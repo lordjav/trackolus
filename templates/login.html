@@ -23,15 +23,19 @@
     <title>Trackolus</title>
 </head>
 <body class="inter-font">
-    <div class="my-5" style="text-align:center">
-        <img src="../static/logo2.jpg" alt="Trackolus logo" style="width:250px;border-radius: 20px;">
-        <h1 class="inter-font py-3" style="font-weight:800;font-size:52px;">Trackolus</h1>
+    <div style="text-align:center;margin-top:20vh;margin-bottom:20vh;">
+        <img src="../static/logo2.jpg" alt="Trackolus logo" style="width:250px;border-radius:20px;">
+        <h1 class="py-3" style="font-weight:800;font-size:52px;">Trackolus</h1>
         <form class="my-5" action="/login" method="post">
             <div class="mb-3">
-                <input autocomplete="off" autofocus class="form-control mx-auto w-auto d-inline-flex focus-ring py-1 px-2 text-decoration-none border rounded-2" style="--bs-focus-ring-color: rgba(var(--bs-dark-rgb), .25)" name="username" placeholder="Username" type="text">
+                <input autocomplete="off" autofocus
+                    class="form-control mx-auto w-auto d-inline-flex focus-ring py-1 px-2 text-decoration-none border rounded-2"
+                    style="--bs-focus-ring-color: rgba(var(--bs-dark-rgb), .25)" name="username" placeholder="Username" type="text">
             </div>
             <div class="mb-3">
-                <input class="form-control mx-auto w-auto d-inline-flex focus-ring py-1 px-2 text-decoration-none border rounded-2" style="--bs-focus-ring-color: rgba(var(--bs-dark-rgb), .25)" name="password" placeholder="Password" type="password">
+                <input class="form-control mx-auto w-auto d-inline-flex focus-ring py-1 px-2 text-decoration-none border rounded-2"
+                    style="--bs-focus-ring-color: rgba(var(--bs-dark-rgb), .25)" name="password" placeholder="Password"
+                    type="password">
             </div>
             <button class="btn btn-dark" type="submit">Log In</button>
         </form>
