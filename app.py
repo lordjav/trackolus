@@ -1,16 +1,16 @@
-from flask_sqlalchemy import SQLAlchemy
+import csv
+from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session, sessions
 from werkzeug.security import generate_password_hash, check_password_hash
 from helpers import login_required
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///general_data.db"
-db = SQLAlchemy(app)
-
+app.secret_key = 'EsAlItErAsE'
+db = SQL("sqlite:///general_data.db")
 
 
 @app.route("/")
-#@login_required
+@login_required
 def index():
     return render_template("index.html")
 
@@ -32,9 +32,7 @@ def login():
             return redirect("/login")
 
         # Query database for username
-        rows = db.execute(
-            "SELECT * FROM users WHERE username = ?", request.form.get("username")
-        )
+        rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(
@@ -42,7 +40,7 @@ def login():
         ):
             return redirect("/login")
 
-        # Remember which user has logged in
+        # Remember which user has logged in and personal settings
         session["user_id"] = rows[0]["id"]
 
         # Redirect user to home page
