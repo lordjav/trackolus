@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box;
+}
+
 .inter-font {
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
@@ -6,4 +10,131 @@
     font-variation-settings:
       "slnt" 0;
   }
-  
+
+#sidebar {
+    background-color:#d9d9d9;
+    height:100vh;    
+}
+
+#logo-frame {
+    text-align: center;
+    margin: 1.5vh auto;
+}
+
+#trackolus-logo {
+    width:100px;
+    border-radius:8px;
+}
+
+#menu-frame {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-option {
+    text-align: center;
+    margin: 12px auto;
+}
+
+.menu-button {
+    width: 220px;
+    height: 90px;
+    background-color: #ADACAC;
+    border-radius: 15px;
+    font-size: 24px;
+    border-style: none;
+    padding: 15px;
+    text-align: left;
+    box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
+}
+
+.icon-button {
+    margin-bottom: 4px;
+}
+
+#purchase-order-button {    
+    display: inline-block;    
+}
+
+#purchase-order-icon {    
+    margin-right: 7px;
+    margin-bottom: 28px;
+}
+
+#purchase-order-text {
+    display: inline-block;
+    text-align: center;
+    line-height: 30px;
+}
+
+#header {
+    background-color: #d9d9d9;
+    height: 12vh;
+    z-index: 0;
+}
+
+#search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+}
+
+#search {
+    border-radius: 17px;
+    border: none;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
+    height: 36px;
+    font-size: 22px;    
+    padding: 12px 20px 12px 40px;
+    width: 33px;
+    height: 33px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpath fill='grey' fill-rule='evenodd' d='m16.325 14.899l5.38 5.38a1.008 1.008 0 0 1-1.427 1.426l-5.38-5.38a8 8 0 1 1 1.426-1.426M10 16a6 6 0 1 0 0-12a6 6 0 0 0 0 12'/%3E%3C/svg%3E");
+    background-position: 5px 3px;
+    z-index: 1;
+}
+
+#go-button {
+    transform: translate(-110%, 10%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background-color: #ADACAC;
+    box-shadow: 4px 2px 4px 0 rgba(0, 0, 0, 0.25);
+    z-index: 1;
+}
+
+#tools-bar {
+    display: flex;
+    flex-direction: column;    
+}
+
+#tools {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+    align-items: center;    
+    height: 50%;
+    margin-right: 10px;
+}
+
+.tools-icon {
+    margin: 0 5px;
+}
+
+#user-box {
+    display: flex; 
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    height: 50%;
+    margin-right: 15px;
+}
+
+#user-box > p {
+    margin: auto 10px;
+    font-size: 24px;
+}
