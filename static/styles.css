@@ -13,7 +13,9 @@
 
 #sidebar {
     background-color:#d9d9d9;
-    height:100vh;    
+    min-height: 100vh;
+    z-index: -1;
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.25);
 }
 
 #logo-frame {
@@ -49,6 +51,10 @@
     box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
 }
 
+.menu-button:hover {
+    background-color: #d7d7d7;
+}
+
 .icon-button {
     margin-bottom: 4px;
 }
@@ -71,13 +77,12 @@
 #header {
     background-color: #d9d9d9;
     height: 12vh;
-    z-index: 0;
+    z-index: 2;
 }
 
 #search-bar {
     display: flex;
-    align-items: center;
-    justify-content: end;
+    align-items: center;    
 }
 
 #search {
@@ -103,7 +108,7 @@
     border-radius: 50%;
     border: none;
     background-color: #ADACAC;
-    box-shadow: 4px 2px 4px 0 rgba(0, 0, 0, 0.25);
+    box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
     z-index: 1;
 }
 
@@ -137,4 +142,8 @@
 #user-box > p {
     margin: auto 10px;
     font-size: 24px;
+}
+
+main {
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;    
 }

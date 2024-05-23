@@ -11,8 +11,34 @@ db = SQL("sqlite:///general_data.db")
 
 @app.route("/")
 @login_required
-def index():
-    return render_template("index.html")
+def inventory():
+    #create class 'product'
+    class prototype_product:
+        def __init__(self, id, SKU, external_code, product_name, quantity, buy_price, sell_price, added_by, addition_date, image_route):
+            self.id = id
+            self.SKU = SKU
+            self.external_code = external_code
+            self.product_name = product_name
+            self.quantity = quantity
+            self.buy_price = buy_price
+            self.sell_price = sell_price
+            self.added_by = added_by
+            self.addition_date = addition_date
+            self.image_route = image_route
+
+    inv = db.execute("SELECT * FROM inventory")
+
+    catalogue = []
+
+    for element in inv:
+        product = prototype_product(
+            element["id"], element["SKU"], element["external_code"], element["product_name"], element["quantity"], element["buy_price"], element["sell_price"], element["added_by"], element["addition_date"], element["image_route"])
+        catalogue.append(product)
+
+    if len(catalogue) == 0:
+        return render_template("inventory.html", empty="There are no products in stock")
+    else:
+        return render_template("inventory.html", catalogue=catalogue)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -49,4 +75,11 @@ def login():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("login.html")
-    
+
+@app.route("/logout")
+def logout():
+    #Forget any user id
+    session.clear()
+
+    #Redirect to login form
+    return redirect("/")
