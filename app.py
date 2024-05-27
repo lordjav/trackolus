@@ -99,39 +99,28 @@ def add_product():
         #Ensure product name is submitted
         if not request.form.get("product_name"):
             raise ValueError("Product name is empty")
+        #Ensure SKU code is submitted
         elif not request.form.get("SKU"):
             raise ValueError("SKU code is empty")
+        #Ensure external code is submitted
         elif not request.form.get("external_code"):
             raise ValueError("External code is empty")
+        #Ensure sell price is submitted
         elif not request.form.get("sell_price"):
             raise ValueError("Sell price is empty")
+        #Ensure a valid quantity
         elif int(request.form.get("initial_quantity")) <= 0:
             raise ValueError("Quantity must be a positive number")
+        #Ensure sell price is a number without special characters
         elif not request.form.get("sell_price").isdigit():
             raise ValueError("Price must contain only numbers")
+        #Ensure sell price is a positive number
         elif int(request.form.get("sell_price")) <= 0:
             raise ValueError("Sell price must be a positive number")
     except ValueError as e:
         return f"Error: {e}", 400
         
     if request.files["image_reference"]:
-        """try:
-            image = request.files["image_reference"]
-            extension = os.path.splitext(image.filename)[1].lower()
-            if extension not in app.config["ALLOWED_EXTENSIONS"]:
-                image_link = ""
-            image_name = request.form.get("SKU") + extension
-            image_route = os.path.join(
-                app.config["UPLOAD_DIRECTORY"],
-                image_name
-                )            
-            image.save(image_route)
-            image_link = image_route
-        except Exception as e:
-            return f"There was a problem uploading image: {e}"
-        
-    else:
-        image_link = """""
         image_link = upload_image(request.files["image_reference"], request.form.get("SKU"), app.config["UPLOAD_DIRECTORY"], app.config["ALLOWED_EXTENSIONS"])
         
     date = datetime.now()
