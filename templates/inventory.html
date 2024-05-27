@@ -25,14 +25,42 @@
                     <td>{{ product.external_code }}</td>
                     <td>{{ product.product_name }}</td>
                     <td>{{ product.quantity }}</td>
-                    <td>${{ product.sell_price }}</td>
+                    <td>{{ product.sell_price|cop }}</td>
                     <td><a href=""><img src="{{ product.image_route }}" style="height:50px;"></a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div>
+    </div>    
     {{ result }}
 {% endif %}
-
+    <!-- Button trigger modal -->
+    <button type="button" id="add-button" data-bs-target="#add-product">+</button>
+  
+    <!-- Modal -->
+    <div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
+        <div id="modal-content">
+            <div id="modal-header">
+                <h3 id="add-product-title">Add new product to stock</h3>
+                <button type="button" class="btn-close" id="close-modal-button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="modal-body">
+                <form action="/add_product" method="POST" enctype="multipart/form-data">
+                    <input autocomplete="off" autofocus class="input" id="product_name" type="text" name="product_name"
+                        placeholder="Product name"><br>
+                    <input autocomplete="off" class="input" id="SKU" type="text" name="SKU" placeholder="SKU"><br>
+                    <input autocomplete="off" class="input" id="external_code" type="text" name="external_code"
+                        placeholder="External code"><br>
+                    <input autocomplete="off" class="input" id="initial_quantity" type="number" name="initial_quantity"
+                        placeholder="Quantity"><br>
+                    <input autocomplete="off" class="input" id="sell_price" type="number" name="sell_price"
+                        placeholder="Sell price"><br>
+                    <label for="image_reference">Select product image</label>
+                    <input class="input" id="image_reference" type="file" name="image_reference"><br>
+                    <button type="button" class="btn btn-light" id="cancel-modal-button" data-bs-dismiss="modal">Cancel</button>
+                    <input type="submit" class="btn btn-secondary" id="save-product-button" action="/add_product">Save product</input>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
