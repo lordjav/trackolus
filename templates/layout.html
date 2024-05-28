@@ -43,18 +43,22 @@
                         </button>
                     </section>
                     <section class="menu-option" id="inventory-frame">
+                        <a href="{{ url_for('inventory') }}">
                         <button class="menu-button" id="inventory-button" name="inventory">
                             <svg class="icon-button icons" xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="black" d="m15.5 17.125l4.95-4.95q.275-.275.7-.275t.7.275t.275.7t-.275.7l-5.65 5.65q-.3.3-.7.3t-.7-.3l-2.85-2.85q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275zM5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h4.175q.275-.875 1.075-1.437T12 1q1 0 1.788.563T14.85 3H19q.825 0 1.413.588T21 5v4q0 .425-.288.713T20 10t-.712-.288T19 9V5h-2v2q0 .425-.288.713T16 8H8q-.425 0-.712-.288T7 7V5H5v14h5q.425 0 .713.288T11 20t-.288.713T10 21zm7-16q.425 0 .713-.288T13 4t-.288-.712T12 3t-.712.288T11 4t.288.713T12 5"/></svg>
                             INVENTORY
                         </button>
+                        </a>
                     </section>
                     <section class="menu-option" id="purchase-order-frame">
+                        <a href="{{ url_for('purchase_order') }}">
                         <button class="menu-button" id="purchase-order-button" name="purchase-order">
                             <svg class="icon-button icons" id="purchase-order-icon" xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="black" d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8 8a2 2 0 0 0 2.828 0l7.172-7.172a2 2 0 0 0 0-2.828zM7 9a2 2 0 1 1 .001-4.001A2 2 0 0 1 7 9"/></svg>
                             <span id="purchase-order-text">
                                 PURCHASE<br>ORDER
                             </span>
                         </button>
+                        </a>
                     </section>
                     <section class="menu-option" id="inbound-frame">
                         <button class="menu-button" id="inbound-button" name="inbound">
@@ -74,9 +78,9 @@
             <div class="col-10 m-0 p-0" id="main-content">
                 <header class=" row m-0 p-0" id="header" name="header">    
                     <div class="col-6 m-0 p-0" id="search-bar">
-                        <form class="input-group input-icon" id="search-box">
+                        <form class="search-container" id="search-box">
                             <input class="form-control" method="POST" type="text" id="search" name="search" placeholder="Search">
-                            <input id="go-button" type="submit" value="&#10140;">
+                            <input class="go-buttons" id="go-button" type="submit" value="&#10140;">
                         </form>
                     </div>
                     <div class="col-6 p-0" id="tools-bar">

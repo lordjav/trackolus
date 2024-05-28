@@ -16,6 +16,20 @@ db = SQL("sqlite:///general_data.db")
 
 app.jinja_env.filters["cop"] = cop
 
+#create class 'product'
+class prototype_product:
+    def __init__(self, id, SKU, external_code, product_name, quantity, buy_price, sell_price, added_by, addition_date, image_route):
+        self.id = id
+        self.SKU = SKU
+        self.external_code = external_code
+        self.product_name = product_name
+        self.quantity = quantity
+        self.buy_price = buy_price
+        self.sell_price = sell_price
+        self.added_by = added_by
+        self.addition_date = addition_date
+        self.image_route = image_route
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     
@@ -64,19 +78,6 @@ def logout():
 @app.route("/")
 @login_required
 def inventory():
-    #create class 'product'
-    class prototype_product:
-        def __init__(self, id, SKU, external_code, product_name, quantity, buy_price, sell_price, added_by, addition_date, image_route):
-            self.id = id
-            self.SKU = SKU
-            self.external_code = external_code
-            self.product_name = product_name
-            self.quantity = quantity
-            self.buy_price = buy_price
-            self.sell_price = sell_price
-            self.added_by = added_by
-            self.addition_date = addition_date
-            self.image_route = image_route
 
     inv = db.execute("SELECT * FROM inventory")
 
@@ -134,3 +135,13 @@ def add_product():
     except Exception as e:
         flash(f"There was a problem: {e}")
         return redirect("/"), 400
+
+@app.route("/purchase_order", methods=["GET", "POST"])
+@login_required
+def purchase_order():
+    if request.method == "POST":
+        pass
+
+    else:
+        inv = db.execute("SELECT * FROM inventory")
+        return render_template("purchase_order.html", catalogue=inv)
