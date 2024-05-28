@@ -94,6 +94,7 @@ def inventory():
 
 
 @app.route("/add_product", methods=["POST"])
+@login_required
 def add_product():
     try:
         #Ensure product name is submitted
