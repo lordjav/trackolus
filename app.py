@@ -143,5 +143,6 @@ def purchase_order():
         pass
 
     else:
-        inv = db.execute("SELECT * FROM inventory")
-        return render_template("purchase_order.html", catalogue=inv)
+        inventory = db.execute("SELECT * FROM inventory")
+        return render_template("purchase_order.html", inventory=inventory)
+        

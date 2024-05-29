@@ -3,19 +3,24 @@
 {% block main %}
 
 <form id="purchase-form">
-    <input type="text" class="form" id="client-name" autofocus placeholder="Client" required>
+    <input type="text" class="form" id="client-name" autofocus placeholder="Client">
     <div id="phone-email">
         <input type="number" class="form" id="client-phone" placeholder="Contact phone">
         <input type="email" class="form" id="client-email" placeholder="E-mail">
     </div>
     <br>
-    <div class="search-container" id="search-box-2">
-        <input type="text" class="form" id="search2" placeholder="Search by SKU code or name">
+    <form class="search-container" id="search-box-2" action="/purchase_order" method="get">
+        <input type="search" list="products" class="form" id="search2" name="q" placeholder="Search by SKU code or name" autocomplete="off">
+        <datalist id="products">
+            {% for product in inventory %}
+            <option id="{{ product['id'] }}">{{ product["SKU"] }}: {{ product["product_name"] }}</option>
+            {% endfor %}
+        </datalist>
         <input class="go-buttons" id="go-button-2" type="submit" value="&#10140;">
-    </div>
+    </form>
     <div>
         <div class="p-2">
-            <table class="table table-striped table-secondary table-borderless">
+            <table class="table table-striped table-secondary table-borderless" id="purchase-cart">
                 <thead class="table-light">
                     <tr>
                         <th>SKU</th>
@@ -27,16 +32,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for product in catalogue %}
-                    <tr>
-                        <td>{{ product.SKU }}</td>
-                        <td>{{ product.product_name }}</td>
-                        <td><input type="number" id="purchase-quantity" name="purchase-quantity" value="1" min="1" max="10"><!--<button id="less-button" action="">-</button><button id="more-button" action="">+</button>--></td>
-                        <td>{{ product.sell_price|cop }}</td>
-                        <td>{{ (product.sell_price * product.quantity)|cop }}</td>
-                        <td><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16l-1.58 14.22A2 2 0 0 1 16.432 22H7.568a2 2 0 0 1-1.988-1.78zm3.345-2.853A2 2 0 0 1 9.154 2h5.692a2 2 0 0 1 1.81 1.147L18 6H6zM2 6h20m-12 5v5m4-5v5"/></svg></td>
-                    </tr>
-                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -57,4 +52,28 @@
     </div>
 </form>
 
+<script>
+  let option = document.querySelector("option");
+  option.addEventListener("click", addToCart());
+
+  function addToCart() {
+    let table = getElementById("purchase-cart");
+    let row = table.insertRow(0);
+    let cell0 = row.insertCell(0);
+    let cell1 = row.insertCell(1);
+    let cell2 = row.insertCell(2);
+    let cell3 = row.insertCell(3);
+    let cell4 = row.insertCell(4);
+    let cell5 = row.insertCell(5);
+
+    let product_id = '{{ inventory[0]["id"] }}'
+
+    cell0.innerHTML = '{{ inventory[0]["SKU"] }}';
+    cell1.innerHTML = '{{ inventory[0]["product_name"] }}';
+    cell2.innerHTML = '<input type="number" id="purchase-quantity-' + product_id + 'name="purchase-quantity" value="1" min="1" max="10">';
+    cell3.innerHTML = '{{ inventory[0]["sell_price"] }}';
+    cell4.innerHTML = '{{ inventory[0]["sell_price"] }}';
+    cell5.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16l-1.58 14.22A2 2 0 0 1 16.432 22H7.568a2 2 0 0 1-1.988-1.78zm3.345-2.853A2 2 0 0 1 9.154 2h5.692a2 2 0 0 1 1.81 1.147L18 6H6zM2 6h20m-12 5v5m4-5v5"/></svg>';
+  };
+</script>
 {% endblock %}
