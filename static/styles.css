@@ -66,7 +66,7 @@ h3 {
     transform: translateY(-10%);
 }
 
-.menu-button:hover, #go-button:hover {
+.menu-button:hover, .go-buttons:hover {
     background-color: #d7d7d7;
 }
 
@@ -95,14 +95,15 @@ h3 {
     z-index: 0;
 }
 
-#search-bar {
+#search-bar, .search-container {
     display: flex;
-    align-items: center;    
+    align-items: center;
+    justify-content: center;
 }
 
-#search {
+#search, #search2 {
     border-radius: 10px;
-    border: none;
+    border: 1px solid #d7d7d7;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
     height: 42px;
     font-size: 22px;
@@ -112,17 +113,66 @@ h3 {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpath fill='grey' fill-rule='evenodd' d='m16.325 14.899l5.38 5.38a1.008 1.008 0 0 1-1.427 1.426l-5.38-5.38a8 8 0 1 1 1.426-1.426M10 16a6 6 0 1 0 0-12a6 6 0 0 0 0 12'/%3E%3C/svg%3E");
     background-position: 5px 3px;
     z-index: 1;
+    flex-direction: row;
+    width: 30vw;
 }
 
-#go-button {
-    transform: translate(-110%, 13%);
-    width: 34px;
+#search-box-2 {    
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#error-output {
+    visibility: hidden;
+}
+
+.form {
+    border-radius: 10px;
+    border: 1px solid #d7d7d7;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
+    height: 42px;
+    font-size: 22px;
+    padding: 12px 20px 12px 45px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: 5px 3px;
+    z-index: 1;
+    flex-direction: row;
+}
+
+#client-name {
+    width: 100%;
+    margin: 20px auto;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cg fill='grey' fill-rule='evenodd' clip-rule='evenodd'%3E%3Cpath d='M16 9a4 4 0 1 1-8 0a4 4 0 0 1 8 0m-2 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0'/%3E%3Cpath d='M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1M3 12c0 2.09.713 4.014 1.908 5.542A8.986 8.986 0 0 1 12.065 14a8.984 8.984 0 0 1 7.092 3.458A9 9 0 1 0 3 12m9 9a8.963 8.963 0 0 1-5.672-2.012A6.992 6.992 0 0 1 12.065 16a6.991 6.991 0 0 1 5.689 2.92A8.964 8.964 0 0 1 12 21'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+#phone-email {
+    margin: 20px auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+#client-phone {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpath fill='none' stroke='grey' stroke-dasharray='64' stroke-dashoffset='64' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M8 3C8.5 3 10.5 7.5 10.5 8C10.5 9 9 10 8.5 11C8 12 9 13 10 14C10.3943 14.3943 12 16 13 15.5C14 15 15 13.5 16 13.5C16.5 13.5 21 15.5 21 16C21 18 19.5 19.5 18 20C16.5 20.5 15.5 20.5 13.5 20C11.5 19.5 10 19 7.5 16.5C5 14 4.5 12.5 4 10.5C3.5 8.5 3.5 7.5 4 6C4.5 4.5 6 3 8 3Z'%3E%3Canimate fill='freeze' attributeName='stroke-dashoffset' dur='0.6s' values='64;0'/%3E%3C/path%3E%3C/svg%3E");
+    width: 45%;
+}
+
+#client-email {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cg fill='none' stroke='grey' stroke-width='2.5'%3E%3Crect width='18.5' height='17' x='2.682' y='3.5' rx='4'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m2.729 7.59l7.205 4.13a3.956 3.956 0 0 0 3.975 0l7.225-4.13'/%3E%3C/g%3E%3C/svg%3E");
+    width: 45%;
+}
+
+.go-buttons {
+    transform: translate(-114%, 2%);
+    width: 36px;
     height: 34px;
     border-radius: 10px;
     border: none;
     background-color: #ADACAC;
     box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.25);
     z-index: 1;
+    flex-direction: row;    
 }
 
 #tools-bar {
@@ -210,75 +260,120 @@ main {
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
     background-color: rgba(0,0,0,0.5); /* Black w/ opacity */    
-  }
+}
   
   /* Modal Content */
-  #modal-content {
+#modal-content {
     background-color: #d9d9d9;
     margin: auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 25%;
+    width: 500px;
     border-radius: 15px;
     text-align: center;
     box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
     animation-name: fading;
     animation-duration: 400ms;
-  }
+}
 
-  @keyframes fading {
+@keyframes fading {
     from {opacity: 0}
     to {opacity: 1}
-  }
+}
 
-  #modal-header {
+#modal-header {
     position: relative;
-  }
+}
 
-  #modal-header h3 {
+#modal-header h3 {
     margin: 10px auto;
     display: inline-block;
     text-align: left;
-  }
+}
   
-  #modal-body input {
+#modal-body input {
     border-radius: 7px;
     border:none;
     height: 35px;
     margin: 15px 0;    
-  }
+}
 
-  #modal-body input[type="text"], input[type="number"] {
+#modal-body input[type="text"], input[type="number"] {
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
     width: 100%;
-  }
+}
 
-  /* The Close Button */
-  #close-modal-button {
+/* The Close Button */
+#close-modal-button {
     color: #000;
     display: inline-block;
     position: absolute;
     right: 0px;
     font-size: 28px;
     font-weight: bold;
-  }
+}
   
-  #close-modal-button:hover,
-  #close-modal-button:focus {
+#close-modal-button:hover,
+#close-modal-button:focus {
     color: #000;
     text-decoration: none;
     cursor: pointer;
-  }
+}
 
-  #save-product-button {
+#save-product-button {
     background-color: #aaaaaa;
     border: none;
     color:#000;    
     width: 30%;
     box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
-  }
+}
 
-  #save-product-button:hover {
+#save-product-button:hover {
     border-color: #000;
     background-color: #d7d7d7;
-  }
+}
+
+#purchase-form {
+    width: 80%;
+    margin: auto;
+    padding-top: 5vh;
+}
+
+#products-selected {
+    display: none;
+}
+
+#table-header {
+    visibility: hidden;
+}
+
+.purchase-quantity {
+    border-radius: 10px;
+    border: 1px solid #d7d7d7;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
+    width: 50px !important;
+    padding-left: 10px;
+    text-align: center;
+}
+
+#buttons-purchase-container {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.purchase-button {
+    width: 185px;
+    height: 45px;
+    padding: 5px;
+    text-align: center;
+}
+
+.delete-button {
+    /*font-size: 24px;*/
+    font-weight: 100;
+    text-align: center;
+}
+
+.delete-button:hover {
+    cursor: pointer;    
+}

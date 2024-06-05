@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+
+        </style>
+    </head>
+    <body>
+        <h1 id="title">Purchase order</h1>
+        <h2 id="trackolus-logo">Trackolus logo here</h2>
+        <h2 id="company-logo">Your logo here</h2>
+
+        <p>Client: {{ client.name }}</p>
+        <p>Phone: {{ client.phone }}</p>
+        <p>E-mail: {{ client.email }}</p>
+
+        <table>
+            <thead class="table-light" id="table-header">
+                <tr>
+                    <th>SKU</th>
+                    <th>Product name</th>
+                    <th>Quantity</th>
+                    <th>Price (unit)</th>
+                    <th>Total price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in products %}
+                <tr>
+                    <td>{{ item.SKU }}</td>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.sell_price | cop }}</td>
+                    <td>{{ (item.sell_price * item.quantity) | cop }}</td>
+                </tr>
+                {% endfor %}
+                <tr><td colspan="4">Grand total</td><td>{{ total | cop }}</td></tr>
+            </tbody>
+        </table>
+    </body>
+    </html>

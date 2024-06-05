@@ -1,6 +1,6 @@
-import csv, os
+import pdfkit, os
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session, sessions
+from flask import Flask, flash, redirect, render_template, request, session, sessions, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
 from trackolus.helpers import *
 from trackolus.image_uploader import upload_image
@@ -15,6 +15,30 @@ app.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
 db = SQL("sqlite:///general_data.db")
 
 app.jinja_env.filters["cop"] = cop
+
+#create class 'product'
+class prototype_product:
+    def __init__(self, id, SKU, external_code, product_name, quantity, buy_price, sell_price, added_by, addition_date, image_route):
+        self.id = id
+        self.SKU = SKU
+        self.external_code = external_code
+        self.product_name = product_name
+        self.quantity = quantity
+        self.buy_price = buy_price
+        self.sell_price = sell_price
+        self.added_by = added_by
+        self.addition_date = addition_date
+        self.image_route = image_route
+
+#Create inventory (list of products as a database) and catalogue (list of products as objects)
+inventory = db.execute("SELECT * FROM inventory")
+catalogue = []
+
+for element in inventory:
+    product = prototype_product(
+        element["id"], element["SKU"], element["external_code"], element["product_name"], element["quantity"], element["buy_price"], element["sell_price"], element["added_by"], element["addition_date"], element["image_route"])
+    catalogue.append(product)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -64,29 +88,6 @@ def logout():
 @app.route("/")
 @login_required
 def inventory():
-    #create class 'product'
-    class prototype_product:
-        def __init__(self, id, SKU, external_code, product_name, quantity, buy_price, sell_price, added_by, addition_date, image_route):
-            self.id = id
-            self.SKU = SKU
-            self.external_code = external_code
-            self.product_name = product_name
-            self.quantity = quantity
-            self.buy_price = buy_price
-            self.sell_price = sell_price
-            self.added_by = added_by
-            self.addition_date = addition_date
-            self.image_route = image_route
-
-    inv = db.execute("SELECT * FROM inventory")
-
-    catalogue = []
-
-    for element in inv:
-        product = prototype_product(
-            element["id"], element["SKU"], element["external_code"], element["product_name"], element["quantity"], element["buy_price"], element["sell_price"], element["added_by"], element["addition_date"], element["image_route"])
-        catalogue.append(product)
-
     if len(catalogue) == 0:
         return render_template("inventory.html", empty="There are no products in stock")
     else:
@@ -134,3 +135,51 @@ def add_product():
     except Exception as e:
         flash(f"There was a problem: {e}")
         return redirect("/"), 400
+
+
+@app.route("/purchase_order", methods=["GET", "POST"])
+@login_required
+def purchase_order():
+    if request.method == "POST":
+        pass
+
+    else:
+        inventory = db.execute("SELECT * FROM inventory")
+        return render_template("purchase_order.html", inventory=inventory)
+
+
+@app.route("/view_pdf", methods=["POST"])
+@login_required
+def view_pdf():
+    path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+    products_selected = request.form.getlist("products-selected")
+    name = request.form.get("client-name")
+    phone = request.form.get("client-phone")
+    email = request.form.get("client-email")    
+    
+    class client:
+        def __init__(self, client_name, client_phone, client_email):
+            self.name = client_name
+            self.phone = client_phone
+            self.email = client_email
+
+    client_data = client(name, phone, email)
+    products = []
+    total = 0
+    for element in catalogue:
+        if element.SKU in products_selected:
+            products.append(element)
+    for object in products:
+        object.quantity = int(request.form.get(object.SKU))
+        total += (object.quantity * object.sell_price)
+
+    rendered = render_template("order_pdf.html", products=products, client=client_data, total=total)
+    
+    pdf = pdfkit.from_string(rendered, False, options={"enable-local-file-access": ""}, configuration=config)
+    
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+    
+    return response
