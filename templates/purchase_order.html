@@ -2,26 +2,26 @@
 
 {% block main %}
 
-<form id="purchase-form">
-    <input type="text" class="form" id="client-name" autofocus placeholder="Client">
+<form id="purchase-form" method="POST" target="_blank">
+    <input type="text" class="form" id="client-name" name="client-name" autofocus placeholder="Client" required>
     <div id="phone-email">
-        <input type="number" class="form" id="client-phone" placeholder="Contact phone">
-        <input type="email" class="form" id="client-email" placeholder="E-mail">
+        <input type="number" class="form" id="client-phone" name="client-phone" placeholder="Contact phone" required>
+        <input type="email" class="form" id="client-email" name="client-email" placeholder="E-mail" required>
     </div>
     <br>
-    <form class="search-container" id="search-box-2" action="/purchase_order" method="get">
-        <input type="search" list="products" class="form" id="search2" name="q" placeholder="Search by SKU code or name" autocomplete="off">
+    <div class="search-container" id="search-box-2">
+        <input list="products" class="form" id="search2" placeholder="Search by SKU code or name" autocomplete="off">
         <datalist id="products">
             {% for product in inventory %}
-            <option id="{{ product['id'] }}">{{ product["SKU"] }}: {{ product["product_name"] }}</option>
+            <option value="{{ product['SKU'] }} - {{ product['product_name'] }}">Available: {{ product['quantity'] }} items</option>
             {% endfor %}
         </datalist>
-        <input class="go-buttons" id="go-button-2" type="submit" value="&#10140;">
-    </form>
+        <p id="error-output" style="color:red;">Ya se encuentra en lista</p>
+    </div>    
     <div>
         <div class="p-2">
             <table class="table table-striped table-secondary table-borderless" id="purchase-cart">
-                <thead class="table-light">
+                <thead class="table-light" id="table-header">
                     <tr>
                         <th>SKU</th>
                         <th>Product name</th>
@@ -31,18 +31,17 @@
                         <th>Remove</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="product-list">
                 </tbody>
             </table>
         </div>
     </div>
-    <div id="buttons-purchase-container">
-        <a href="">
-            <button class="menu-button purchase-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" color="black"><path d="M3.5 13v-.804c0-2.967 0-4.45.469-5.636c.754-1.905 2.348-3.407 4.37-4.118C9.595 2 11.168 2 14.318 2c1.798 0 2.698 0 3.416.253c1.155.406 2.066 1.264 2.497 2.353c.268.677.268 1.525.268 3.22V13"/><path d="M3.5 12a3.333 3.333 0 0 1 3.333-3.333c.666 0 1.451.116 2.098-.057a1.67 1.67 0 0 0 1.179-1.18c.173-.647.057-1.432.057-2.098A3.333 3.333 0 0 1 13.5 2m-10 20v-3m0 0v-1.8c0-.566 0-.848.176-1.024C3.85 16 4.134 16 4.7 16h.8a1.5 1.5 0 0 1 0 3zm17-3H19c-.943 0-1.414 0-1.707.293S17 17.057 17 18v1m0 3v-3m0 0h2.5M14 19a3 3 0 0 1-3 3c-.374 0-.56 0-.7-.08c-.333-.193-.3-.582-.3-.92v-4c0-.338-.033-.727.3-.92c.14-.08.326-.08.7-.08a3 3 0 0 1 3 3"/></g></svg>
-                View PDF
-            </button>
-        </a>
+    <select id="products-selected" name="products-selected" multiple></select>
+    <div id="buttons-purchase-container">        
+        <button type="submit" onclick="getPDF()" class="menu-button purchase-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" color="black"><path d="M3.5 13v-.804c0-2.967 0-4.45.469-5.636c.754-1.905 2.348-3.407 4.37-4.118C9.595 2 11.168 2 14.318 2c1.798 0 2.698 0 3.416.253c1.155.406 2.066 1.264 2.497 2.353c.268.677.268 1.525.268 3.22V13"/><path d="M3.5 12a3.333 3.333 0 0 1 3.333-3.333c.666 0 1.451.116 2.098-.057a1.67 1.67 0 0 0 1.179-1.18c.173-.647.057-1.432.057-2.098A3.333 3.333 0 0 1 13.5 2m-10 20v-3m0 0v-1.8c0-.566 0-.848.176-1.024C3.85 16 4.134 16 4.7 16h.8a1.5 1.5 0 0 1 0 3zm17-3H19c-.943 0-1.414 0-1.707.293S17 17.057 17 18v1m0 3v-3m0 0h2.5M14 19a3 3 0 0 1-3 3c-.374 0-.56 0-.7-.08c-.333-.193-.3-.582-.3-.92v-4c0-.338-.033-.727.3-.92c.14-.08.326-.08.7-.08a3 3 0 0 1 3 3"/></g></svg>
+            View PDF
+        </button>
         <a href="">
             <button class="menu-button purchase-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
@@ -53,27 +52,61 @@
 </form>
 
 <script>
-  let option = document.querySelector("option");
-  option.addEventListener("click", addToCart());
+  //Add product in a new row
+  let myInventory = {{ inventory | tojson | safe }};
+  function eraseErrorMessage() {
+    document.getElementById("error-output").style.visibility = "hidden";
+  }
+  document.getElementById('search2').addEventListener('input', function(e) {
+    let selectedOption = e.target.value;
+    let SKU = selectedOption.slice(0, 8);
+    if (document.getElementById(SKU) != null) {
+        document.getElementById("error-output").style.visibility = "visible";
+        setTimeout(eraseErrorMessage, 5000);
+    } else {
+      let product = myInventory.find(object => object.SKU === SKU);
+      document.getElementById("table-header").style.visibility = "visible";
+      document.getElementById("product-list").innerHTML += `
+        <tr>
+            <td>${product.SKU}</td>
+            <td>${product.product_name}</td>
+            <td><input type="number" class="purchase-quantity" name="${product.SKU}" value="1" max="${product.quantity}"></td>
+            <td>${product.sell_price}</td>
+            <td class="total-price">${product.sell_price}</td>
+            <td class="delete-button">&#x1F5D9;</td>
+        </tr>
+      `;
+      document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
+    }
+    document.getElementById('search2').value = "";
+  });
+  
+  //Delete product (A.K.A row)
+  function deleteRow(e) {
+    if (e.target.classList.contains("delete-button")) {
+      document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
+      e.target.closest("tr").remove();
+    }
+    if (document.querySelectorAll("tr").length == 1) {
+        document.getElementById("table-header").style.visibility = "hidden";
+    }
+  }
+  document.querySelector("table").addEventListener("click", deleteRow);
+  
+  //Dynamically multiply quantity by price
+  function updatePrice(e) {
+    if (e.target.classList.contains("purchase-quantity")) {
+      let total_price = e.target.value * parseInt(e.target.parentNode.nextElementSibling.innerHTML);
+      e.target.parentNode.nextElementSibling.nextElementSibling.innerHTML = total_price;
+    }    
+  }
+  document.querySelector("table").addEventListener("input", updatePrice);
+  // Save list of products in a hidden input list
 
-  function addToCart() {
-    let table = getElementById("purchase-cart");
-    let row = table.insertRow(0);
-    let cell0 = row.insertCell(0);
-    let cell1 = row.insertCell(1);
-    let cell2 = row.insertCell(2);
-    let cell3 = row.insertCell(3);
-    let cell4 = row.insertCell(4);
-    let cell5 = row.insertCell(5);
-
-    let product_id = '{{ inventory[0]["id"] }}'
-
-    cell0.innerHTML = '{{ inventory[0]["SKU"] }}';
-    cell1.innerHTML = '{{ inventory[0]["product_name"] }}';
-    cell2.innerHTML = '<input type="number" id="purchase-quantity-' + product_id + 'name="purchase-quantity" value="1" min="1" max="10">';
-    cell3.innerHTML = '{{ inventory[0]["sell_price"] }}';
-    cell4.innerHTML = '{{ inventory[0]["sell_price"] }}';
-    cell5.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16l-1.58 14.22A2 2 0 0 1 16.432 22H7.568a2 2 0 0 1-1.988-1.78zm3.345-2.853A2 2 0 0 1 9.154 2h5.692a2 2 0 0 1 1.81 1.147L18 6H6zM2 6h20m-12 5v5m4-5v5"/></svg>';
-  };
+  //Generate purchase order as pdf
+  function getPDF() {
+    //event.preventDefault();
+    document.getElementById("purchase-form").action = "/view_pdf";
+  }
 </script>
 {% endblock %}
