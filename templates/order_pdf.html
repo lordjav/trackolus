@@ -10,9 +10,10 @@
         <h2 id="trackolus-logo">Trackolus logo here</h2>
         <h2 id="company-logo">Your logo here</h2>
 
-        <p>Client: {{ client.name }}</p>
-        <p>Phone: {{ client.phone }}</p>
-        <p>E-mail: {{ client.email }}</p>
+        <p>Client: {{ data[0].name }}</p>
+        <p>Identification: {{ data[0].id }}</p>
+        <p>Phone: {{ data[0].phone }}</p>
+        <p>E-mail: {{ data[0].email }}</p>
 
         <table>
             <thead class="table-light" id="table-header">
@@ -25,7 +26,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in products %}
+                {% for item in data[1] %}
                 <tr>
                     <td>{{ item.SKU }}</td>
                     <td>{{ item.product_name }}</td>
@@ -34,7 +35,7 @@
                     <td>{{ (item.sell_price * item.quantity) | cop }}</td>
                 </tr>
                 {% endfor %}
-                <tr><td colspan="4">Grand total</td><td>{{ total | cop }}</td></tr>
+                <tr><td colspan="4">Grand total</td><td>{{ data[2] | cop }}</td></tr>
             </tbody>
         </table>
     </body>

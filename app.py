@@ -16,9 +16,9 @@ db = SQL("sqlite:///general_data.db")
 
 app.jinja_env.filters["cop"] = cop
 
-#create class 'product'
+#create class "product"
 class prototype_product:
-    def __init__(self, id, SKU, external_code, product_name, quantity, buy_price, sell_price, added_by, addition_date, image_route):
+    def __init__(self, id, SKU, external_code, product_name, quantity, buy_price, sell_price, author, addition_date, image_route):
         self.id = id
         self.SKU = SKU
         self.external_code = external_code
@@ -26,9 +26,17 @@ class prototype_product:
         self.quantity = quantity
         self.buy_price = buy_price
         self.sell_price = sell_price
-        self.added_by = added_by
+        self.author = author
         self.addition_date = addition_date
         self.image_route = image_route
+
+#Create class "client"
+class client:
+    def __init__(self, client_name, client_id, client_phone, client_email):
+        self.name = client_name
+        self.id = client_id
+        self.phone = client_phone
+        self.email = client_email
 
 #Create inventory (list of products as a database) and catalogue (list of products as objects)
 inventory = db.execute("SELECT * FROM inventory")
@@ -36,8 +44,28 @@ catalogue = []
 
 for element in inventory:
     product = prototype_product(
-        element["id"], element["SKU"], element["external_code"], element["product_name"], element["quantity"], element["buy_price"], element["sell_price"], element["added_by"], element["addition_date"], element["image_route"])
+        element["id"], element["SKU"], element["external_code"], element["product_name"], element["quantity"], element["buy_price"], element["sell_price"], element["author"], element["addition_date"], element["image_route"])
     catalogue.append(product)
+
+#Get data for create order
+def get_order_data():
+    products_list = request.form.getlist("products-selected")
+    name = request.form.get("client-name")
+    id = request.form.get("client-id")
+    phone = request.form.get("client-phone")
+    email = request.form.get("client-email")
+
+    client_data = client(name, id, phone, email)
+    products = []
+    total = 0
+    for element in catalogue:
+        if element.SKU in products_list:
+            products.append(element)
+    for object in products:
+        object.quantity = int(request.form.get(object.SKU))
+        total += (object.quantity * object.sell_price)
+    data = [client_data, products, total]
+    return data
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -128,7 +156,7 @@ def add_product():
     date = datetime.now()
     try:
         db.execute(
-            "INSERT INTO inventory (SKU, product_name, external_code, quantity, sell_price, added_by, addition_date, image_route) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", request.form.get("SKU"), request.form.get("product_name"), request.form.get("external_code"), request.form.get("initial_quantity"), request.form.get("sell_price"), session["user_id"], date, image_link
+            "INSERT INTO inventory (SKU, product_name, external_code, quantity, sell_price, author, addition_date, image_route) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", request.form.get("SKU"), request.form.get("product_name"), request.form.get("external_code"), request.form.get("initial_quantity"), request.form.get("sell_price"), session["user_id"], date, image_link
             )
         flash("Product succesfully added to inventory", category="success")
         return redirect("/")
@@ -141,7 +169,30 @@ def add_product():
 @login_required
 def purchase_order():
     if request.method == "POST":
-        pass
+        data = get_order_data()
+        date = datetime.now()
+
+        try:
+            is_client = db.execute("SELECT id FROM clients WHERE id = ?", data[0].id)
+            if len(is_client) != 1:
+                db.execute(
+                    "INSERT INTO clients (client_name, external_id, phone, email) VALUES (?, ?, ?, ?)", data[0].name, data[0].id, data[0].phone, data[0].email
+                    )
+            for item in data[1]:
+                stock = (db.execute("SELECT quantity FROM inventory WHERE id = ?", item.id))[0]["quantity"]                
+                if item.quantity <= stock:
+                    db.execute(
+                        "UPDATE inventory SET quantity = ? WHERE id = ?", (stock - int(item.quantity)), item.id
+                    )
+                    client_id = (db.execute("SELECT id FROM clients WHERE external_id = ?", data[0].id))[0]["id"]
+                    db.execute(
+                        "INSERT INTO movements (date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?)", date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
+                    )                
+            flash("Order succesfully registered", category="success")
+            return redirect("/purchase_order")
+        except Exception as e:
+            print(f"There was a problem: {e}")
+            return redirect("/purchase_order")
 
     else:
         inventory = db.execute("SELECT * FROM inventory")
@@ -153,28 +204,8 @@ def purchase_order():
 def view_pdf():
     path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
-    products_selected = request.form.getlist("products-selected")
-    name = request.form.get("client-name")
-    phone = request.form.get("client-phone")
-    email = request.form.get("client-email")    
-    
-    class client:
-        def __init__(self, client_name, client_phone, client_email):
-            self.name = client_name
-            self.phone = client_phone
-            self.email = client_email
-
-    client_data = client(name, phone, email)
-    products = []
-    total = 0
-    for element in catalogue:
-        if element.SKU in products_selected:
-            products.append(element)
-    for object in products:
-        object.quantity = int(request.form.get(object.SKU))
-        total += (object.quantity * object.sell_price)
-
-    rendered = render_template("order_pdf.html", products=products, client=client_data, total=total)
+    data = get_order_data()    
+    rendered = render_template("order_pdf.html", data=data)
     
     pdf = pdfkit.from_string(rendered, False, options={"enable-local-file-access": ""}, configuration=config)
     

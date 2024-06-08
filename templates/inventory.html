@@ -32,17 +32,16 @@
             </tbody>
         </table>
     </div>    
-    {{ result }}
 {% endif %}
     <!-- Button trigger modal -->
-    <button type="button" id="add-button" data-bs-target="#add-product">+</button>
+    <button type="button" id="add-button" onclick="showModal()" data-bs-target="#add-product">+</button>
   
     <!-- Modal -->
     <div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
         <div id="modal-content">
             <div id="modal-header">
                 <h3 id="add-product-title">Add new product to stock</h3>
-                <button type="button" class="btn-close" id="close-modal-button" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" id="close-modal-button" onclick="closeModal()" aria-label="Close"></button>
             </div>
             <div id="modal-body">
                 <form action="/add_product" method="POST" enctype="multipart/form-data">
@@ -64,28 +63,4 @@
     </div>
 {% endblock %}
     <script>
-        // Get the modal
-        let addProductModal = document.getElementById("add-product");
-
-        // Get the button that opens the modal
-        let addButton = document.getElementById("add-button");
-
-        // Get the elements that closes the modal
-        let closeModalButton = document.getElementById("close-modal-button");
-
-        // When the user clicks the button, open the modal
-        addButton.onclick = function() {
-            addProductModal.style.display = "block";
-        }
-
-        // When the user clicks on "x", close the modal
-        closeModalButton.onclick = function() {
-            addProductModal.style.display = "none";
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-            if (event.target == addProductModal) {
-                addProductModal.style.display = "none";
-        }}
     </script>

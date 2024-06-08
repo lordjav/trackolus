@@ -2,8 +2,11 @@
 
 {% block main %}
 
-<form id="purchase-form" method="POST" target="_blank">
-    <input type="text" class="form" id="client-name" name="client-name" autofocus placeholder="Client" required>
+<form id="purchase-form" method="POST" >
+    <div id="name-id">
+        <input type="text" class="form" id="client-name" name="client-name" autofocus placeholder="Client" required>
+        <input type="text" class="form" id="client-id" name="client-id" placeholder="Identification" required>
+    </div>
     <div id="phone-email">
         <input type="number" class="form" id="client-phone" name="client-phone" placeholder="Contact phone" required>
         <input type="email" class="form" id="client-email" name="client-email" placeholder="E-mail" required>
@@ -43,7 +46,7 @@
             View PDF
         </button>
         <a href="">
-            <button class="menu-button purchase-button">
+            <button type="submit" onclick="saveOrder()" class="menu-button purchase-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
                 Save order
             </button>
@@ -81,7 +84,7 @@
     document.getElementById('search2').value = "";
   });
   
-  //Delete product (A.K.A row)
+  //Delete product (from hidden input list and table)
   function deleteRow(e) {
     if (e.target.classList.contains("delete-button")) {
       document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
@@ -101,12 +104,18 @@
     }    
   }
   document.querySelector("table").addEventListener("input", updatePrice);
-  // Save list of products in a hidden input list
 
   //Generate purchase order as pdf
+  form = document.getElementById("purchase-form")
   function getPDF() {
-    //event.preventDefault();
-    document.getElementById("purchase-form").action = "/view_pdf";
+    form.action = "/view_pdf";
+    form.target = "_blank";
+  }
+  
+  //Save order in transaction list
+  function saveOrder() {
+    form.action = "/purchase_order";
+    form.target = "_self";
   }
 </script>
 {% endblock %}
