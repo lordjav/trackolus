@@ -173,21 +173,28 @@ def purchase_order():
         date = datetime.now()
 
         try:
-            is_client = db.execute("SELECT id FROM clients WHERE id = ?", data[0].id)
+            is_client = db.execute("SELECT id FROM clients WHERE external_id = ?", data[0].id)
             if len(is_client) != 1:
                 db.execute(
                     "INSERT INTO clients (client_name, external_id, phone, email) VALUES (?, ?, ?, ?)", data[0].name, data[0].id, data[0].phone, data[0].email
-                    )
+                )
+            else:
+                client_id = is_client[0]["id"]
+            order_number = db.execute("SELECT order_number FROM movements ORDER BY order_number DESC LIMIT 1")[0]["order_number"]
+            order_number += 1
             for item in data[1]:
-                stock = (db.execute("SELECT quantity FROM inventory WHERE id = ?", item.id))[0]["quantity"]                
-                if item.quantity <= stock:
+                stock = (db.execute("SELECT quantity FROM inventory WHERE id = ?", item.id))[0]["quantity"]
+                if stock == 0:
+                    raise ValueError(f"{item.product_name} is out of stock")
+                elif item.quantity > stock:
+                    raise ValueError(f"There is only {stock} items of this product")
+                else:
                     db.execute(
                         "UPDATE inventory SET quantity = ? WHERE id = ?", (stock - int(item.quantity)), item.id
                     )
-                    client_id = (db.execute("SELECT id FROM clients WHERE external_id = ?", data[0].id))[0]["id"]
                     db.execute(
-                        "INSERT INTO movements (date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?)", date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
-                    )                
+                        "INSERT INTO movements (order_number, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?)", order_number, date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
+                    )
             flash("Order succesfully registered", category="success")
             return redirect("/purchase_order")
         except Exception as e:
