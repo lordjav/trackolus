@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+
+        </style>
+    </head>
+    <body>
+        <h1 id="title">Purchase order</h1>
+        <h2 id="trackolus-logo">Trackolus logo here</h2>
+        <h2 id="company-logo">Your logo here</h2>
+
+        <p>Client: {{ data["client_name"] }}</p>
+        <p>Identification: {{ data["client_external_id"] }}</p>
+        <p>Phone: {{ data["client_phone"] }}</p>
+        <p>E-mail: {{ data["client_email"] }}</p>
+        <p>Order number: {{ order.order_number }}</p>
+        <p>Type of movement: {{ order.order_type }}</p>
+        <p>Date: {{ order.order_date }}</p>
+        <p>Seller: {{ order.order_author }}</p>
+
+        <table>
+            <thead class="table-light" id="table-header">
+                <tr>
+                    <th>SKU</th>
+                    <th>Product name</th>
+                    <th>Quantity</th>
+                    <th>Price (unit)</th>
+                    <th>Total price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.order_products %}
+                <tr>
+                    <td>{{ item["SKU"] }}</td>
+                    <td>{{ item["product_name"] }}</td>
+                    <td>{{ item["quantity"] }}</td>
+                    <td>{{ item["price"] | cop }}</td>
+                    <td>{{ (item["price"] * item["quantity"]) | cop }}</td>
+                </tr>
+                {% endfor %}
+                <tr><td colspan="4">Grand total</td><td>{{ data["grand_total"] | cop }}</td></tr>
+            </tbody>
+        </table>
+    </body>
+    </html>

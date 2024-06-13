@@ -40,8 +40,7 @@ class client:
 
 #Create class "order_object"
 class prototype_order:
-    def __init__(self, id, order_number, order_type, order_date, order_author, order_buyer):
-        self.id = id
+    def __init__(self, order_number, order_type, order_date, order_author, order_buyer):
         self.order_number = order_number
         self.order_type = order_type
         self.order_date = order_date
@@ -58,7 +57,17 @@ def create_catalogue():
     catalogue = []
     for element in inventory:
         product = prototype_product(
-            element["id"], element["SKU"], element["external_code"], element["product_name"], element["quantity"], element["buy_price"], element["sell_price"], element["author"], element["addition_date"], element["image_route"])
+            element["id"], 
+            element["SKU"], 
+            element["external_code"], 
+            element["product_name"], 
+            element["quantity"], 
+            element["buy_price"], 
+            element["sell_price"], 
+            element["author"], 
+            element["addition_date"], 
+            element["image_route"]
+            )
         catalogue.append(product)
     return catalogue
 
@@ -101,7 +110,9 @@ def separate_movements(type_of_movement):
     movements_objects = []
     def products_to_movements(element):
         product = {}
-        product["product_name"] = db.execute("SELECT product_name FROM inventory JOIN movements ON inventory.SKU = movements.SKU WHERE movements.SKU = ?", element["SKU"])[0]["product_name"]
+        product["product_name"] = db.execute("SELECT product_name FROM inventory JOIN movements ON inventory.SKU = movements.SKU WHERE movements.SKU = ?", 
+                                             element["SKU"]
+                                             )[0]["product_name"]
         product["SKU"] = element["SKU"]
         product["quantity"] = element["quantity"]
         product["price"] = element["price"]
@@ -117,7 +128,12 @@ def separate_movements(type_of_movement):
                 product_data = products_to_movements(element)
                 object.add_products(product_data)
         if order_in_list == False:
-            movement = prototype_order(element["id"], element["order_number"], element["type"], element["date"], author_name, client_name)
+            movement = prototype_order(element["order_number"], 
+                                       element["type"], 
+                                       element["date"], 
+                                       author_name, 
+                                       client_name
+                                       )
             product_data = products_to_movements(element)
             movement.add_products(product_data)
             movements_objects.append(movement)
@@ -214,7 +230,8 @@ def add_product():
     date = datetime.now()
     try:
         db.execute(
-            "INSERT INTO inventory (SKU, product_name, external_code, quantity, sell_price, author, addition_date, image_route) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", request.form.get("SKU"), request.form.get("product_name"), request.form.get("external_code"), request.form.get("initial_quantity"), request.form.get("sell_price"), session["user_id"], date, image_link
+            "INSERT INTO inventory (SKU, product_name, external_code, quantity, sell_price, author, addition_date, image_route) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+            request.form.get("SKU"), request.form.get("product_name"), request.form.get("external_code"), request.form.get("initial_quantity"), request.form.get("sell_price"), session["user_id"], date, image_link
             )
         flash("Product succesfully added to inventory", category="success")
         return redirect("/")
@@ -234,7 +251,8 @@ def purchase_order():
             is_client = db.execute("SELECT id FROM clients WHERE external_id = ?", data[0].id)
             if len(is_client) != 1:
                 db.execute(
-                    "INSERT INTO clients (client_name, external_id, phone, email) VALUES (?, ?, ?, ?)", data[0].name, data[0].id, data[0].phone, data[0].email
+                    "INSERT INTO clients (client_name, external_id, phone, email) VALUES (?, ?, ?, ?)", 
+                    data[0].name, data[0].id, data[0].phone, data[0].email
                 )
             else:
                 client_id = is_client[0]["id"]
@@ -252,7 +270,8 @@ def purchase_order():
                         "UPDATE inventory SET quantity = ? WHERE id = ?", (stock - int(item.quantity)), item.id
                     )
                     db.execute(
-                        "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", order_number, movement_type, date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
+                        "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+                        order_number, movement_type, date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
                     )
             flash("Order succesfully registered", category="success")
             return redirect("/purchase_order")
@@ -278,36 +297,51 @@ def view_pdf():
 @app.route("/inbound", methods=["GET", "POST"])
 @login_required
 def inbound():
-    if request.method == 'POST':
-        data = """sumary_line"""
-        rendered = render_template("view_movement.html", data=data)
-        response = configurate_pdf(rendered)
-
-        return response
-
-    else:
-        movements = db.execute("SELECT * FROM movements WHERE type = 'inbound' ORDER  BY date DESC")
-        movements_objects = []
-
-        for element in movements:
-            movement = prototype_order(
-                element["id"], element["order_number"], element["type"], element["date"], element["SKU"], element["quantity"], element["price"], element["author"], element["buyer"])
-            movements_objects.append(movement)
-        
-        return render_template("inbound.html", catalogue=movements_objects)
+    movements_objects = separate_movements('inbound')
+    return render_template("outbound.html", catalogue=movements_objects)
 
 
-@app.route("/outbound", methods=["GET", "POST"])
+@app.route("/outbound")
 @login_required
 def outbound():
-    if request.method == 'POST':
-        data = """sumary_line"""
-        rendered = render_template("view_movement.html", data=data)
-        response = configurate_pdf(rendered)
+    movements_objects = separate_movements('outbound')
+    return render_template("outbound.html", catalogue=movements_objects)
 
-        return response
 
-    else:
-        movements_objects = separate_movements('outbound')
-        
-        return render_template("outbound.html", catalogue=movements_objects)
+@app.route("/movement_pdf/<order_number>")
+@login_required
+def movement_pdf(order_number):
+    order_raw = db.execute("SELECT * FROM movements JOIN clients ON movements.buyer = clients.id WHERE order_number = ?", order_number)
+
+    def products_to_order(element):
+        product = {}
+        product["product_name"] = db.execute("SELECT product_name FROM inventory JOIN movements ON inventory.SKU = movements.SKU WHERE movements.SKU = ?", 
+                                             element["SKU"]
+                                             )[0]["product_name"]
+        product["SKU"] = element["SKU"]
+        product["quantity"] = element["quantity"]
+        product["price"] = element["price"]
+        return product
+
+    author_name = db.execute("SELECT name FROM users JOIN movements ON users.id = movements.author WHERE movements.author = ?", order_raw[0]["author"])[0]["name"]
+    order_object = prototype_order(order_raw[0]["order_number"], 
+                                  order_raw[0]["type"], 
+                                  order_raw[0]["date"], 
+                                  author_name, 
+                                  order_raw[0]["buyer"]
+                                  )
+    grand_total = 0
+    for element in order_raw:
+        product_data = products_to_order(element)
+        order_object.add_products(product_data)
+        grand_total += element["price"] * element["quantity"]
+    additional_data = {"client_name": order_raw[0]["client_name"], 
+                       "client_external_id": order_raw[0]["external_id"], 
+                       "client_phone": order_raw[0]["phone"], 
+                       "client_email": order_raw[0]["email"],
+                       "grand_total": grand_total
+                       }
+    rendered = render_template("movement_pdf.html", order=order_object, data=additional_data)
+    response = configurate_pdf(rendered)
+
+    return response
