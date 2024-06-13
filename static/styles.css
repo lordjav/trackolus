@@ -231,7 +231,7 @@ h3 {
 }
 
 main {
-    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;    
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
 }
 
 #add-button {
@@ -378,12 +378,79 @@ main {
     text-align: center;
 }
 
-.delete-button {
-    /*font-size: 24px;*/
+.delete-button {    
     font-weight: 100;
     text-align: center;
 }
 
 .delete-button:hover {
     cursor: pointer;    
+}
+
+.movement-container {
+    height: fit-content;
+    margin: 25px auto;
+    width: 96%;
+    text-align: center;
+}
+
+.movement-container * {
+    font-size: 18px;    
+}
+
+.movements {    
+    height: fit-content;
+    padding: 15px;
+    background-color: #ACACAC;
+    border-radius: 15px;
+    border-style: none;
+    text-align: left;
+    box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
+    z-index: 2;
+    position: relative;
+    display: flex;
+}
+
+.mov-info {
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    flex: 95;
+}
+
+.mov-data {
+    width: 50%;
+    margin: 0;
+}
+
+.mov-pdf {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    flex: 5;
+}
+
+/*.mov-pdf svg {
+    
+}*/
+
+.collapsible {
+    background-color: #d7d7d7;
+    border-radius: 0 0 15px 15px;
+    font-size: 22px;
+    border-style: none;
+    text-align: left;
+    z-index: 1;
+    transform: translateY(-20%);
+    max-height: 0;
+    width: 100%;
+    padding-top: 0;
+    padding-left: 15px;
+    padding-right: 15px;
+    overflow: hidden;
+    transition: max-height, padding-top 0.2s ease;
+    position: relative;
 }

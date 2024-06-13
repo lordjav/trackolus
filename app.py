@@ -38,14 +38,30 @@ class client:
         self.phone = client_phone
         self.email = client_email
 
-#Create inventory (list of products as a database) and catalogue (list of products as objects)
-inventory = db.execute("SELECT * FROM inventory")
-catalogue = []
+#Create class "order_object"
+class prototype_order:
+    def __init__(self, id, order_number, order_type, order_date, order_author, order_buyer):
+        self.id = id
+        self.order_number = order_number
+        self.order_type = order_type
+        self.order_date = order_date
+        self.order_products = []
+        self.order_author = order_author
+        self.order_buyer = order_buyer
 
-for element in inventory:
-    product = prototype_product(
-        element["id"], element["SKU"], element["external_code"], element["product_name"], element["quantity"], element["buy_price"], element["sell_price"], element["author"], element["addition_date"], element["image_route"])
-    catalogue.append(product)
+    def add_products(self, product_object):
+        self.order_products.append(product_object)
+
+#Create inventory (list of products as a database) and catalogue (list of products as objects)
+def create_catalogue():
+    inventory = db.execute("SELECT * FROM inventory")
+    catalogue = []
+    for element in inventory:
+        product = prototype_product(
+            element["id"], element["SKU"], element["external_code"], element["product_name"], element["quantity"], element["buy_price"], element["sell_price"], element["author"], element["addition_date"], element["image_route"])
+        catalogue.append(product)
+    return catalogue
+
 
 #Get data for create order
 def get_order_data():
@@ -58,6 +74,7 @@ def get_order_data():
     client_data = client(name, id, phone, email)
     products = []
     total = 0
+    catalogue = create_catalogue()
     for element in catalogue:
         if element.SKU in products_list:
             products.append(element)
@@ -116,6 +133,7 @@ def logout():
 @app.route("/")
 @login_required
 def inventory():
+    catalogue = create_catalogue()
     if len(catalogue) == 0:
         return render_template("inventory.html", empty="There are no products in stock")
     else:
@@ -182,6 +200,7 @@ def purchase_order():
                 client_id = is_client[0]["id"]
             order_number = db.execute("SELECT order_number FROM movements ORDER BY order_number DESC LIMIT 1")[0]["order_number"]
             order_number += 1
+            movement_type = "outbound"
             for item in data[1]:
                 stock = (db.execute("SELECT quantity FROM inventory WHERE id = ?", item.id))[0]["quantity"]
                 if stock == 0:
@@ -193,7 +212,7 @@ def purchase_order():
                         "UPDATE inventory SET quantity = ? WHERE id = ?", (stock - int(item.quantity)), item.id
                     )
                     db.execute(
-                        "INSERT INTO movements (order_number, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?)", order_number, date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
+                        "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", order_number, movement_type, date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
                     )
             flash("Order succesfully registered", category="success")
             return redirect("/purchase_order")
@@ -221,3 +240,53 @@ def view_pdf():
     response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
     
     return response
+
+
+@app.route("/inbound", methods=["GET", "POST"])
+@login_required
+def inbound():
+    if request.method == 'POST':
+        pass
+
+    else:
+        movements = db.execute("SELECT * FROM movements WHERE type = 'inbound' ORDER  BY date DESC")
+        movements_objects = []
+
+        for element in movements:
+            movement = prototype_order(
+                element["id"], element["order_number"], element["type"], element["date"], element["SKU"], element["quantity"], element["price"], element["author"], element["buyer"])
+            movements_objects.append(movement)
+        
+        return render_template("inbound.html", catalogue=movements_objects)
+
+
+@app.route("/outbound", methods=["GET", "POST"])
+@login_required
+def outbound():
+    if request.method == 'POST':
+        pass
+
+    else:
+        movements = db.execute("SELECT * FROM movements WHERE type = 'outbound' ORDER BY date DESC")
+        movements_objects = []
+        def products_to_movements(element):
+            product = {}
+            product["SKU"] = element["SKU"]
+            product["quantity"] = element["quantity"]
+            product["price"] = element["price"]
+            return product
+
+        for element in movements:
+            order_in_list = False
+            for object in movements_objects:
+                if element["order_number"] == object.order_number:
+                    order_in_list = True
+                    product_data = products_to_movements(element)
+                    object.add_products(product_data)
+            if order_in_list == False:
+                movement = prototype_order(element["id"], element["order_number"], element["type"], element["date"], element["author"], element["buyer"])
+                product_data = products_to_movements(element)
+                movement.add_products(product_data)
+                movements_objects.append(movement)        
+        
+        return render_template("outbound.html", catalogue=movements_objects)
