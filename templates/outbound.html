@@ -32,10 +32,10 @@
                     {% for product in movement.order_products %}
                     <tr>
                         <td>{{ product["SKU"] }}</td>
-                        <td>Name</td>
+                        <td>{{ product["product_name"] }}</td>
                         <td>{{ product["quantity"] }}</td>
-                        <td>{{ product["price"] }}</td>
-                        <td>{{ (product["quantity"] * product["price"]) }}</td>
+                        <td>{{ product["price"] | cop }}</td>
+                        <td>{{ (product["quantity"] * product["price"]) | cop }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

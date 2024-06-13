@@ -63,7 +63,7 @@ def create_catalogue():
     return catalogue
 
 
-#Get data for create order
+#Function: get data to create order
 def get_order_data():
     products_list = request.form.getlist("products-selected")
     name = request.form.get("client-name")
@@ -83,6 +83,46 @@ def get_order_data():
         total += (object.quantity * object.sell_price)
     data = [client_data, products, total]
     return data
+
+#Function: configurate pdfkit and wkhtmltopdf to create pdf 
+def configurate_pdf(rendered):
+    path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)    
+    pdf = pdfkit.from_string(rendered, False, options={"enable-local-file-access": ""}, configuration=config)    
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+
+    return response
+
+#Function: get type of movements ('inbound' or 'outbound') and convert database into a list of 'movement' objects
+def separate_movements(type_of_movement):
+    movements = db.execute("SELECT * FROM movements WHERE type = ? ORDER BY date DESC", type_of_movement)
+    movements_objects = []
+    def products_to_movements(element):
+        product = {}
+        product["product_name"] = db.execute("SELECT product_name FROM inventory JOIN movements ON inventory.SKU = movements.SKU WHERE movements.SKU = ?", element["SKU"])[0]["product_name"]
+        product["SKU"] = element["SKU"]
+        product["quantity"] = element["quantity"]
+        product["price"] = element["price"]
+        return product
+
+    for element in movements:
+        author_name = db.execute("SELECT name FROM users JOIN movements ON users.id = movements.author WHERE movements.author = ?", element["author"])[0]["name"]
+        client_name = db.execute("SELECT client_name FROM clients JOIN movements ON clients.id = movements.buyer WHERE movements.buyer = ?", element["buyer"])[0]["client_name"]
+        order_in_list = False
+        for object in movements_objects:
+            if element["order_number"] == object.order_number:
+                order_in_list = True
+                product_data = products_to_movements(element)
+                object.add_products(product_data)
+        if order_in_list == False:
+            movement = prototype_order(element["id"], element["order_number"], element["type"], element["date"], author_name, client_name)
+            product_data = products_to_movements(element)
+            movement.add_products(product_data)
+            movements_objects.append(movement)
+
+    return movements_objects
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -228,16 +268,9 @@ def purchase_order():
 @app.route("/view_pdf", methods=["POST"])
 @login_required
 def view_pdf():
-    path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
-    config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
     data = get_order_data()    
     rendered = render_template("order_pdf.html", data=data)
-    
-    pdf = pdfkit.from_string(rendered, False, options={"enable-local-file-access": ""}, configuration=config)
-    
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+    response = configurate_pdf(rendered)
     
     return response
 
@@ -246,7 +279,11 @@ def view_pdf():
 @login_required
 def inbound():
     if request.method == 'POST':
-        pass
+        data = """sumary_line"""
+        rendered = render_template("view_movement.html", data=data)
+        response = configurate_pdf(rendered)
+
+        return response
 
     else:
         movements = db.execute("SELECT * FROM movements WHERE type = 'inbound' ORDER  BY date DESC")
@@ -264,29 +301,13 @@ def inbound():
 @login_required
 def outbound():
     if request.method == 'POST':
-        pass
+        data = """sumary_line"""
+        rendered = render_template("view_movement.html", data=data)
+        response = configurate_pdf(rendered)
+
+        return response
 
     else:
-        movements = db.execute("SELECT * FROM movements WHERE type = 'outbound' ORDER BY date DESC")
-        movements_objects = []
-        def products_to_movements(element):
-            product = {}
-            product["SKU"] = element["SKU"]
-            product["quantity"] = element["quantity"]
-            product["price"] = element["price"]
-            return product
-
-        for element in movements:
-            order_in_list = False
-            for object in movements_objects:
-                if element["order_number"] == object.order_number:
-                    order_in_list = True
-                    product_data = products_to_movements(element)
-                    object.add_products(product_data)
-            if order_in_list == False:
-                movement = prototype_order(element["id"], element["order_number"], element["type"], element["date"], element["author"], element["buyer"])
-                product_data = products_to_movements(element)
-                movement.add_products(product_data)
-                movements_objects.append(movement)        
+        movements_objects = separate_movements('outbound')
         
         return render_template("outbound.html", catalogue=movements_objects)
