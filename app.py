@@ -120,7 +120,11 @@ def separate_movements(type_of_movement):
 
     for element in movements:
         author_name = db.execute("SELECT name FROM users JOIN movements ON users.id = movements.author WHERE movements.author = ?", element["author"])[0]["name"]
-        client_name = db.execute("SELECT client_name FROM clients JOIN movements ON clients.id = movements.buyer WHERE movements.buyer = ?", element["buyer"])[0]["client_name"]
+        client = db.execute("SELECT client_name FROM clients JOIN movements ON clients.id = movements.buyer WHERE movements.buyer = ?", element["buyer"])
+        if not client:
+            client_name = ""
+        else:
+            client_name = client[0]["client_name"]
         order_in_list = False
         for object in movements_objects:
             if element["order_number"] == object.order_number:
@@ -297,9 +301,36 @@ def view_pdf():
 @app.route("/inbound", methods=["GET", "POST"])
 @login_required
 def inbound():
-    movements_objects = separate_movements('inbound')
-    inventory = db.execute("SELECT * FROM inventory")
-    return render_template("outbound.html", catalogue=movements_objects, inventory=inventory)
+    if request.method == "POST":
+        data = get_order_data()
+        date = datetime.now()
+        
+        #try:
+        order_number = db.execute("SELECT order_number FROM movements ORDER BY order_number DESC LIMIT 1")[0]["order_number"]
+        order_number += 1
+        movement_type = "inbound"
+        for item in data[1]:
+            stock = (db.execute("SELECT quantity FROM inventory WHERE id = ?", item.id))[0]["quantity"]
+            buy_price = (db.execute("SELECT buy_price FROM inventory WHERE id = ?", item.id))[0]["buy_price"]
+            if item.quantity <= 0:
+                raise ValueError("Value must be a positive integer")
+            db.execute(
+                "UPDATE inventory SET quantity = ? WHERE id = ?", (stock + int(item.quantity)), item.id
+            )
+            db.execute(
+                "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+                order_number, movement_type, date, item.SKU, item.quantity, buy_price, session["user_id"], 0
+            )
+        flash("Order succesfully registered", category="success")
+        return redirect("/inbound")
+        #except Exception as e:
+        #    print(f"There was a problem: {e}")
+        #    return redirect("/inbound")
+
+    else:
+        movements_objects = separate_movements('inbound')
+        inventory = db.execute("SELECT * FROM inventory")
+        return render_template("inbound.html", catalogue=movements_objects, inventory=inventory)
 
 
 @app.route("/outbound")
@@ -312,37 +343,47 @@ def outbound():
 @app.route("/movement_pdf/<order_number>")
 @login_required
 def movement_pdf(order_number):
-    order_raw = db.execute("SELECT * FROM movements JOIN clients ON movements.buyer = clients.id WHERE order_number = ?", order_number)
-
-    def products_to_order(element):
+    movement_type = db.execute("SELECT type FROM movements WHERE order_number = ?", order_number)[0]["type"]
+    def products_in_order(element):
         product = {}
         product["product_name"] = db.execute("SELECT product_name FROM inventory JOIN movements ON inventory.SKU = movements.SKU WHERE movements.SKU = ?", 
-                                             element["SKU"]
-                                             )[0]["product_name"]
+                                            element["SKU"]
+                                            )[0]["product_name"]
         product["SKU"] = element["SKU"]
         product["quantity"] = element["quantity"]
         product["price"] = element["price"]
-        return product
+        return product        
+
+    if movement_type == 'outbound':
+        order_raw = db.execute("SELECT * FROM movements JOIN clients ON movements.buyer = clients.id WHERE order_number = ?", order_number)
+    else:
+        order_raw = db.execute("SELECT * FROM movements WHERE order_number = ?", order_number)
 
     author_name = db.execute("SELECT name FROM users JOIN movements ON users.id = movements.author WHERE movements.author = ?", order_raw[0]["author"])[0]["name"]
     order_object = prototype_order(order_raw[0]["order_number"], 
-                                  order_raw[0]["type"], 
-                                  order_raw[0]["date"], 
-                                  author_name, 
-                                  order_raw[0]["buyer"]
-                                  )
+                                order_raw[0]["type"], 
+                                order_raw[0]["date"], 
+                                author_name, 
+                                order_raw[0]["buyer"]
+                                )
     grand_total = 0
     for element in order_raw:
-        product_data = products_to_order(element)
+        product_data = products_in_order(element)
         order_object.add_products(product_data)
         grand_total += element["price"] * element["quantity"]
-    additional_data = {"client_name": order_raw[0]["client_name"], 
-                       "client_external_id": order_raw[0]["external_id"], 
-                       "client_phone": order_raw[0]["phone"], 
-                       "client_email": order_raw[0]["email"],
-                       "grand_total": grand_total
-                       }
-    rendered = render_template("movement_pdf.html", order=order_object, data=additional_data)
+    
+    if movement_type == "outbound":
+        additional_data = {"client_name": order_raw[0]["client_name"], 
+                        "client_external_id": order_raw[0]["external_id"], 
+                        "client_phone": order_raw[0]["phone"], 
+                        "client_email": order_raw[0]["email"],
+                        "grand_total": grand_total
+                        }
+        rendered = render_template("outbound_movement_pdf.html", order=order_object, data=additional_data)
+    else:
+        additional_data = {"grand_total": grand_total}
+        rendered = render_template("inbound_movement_pdf.html", order=order_object, data=additional_data)
+    
     response = configurate_pdf(rendered)
 
     return response

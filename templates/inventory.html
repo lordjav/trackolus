@@ -38,12 +38,12 @@
   
     <!-- Modal -->
     <div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
-        <div id="modal-content">
+        <div id="inventory-modal-content">
             <div id="modal-header">
                 <h3 id="add-product-title">Add new product to stock</h3>
                 <button type="button" class="btn-close" id="close-modal-button" onclick="closeModal()" aria-label="Close"></button>
             </div>
-            <div id="modal-body">
+            <div class="modal-body" id="inventory-modal-body">
                 <form action="/add_product" method="POST" enctype="multipart/form-data">
                     <input autocomplete="off" autofocus class="input" id="product_name" type="text" name="product_name"
                         placeholder="Product name"><br>

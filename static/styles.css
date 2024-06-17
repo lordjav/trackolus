@@ -101,7 +101,7 @@ h3 {
     justify-content: center;
 }
 
-#search, #search2 {
+#search, #search2, #search3 {
     border-radius: 10px;
     border: 1px solid #d7d7d7;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
@@ -117,7 +117,11 @@ h3 {
     width: 30vw;
 }
 
-#search-box-2 {    
+#search3 {
+    width: 20vw;
+}
+
+#search-box-2, #search-box-3 {    
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -273,7 +277,7 @@ main {
 }
   
   /* Modal Content */
-#modal-content {
+#inventory-modal-content, #inbound-modal-content {
     background-color: #d9d9d9;
     margin: auto;
     padding: 20px;
@@ -291,6 +295,10 @@ main {
     to {opacity: 1}
 }
 
+#inbound-modal-content {
+    width: 700px;
+}
+
 #modal-header {
     position: relative;
 }
@@ -300,17 +308,29 @@ main {
     display: inline-block;
     text-align: left;
 }
-  
-#modal-body input {
+
+.modal-body input {
     border-radius: 7px;
-    border:none;
+    border: none;
     height: 35px;
     margin: 15px 0;    
 }
 
-#modal-body input[type="text"], input[type="number"] {
+#inventory-modal-body input {
+    margin: 15px 0;    
+}
+
+#inventory-modal-body input[type="text"], #inventory-modal-body input[type="number"] {
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
+    height: 35px;
     width: 100%;
+}
+
+#inbound-modal-body input[type="number"] {
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
+    width: 50px;
+    height: 25px;
+    margin: 0;
 }
 
 /* The Close Button */
@@ -357,7 +377,7 @@ main {
     visibility: hidden;
 }
 
-.purchase-quantity {
+.purchase-quantity, .inbound-quantity {
     border-radius: 10px;
     border: 1px solid #d7d7d7;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;

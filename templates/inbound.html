@@ -11,7 +11,7 @@
             <div class="mov-info">
                 <p class="mov-data"><b>Order number:</b> {{ movement.order_number }}</p>
                 <p class="mov-data"><b>Date:</b> {{ movement.order_date }}</p>
-                <p class="mov-data"><b>Client:</b> Comprador </p>
+                <p class="mov-data"><b>Supplier:</b> Grupo Corbeta </p>
                 <p class="mov-data"><b>Receiver:</b> {{ movement.order_author }}</p>
             </div>
             <div class="mov-pdf">
@@ -48,32 +48,32 @@
     </article>
     {% endfor %}
     {% else %}
-    <h1>No products in catalogue</h1>
+    <h1>No inbound movements</h1>
     {% endif %}
 </div>
 
 <button type="button" id="add-button" onclick="showModal()" data-bs-target="#add-product">+</button>
 
 <div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
-    <div id="modal-content">
+    <div id="inbound-modal-content">
         <div id="modal-header">
             <h3 id="add-product-title">Add new incoming shipment</h3>
             <button type="button" class="btn-close" id="close-modal-button" onclick="closeModal()" aria-label="Close"></button>
         </div>
-        <div id="modal-body">
-            <form action="/add_shipment" method="POST" enctype="multipart/form-data">
-                <div class="search-container" id="search-box-2">
-                    <input list="products" class="form" id="search2" placeholder="Search by SKU code or name" autocomplete="off">
+        <div class="modal-body" id="inbound-modal-body">
+            <form action="/inbound" id="add-shipment" method="POST" enctype="multipart/form-data">
+                <div class="search-container" id="search-box-3">
+                    <input list="products" class="form" id="search3" placeholder="Search by SKU code or name" autocomplete="off">
                     <datalist id="products">
                         {% for product in inventory %}
                         <option>{{ product['SKU'] }} - {{ product['product_name'] }}</option>
                         {% endfor %}
                     </datalist>
-                    <p id="error-output" style="color:red;">Ya se encuentra en lista</p>
-                </div>    
+                    <p id="error-output" style="color:red;">.</p>
+                </div>
                 <div>
                     <div class="p-2">
-                        <table class="table table-striped table-secondary table-borderless" id="purchase-cart">
+                        <table class="table table-striped table-secondary table-borderless" id="products-in-list">
                             <thead class="table-light" id="table-header">
                                 <tr>
                                     <th>SKU</th>
@@ -88,6 +88,10 @@
                     </div>
                 </div>
                 <select id="products-selected" name="products-selected" multiple></select>
+                <button type="submit" onclick="saveOrder()" class="menu-button purchase-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
+                    Save order
+                </button>        
             </form>
         </div>
     </div>
@@ -96,7 +100,6 @@
   //Collapsible
   var mov = document.getElementsByClassName("movements");
   var i;
-
   for (i = 0; i < mov.length; i++) {
   mov[i].addEventListener("click", function() {
       var collapsible = this.nextElementSibling;
@@ -110,45 +113,60 @@
       }
   });}
 
-  //Add product in a new row in table and to hidden input list
+  //Show error message
   let myInventory = {{ inventory | tojson | safe }};
-  function eraseErrorMessage() {
-    document.getElementById("error-output").style.visibility = "hidden";
+  function errorMessage(message) {
+    document.getElementById("error-output").innerHTML = message;
+    document.getElementById("error-output").style.visibility = "visible";
+    function eraseErrorMessage() {        
+        document.getElementById("error-output").style.visibility = "hidden";
+     }
+     setTimeout(eraseErrorMessage, 5000);
   }
-  document.getElementById('search2').addEventListener('input', function(e) {
+  
+  //Add product in a new row in table and to hidden input list
+  document.getElementById('search3').addEventListener('input', function(e) {
     let selectedOption = e.target.value;
     let SKU = selectedOption.slice(0, 8);
     if (document.getElementById(SKU) != null) {
-        document.getElementById("error-output").style.visibility = "visible";
-        setTimeout(eraseErrorMessage, 5000);
+        errorMessage("Ya se encuentra en lista");
     } else {
-      let product = myInventory.find(object => object.SKU === SKU);
-      document.getElementById("table-header").style.visibility = "visible";
-      document.getElementById("product-list").innerHTML += `
-        <tr>
+        let product = myInventory.find(object => object.SKU === SKU);
+        document.getElementById("table-header").style.visibility = "visible";
+        document.getElementById("product-list").innerHTML += `
+        <tr class="product-to-add">
             <td>${product.SKU}</td>
             <td>${product.product_name}</td>
-            <td><input type="number" class="purchase-quantity" name="${product.SKU}" value="1" max="${product.quantity}"></td>
-            <td>${product.sell_price}</td>
-            <td class="total-price">${product.sell_price}</td>
+            <td><input type="number" class="inbound-quantity" name="${product.SKU}" value="1"></td>
             <td class="delete-button">&#x1F5D9;</td>
         </tr>
-      `;
-      document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
+        `;
+        document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
     }
-    document.getElementById('search2').value = "";
+    document.getElementById('search3').value = "";
   });
   
   //Delete product (from hidden input list and table)
   function deleteRow(e) {
     if (e.target.classList.contains("delete-button")) {
-      document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
-      e.target.closest("tr").remove();
+        document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
+        e.target.closest("tr").remove();
     }
-    if (document.querySelectorAll("tr").length == 1) {
+    if (document.querySelectorAll(".product-to-add").length == 0) {
         document.getElementById("table-header").style.visibility = "hidden";
     }
   }
-  document.querySelector("table").addEventListener("click", deleteRow);
+  document.querySelector("#products-in-list").addEventListener("click", deleteRow);
+
+  //Validations
+  function saveOrder() {
+    if (document.getElementById("products-selected").options.length == 0) {
+        document.getElementById("add-shipment").addEventListener('submit', function(event) {
+            event.preventDefault();
+        });
+        errorMessage("There are no products added");
+    }
+  }
 </script>
+
 {% endblock %}
