@@ -2,15 +2,153 @@
 
 {% block main %}
 
-{% for movement in catalogue %}
-<div class="movements" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-    Hi
+<div id="main-container">
+    <br>
+    {% if catalogue %}
+    {% for movement in catalogue %}
+    <article class="movement-container container-fluid" id="{{ movement.order_number }}">
+        <section class="movements" aria-expanded="false">
+            <div class="mov-info">
+                <p class="mov-data"><b>Order number:</b> {{ movement.order_number }}</p>
+                <p class="mov-data"><b>Date:</b> {{ movement.order_date }}</p>
+                <p class="mov-data"><b>Client:</b> Comprador </p>
+                <p class="mov-data"><b>Receiver:</b> {{ movement.order_author }}</p>
+            </div>
+            <div class="mov-pdf">
+                <a href="/movement_pdf/{{ movement.order_number }}" target="_blank">
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
+                    <g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" color="black">
+                        <path d="M3.5 13v-.804c0-2.967 0-4.45.469-5.636c.754-1.905 2.348-3.407 4.37-4.118C9.595 2 11.168 2 14.318 2c1.798 0 2.698 0 3.416.253c1.155.406 2.066 1.264 2.497 2.353c.268.677.268 1.525.268 3.22V13"/>
+                        <path d="M3.5 12a3.333 3.333 0 0 1 3.333-3.333c.666 0 1.451.116 2.098-.057a1.67 1.67 0 0 0 1.179-1.18c.173-.647.057-1.432.057-2.098A3.333 3.333 0 0 1 13.5 2m-10 20v-3m0 0v-1.8c0-.566 0-.848.176-1.024C3.85 16 4.134 16 4.7 16h.8a1.5 1.5 0 0 1 0 3zm17-3H19c-.943 0-1.414 0-1.707.293S17 17.057 17 18v1m0 3v-3m0 0h2.5M14 19a3 3 0 0 1-3 3c-.374 0-.56 0-.7-.08c-.333-.193-.3-.582-.3-.92v-4c0-.338-.033-.727.3-.92c.14-.08.326-.08.7-.08a3 3 0 0 1 3 3"/>
+                    </g>
+                </svg>
+                </a>
+            </div>
+        </section>
+        <section class="collapsible">
+            <table  class="table table-striped table-secondary table-borderless">
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Product name</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in movement.order_products %}
+                    <tr>
+                        <td>{{ product["SKU"] }}</td>
+                        <td>{{ product["product_name"] }}</td>
+                        <td>{{ product["quantity"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </article>
+    {% endfor %}
+    {% else %}
+    <h1>No products in catalogue</h1>
+    {% endif %}
 </div>
-<div class="collapse" id="collapseExample">
-    <div class="card card-body">
-      Some placeholder content for the collapse component. This panel is hidden by default but revealed when the user activates the relevant trigger.
+
+<button type="button" id="add-button" onclick="showModal()" data-bs-target="#add-product">+</button>
+
+<div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
+    <div id="modal-content">
+        <div id="modal-header">
+            <h3 id="add-product-title">Add new incoming shipment</h3>
+            <button type="button" class="btn-close" id="close-modal-button" onclick="closeModal()" aria-label="Close"></button>
+        </div>
+        <div id="modal-body">
+            <form action="/add_shipment" method="POST" enctype="multipart/form-data">
+                <div class="search-container" id="search-box-2">
+                    <input list="products" class="form" id="search2" placeholder="Search by SKU code or name" autocomplete="off">
+                    <datalist id="products">
+                        {% for product in inventory %}
+                        <option>{{ product['SKU'] }} - {{ product['product_name'] }}</option>
+                        {% endfor %}
+                    </datalist>
+                    <p id="error-output" style="color:red;">Ya se encuentra en lista</p>
+                </div>    
+                <div>
+                    <div class="p-2">
+                        <table class="table table-striped table-secondary table-borderless" id="purchase-cart">
+                            <thead class="table-light" id="table-header">
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Product name</th>
+                                    <th>Quantity</th>
+                                    <th>Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="product-list">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <select id="products-selected" name="products-selected" multiple></select>
+            </form>
+        </div>
     </div>
 </div>
-{% endfor %}
+<script>
+  //Collapsible
+  var mov = document.getElementsByClassName("movements");
+  var i;
 
+  for (i = 0; i < mov.length; i++) {
+  mov[i].addEventListener("click", function() {
+      var collapsible = this.nextElementSibling;
+      if (collapsible.style.maxHeight){
+      collapsible.style.maxHeight = null;
+      collapsible.style.paddingTop = null;
+      } else {
+      collapsible.style.maxHeight = "fit-content";
+      collapsible.style.paddingTop = "50px";
+      collapsible.firstElementChild.classList.toggle("mb-0");
+      }
+  });}
+
+  //Add product in a new row in table and to hidden input list
+  let myInventory = {{ inventory | tojson | safe }};
+  function eraseErrorMessage() {
+    document.getElementById("error-output").style.visibility = "hidden";
+  }
+  document.getElementById('search2').addEventListener('input', function(e) {
+    let selectedOption = e.target.value;
+    let SKU = selectedOption.slice(0, 8);
+    if (document.getElementById(SKU) != null) {
+        document.getElementById("error-output").style.visibility = "visible";
+        setTimeout(eraseErrorMessage, 5000);
+    } else {
+      let product = myInventory.find(object => object.SKU === SKU);
+      document.getElementById("table-header").style.visibility = "visible";
+      document.getElementById("product-list").innerHTML += `
+        <tr>
+            <td>${product.SKU}</td>
+            <td>${product.product_name}</td>
+            <td><input type="number" class="purchase-quantity" name="${product.SKU}" value="1" max="${product.quantity}"></td>
+            <td>${product.sell_price}</td>
+            <td class="total-price">${product.sell_price}</td>
+            <td class="delete-button">&#x1F5D9;</td>
+        </tr>
+      `;
+      document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
+    }
+    document.getElementById('search2').value = "";
+  });
+  
+  //Delete product (from hidden input list and table)
+  function deleteRow(e) {
+    if (e.target.classList.contains("delete-button")) {
+      document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
+      e.target.closest("tr").remove();
+    }
+    if (document.querySelectorAll("tr").length == 1) {
+        document.getElementById("table-header").style.visibility = "hidden";
+    }
+  }
+  document.querySelector("table").addEventListener("click", deleteRow);
+</script>
 {% endblock %}

@@ -298,7 +298,8 @@ def view_pdf():
 @login_required
 def inbound():
     movements_objects = separate_movements('inbound')
-    return render_template("outbound.html", catalogue=movements_objects)
+    inventory = db.execute("SELECT * FROM inventory")
+    return render_template("outbound.html", catalogue=movements_objects, inventory=inventory)
 
 
 @app.route("/outbound")

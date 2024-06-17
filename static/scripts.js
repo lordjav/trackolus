@@ -1,12 +1,6 @@
 // Get the modal
 let addProductModal = document.getElementById("add-product");
 
-// Get the button that opens the modal
-let addButton = document.getElementById("add-button");
-
-// Get the button that closes the modal
-let closeModalButton = document.getElementById("close-modal-button");
-
 // When the user clicks the button, open the modal
 function showModal() {
     addProductModal.style.display = "block";
