@@ -387,3 +387,9 @@ def movement_pdf(order_number):
     response = configurate_pdf(rendered)
 
     return response
+
+
+@app.route("/reports")
+@login_required
+def reports():
+    return render_template("reports.html")

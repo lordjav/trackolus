@@ -437,7 +437,7 @@ main {
     flex-direction: column;
     flex-wrap: wrap;
     justify-content: space-between;
-    flex: 95;
+    flex: 92;
 }
 
 .mov-data {
@@ -448,9 +448,9 @@ main {
 .mov-pdf {
     display: flex;
     flex-wrap: nowrap;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    flex: 5;
+    flex: 8;
 }
 
 /*.mov-pdf svg {

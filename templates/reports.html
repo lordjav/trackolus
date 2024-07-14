@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+<form>
+    <label for="datatype">Data:</label>
+    <select id="datatype">
+        <option value="Choose data type" selected disabled>Choose data type</option>
+        <option value="Clients">Clients</option>
+        <option value="Products">Products</option>
+        <option value="Inbound">Inbound</option>
+        <option value="Outbound">Outbound</option>
+        <option value="Users">Users</option>
+        <option value="Activity">Activity</option>
+    </select>
+</form>
+
+{% endblock %}
