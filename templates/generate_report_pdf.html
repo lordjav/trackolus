@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+
+        </style>
+    </head>
+    <body>
+        <h1 id="title">Purchase order</h1>
+        <h2 id="trackolus-logo">Trackolus logo here</h2>
+        <h2 id="company-logo">Your logo here</h2>
+
+        <table class="table table-striped table-secondary table-borderless table-hover">
+        <thead class="table-light">
+            <tr>
+            {% for key in data[0] %}
+                <th>{{ key }}</th>
+            {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            {% if item | length > 2 %}            
+                {% for key in item %}
+                {% if key == 'Price' %}
+                <td>{{ item[key] | cop }}</td>
+                {% elif key == 'Amount' %}
+                <td>{{ item[key] | cop }}</td>
+                {% else %}
+                <td>{{ item[key] }}</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    </body>
+

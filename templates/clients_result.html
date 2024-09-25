@@ -1,0 +1,51 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+
+<div>
+    <div class="image_container" style="text-align:center;">
+        <svg class="profile-icon icons result_image" xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 24 24"><g fill="grey" fill-rule="evenodd" clip-rule="evenodd"><path d="M16 9a4 4 0 1 1-8 0a4 4 0 0 1 8 0m-2 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0"/><path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1M3 12c0 2.09.713 4.014 1.908 5.542A8.986 8.986 0 0 1 12.065 14a8.984 8.984 0 0 1 7.092 3.458A9 9 0 1 0 3 12m9 9a8.963 8.963 0 0 1-5.672-2.012A6.992 6.992 0 0 1 12.065 16a6.991 6.991 0 0 1 5.689 2.92A8.964 8.964 0 0 1 12 21"/></g></svg>
+    </div>
+    
+    <section>
+        <div><span>Client name: </span><span>{{ item[0]['client_name'] }}</span></div>
+        <div><span>External ID: </span><span>{{ item[0]['external_id'] }}</span></div>
+        <div><span>Phone: </span><span>{{ item[0]['phone'] }}</span></div>
+        <div><span>E-mail: </span><span>{{ item[0]['email'] }}</span></div>
+    </section>
+    <section>
+        <h3 class="data_title">Transactions</h3>
+        {% if transactions %}
+        <div class="p-2">
+            <table class="table table-striped table-secondary table-borderless table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Order Number</th>
+                        <th>Products bought</th>
+                        <th>Total sale</th>
+                        <th>Seller</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in transactions %}
+                    {% if item['type'] == 'outbound' %}
+                    <tr target="_blank">
+                        <td>{{ item['date'] }}</td>
+                        <td><a href="{{ url_for('result', search_term=item['order_number'], type='Outbound') }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['order_number'] }}</a></td>
+                        <td>{{ item['quantity'] }}</td>
+                        <td>{{ (item['price'] * item['quantity']) | cop }}</td>
+                        <td><a href="{{ url_for('result', search_term=item['seller'], type='User') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['seller'] }}</a></td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>    
+        {% endif %}
+    </section>
+    <div>
+    </div>
+</div>
+
+{% endblock %}

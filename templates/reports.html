@@ -2,17 +2,70 @@
 
 {% block main %}
 
-<form>
-    <label for="datatype">Data:</label>
-    <select id="datatype">
-        <option value="Choose data type" selected disabled>Choose data type</option>
-        <option value="Clients">Clients</option>
-        <option value="Products">Products</option>
-        <option value="Inbound">Inbound</option>
-        <option value="Outbound">Outbound</option>
-        <option value="Users">Users</option>
-        <option value="Activity">Activity</option>
-    </select>
-</form>
+<div id="datatype-container">
+    <form action="/reports" method="POST" id="data-form">
+        <select class="form" id="datatype" name="datatype" required>
+            <option value="" id="choose_data_type">Choose data type</option>
+            <option value="Clients">Clients</option>
+            <option value="Products">Products</option>
+            <option value="Inbound">Inbound</option>
+            <option value="Outbound">Outbound</option>
+            <option value="Users">Users</option>
+            <option value="Activity">Activity</option>
+        </select>
+        <br>
+        <input class="menu-button purchase-button" type="submit" value="Get report">
+    </form>
+</div>
+{% if data %}
+<div>
+    <h3 class="data_title">{{ data[-1]['datatype'] }}</h3>
+</div>
+<div class="p-2">
+    <section id="generate_doc_container">
+        <a class="button link_button" href="/generate_report/pdf" id="gr_pdf" name="gr_pdf">
+            <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12V5a2 2 0 0 1 2-2h7l5 5v4M5 18h1.5a1.5 1.5 0 0 0 0-3H5v6m12-3h2m1-3h-3v6m-6-6v6h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2z"/></g></svg>
+        </a>
+        <a class="button link_button" href="/generate_report/csv" id="gr_csv" name="gr_csv">
+            <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12V5a2 2 0 0 1 2-2h7l5 5v4M7 16.5a1.5 1.5 0 0 0-3 0v3a1.5 1.5 0 0 0 3 0m3 .75c0 .414.336.75.75.75H12a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1h1.25a.75.75 0 0 1 .75.75m3-.75l2 6l2-6"/></g></svg>
+        </a>
+        <a class="button link_button" href="/generate_report/xls" id="gr_xls" name="gr_xls">
+            <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12V5a2 2 0 0 1 2-2h7l5 5v4M4 15l4 6m-4 0l4-6m9 5.25c0 .414.336.75.75.75H19a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1h1.25a.75.75 0 0 1 .75.75M11 15v6h3"/></g></svg>
+        </a>
+        <div id="report_doc"></div>
+    </section>
+    <table class="table table-striped table-secondary table-borderless table-hover">
+        <thead class="table-light">
+            <tr>
+            {% for key in data[0] %}
+                <th>{{ key }}</th>
+            {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            {% if item | length > 2 %}            
+                {% for key in item %}
+                {% if key == 'Price' %}
+                <td>{{ item[key] | cop }}</td>
+                {% elif key == 'Amount' %}
+                <td>{{ item[key] | cop }}</td>
+                {% elif key == 'Order' %}
+                <td><a href="{{ url_for('result', search_term=item[key], type=data[-1]['datatype']) }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+                {% elif key in ['Product', 'Client', 'User'] %}
+                <td><a href="{{ url_for('result', search_term=item[key], type=key) }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+                {% elif key in ['Receiver', 'Seller'] %}
+                <td><a href="{{ url_for('result', search_term=item[key], type='User') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+                {% else %}
+                <td>{{ item[key] }}</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 
 {% endblock %}

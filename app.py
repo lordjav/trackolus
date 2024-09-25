@@ -1,20 +1,21 @@
-import pdfkit, os
+import pdfkit, sqlalchemy, pandas, plotly.express, textwrap, csv, io
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session, sessions, make_response
+from flask import Flask, jsonify, flash, redirect, render_template, render_template_string, request, session, make_response, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from trackolus.helpers import *
 from trackolus.image_uploader import upload_image
-from datetime import datetime
+from datetime import datetime, timedelta
 
-app = Flask(__name__)
-app.secret_key = 'EsAlItErAsE'
-app.config["UPLOAD_DIRECTORY"] = "static/product_images/"
-app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
-app.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
+server = Flask(__name__)
+server.secret_key = 'EsAlItErAsE'
+server.config["UPLOAD_DIRECTORY"] = "product_images/"
+server.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+server.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
 
 db = SQL("sqlite:///general_data.db")
+engine = sqlalchemy.create_engine("sqlite:///general_data.db")
 
-app.jinja_env.filters["cop"] = cop
+server.jinja_env.filters["cop"] = cop
 
 #create class "product"
 class prototype_product:
@@ -145,7 +146,7 @@ def separate_movements(type_of_movement):
     return movements_objects
 
 
-@app.route("/login", methods=["GET", "POST"])
+@server.route("/login", methods=["GET", "POST"])
 def login():
     
     # Forget any user_id
@@ -172,35 +173,69 @@ def login():
 
         # Remember which user has logged in and personal settings
         session["user_id"] = rows[0]["id"]
+        session["inventory_order"] = False
 
         # Redirect user to home page
-        return redirect("/")
+        return redirect("/dashboard")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("login.html")
 
 
-@app.route("/logout")
+@server.route("/logout")
 def logout():
     #Forget any user id
     session.clear()
 
     #Redirect to login form
-    return redirect("/")
+    return redirect("/dashboard")
 
 
-@app.route("/")
+@server.route("/inventory")
 @login_required
 def inventory():
-    catalogue = create_catalogue()
+    catalogue = db.execute("SELECT SKU, product_name, external_code, quantity, sell_price, image_route FROM inventory")
+
     if len(catalogue) == 0:
         return render_template("inventory.html", empty="There are no products in stock")
     else:
         return render_template("inventory.html", catalogue=catalogue)
 
 
-@app.route("/add_product", methods=["POST"])
+@server.route("/ordered_inventory/<parameter>")
+@login_required
+def ordered_inventory(parameter):
+    allowed_parameters = ['SKU', 'product_name', 'external_code', 'quantity', 'sell_price']
+    if parameter not in allowed_parameters:
+        raise ValueError('Invalid parameter in "Order" variable')
+    print(session)
+    session["inventory_order"] = not session["inventory_order"]
+    if session["inventory_order"] == True:
+        order = 'ASC'
+    else:
+        order = 'DESC'
+    catalogue = db.execute(f"""
+                           SELECT SKU, product_name, external_code, quantity, sell_price, image_route
+                           FROM inventory 
+                           ORDER BY {parameter} {order}
+                           """)
+    
+    return render_template_string("""
+                                    {% for product in catalogue %}
+                                    <tr onclick="window.location='{{ url_for('result', search_term=product['product_name'], type='Product') }}';">
+                                    <td>{{ product['SKU'] }}</td>
+                                    <td>{{ product['external_code'] }}</td>
+                                    <td>{{ product['product_name'] }}</td>
+                                    <td>{{ product['quantity'] }}</td>
+                                    <td>{{ product['sell_price'] | cop }}</td>
+                                    <td><img id="{{ product['image_route'] }}" src="{{ url_for('static', filename=product['image_route']) }}" style="height:50px;"></td>
+                                    </tr>
+                                    {% endfor %}
+                                    """, catalogue=catalogue)
+
+
+@server.route("/add_product", methods=["POST"])
 @login_required
 def add_product():
     try:
@@ -229,13 +264,19 @@ def add_product():
         return f"Error: {e}", 400
         
     if request.files["image_reference"]:
-        image_link = upload_image(request.files["image_reference"], request.form.get("SKU"), app.config["UPLOAD_DIRECTORY"], app.config["ALLOWED_EXTENSIONS"])
+        image_link = upload_image(request.files["image_reference"], request.form.get("SKU"), server.config["UPLOAD_DIRECTORY"], server.config["ALLOWED_EXTENSIONS"])
         
     date = datetime.now()
     try:
         db.execute(
             "INSERT INTO inventory (SKU, product_name, external_code, quantity, sell_price, author, addition_date, image_route) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-            request.form.get("SKU"), request.form.get("product_name"), request.form.get("external_code"), request.form.get("initial_quantity"), request.form.get("sell_price"), session["user_id"], date, image_link
+            request.form.get("SKU"), request.form.get("product_name"), 
+            request.form.get("external_code"), 
+            request.form.get("initial_quantity"), 
+            request.form.get("sell_price"), 
+            session["user_id"], 
+            date, 
+            image_link
             )
         flash("Product succesfully added to inventory", category="success")
         return redirect("/")
@@ -244,7 +285,7 @@ def add_product():
         return redirect("/"), 400
 
 
-@app.route("/purchase_order", methods=["GET", "POST"])
+@server.route("/purchase_order", methods=["GET", "POST"])
 @login_required
 def purchase_order():
     if request.method == "POST":
@@ -288,7 +329,7 @@ def purchase_order():
         return render_template("purchase_order.html", inventory=inventory)
 
 
-@app.route("/view_pdf", methods=["POST"])
+@server.route("/view_pdf", methods=["POST"])
 @login_required
 def view_pdf():
     data = get_order_data()    
@@ -298,34 +339,34 @@ def view_pdf():
     return response
 
 
-@app.route("/inbound", methods=["GET", "POST"])
+@server.route("/inbound", methods=["GET", "POST"])
 @login_required
 def inbound():
     if request.method == "POST":
         data = get_order_data()
         date = datetime.now()
         
-        #try:
-        order_number = db.execute("SELECT order_number FROM movements ORDER BY order_number DESC LIMIT 1")[0]["order_number"]
-        order_number += 1
-        movement_type = "inbound"
-        for item in data[1]:
-            stock = (db.execute("SELECT quantity FROM inventory WHERE id = ?", item.id))[0]["quantity"]
-            buy_price = (db.execute("SELECT buy_price FROM inventory WHERE id = ?", item.id))[0]["buy_price"]
-            if item.quantity <= 0:
-                raise ValueError("Value must be a positive integer")
-            db.execute(
-                "UPDATE inventory SET quantity = ? WHERE id = ?", (stock + int(item.quantity)), item.id
-            )
-            db.execute(
-                "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-                order_number, movement_type, date, item.SKU, item.quantity, buy_price, session["user_id"], 0
-            )
-        flash("Order succesfully registered", category="success")
-        return redirect("/inbound")
-        #except Exception as e:
-        #    print(f"There was a problem: {e}")
-        #    return redirect("/inbound")
+        try:
+            order_number = db.execute("SELECT order_number FROM movements ORDER BY order_number DESC LIMIT 1")[0]["order_number"]
+            order_number += 1
+            movement_type = "inbound"
+            for item in data[1]:
+                stock = (db.execute("SELECT quantity FROM inventory WHERE id = ?", item.id))[0]["quantity"]
+                buy_price = (db.execute("SELECT buy_price FROM inventory WHERE id = ?", item.id))[0]["buy_price"]
+                if item.quantity <= 0:
+                    raise ValueError("Value must be a positive integer")
+                db.execute(
+                    "UPDATE inventory SET quantity = ? WHERE id = ?", (stock + int(item.quantity)), item.id
+                )
+                db.execute(
+                    "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+                    order_number, movement_type, date, item.SKU, item.quantity, buy_price, session["user_id"], 0
+                )
+            flash("Order succesfully registered", category="success")
+            return redirect("/inbound")
+        except Exception as e:
+            print(f"There was a problem: {e}")
+            return redirect("/inbound")
 
     else:
         movements_objects = separate_movements('inbound')
@@ -333,33 +374,36 @@ def inbound():
         return render_template("inbound.html", catalogue=movements_objects, inventory=inventory)
 
 
-@app.route("/outbound")
+@server.route("/outbound")
 @login_required
 def outbound():
     movements_objects = separate_movements('outbound')
     return render_template("outbound.html", catalogue=movements_objects)
 
 
-@app.route("/movement_pdf/<order_number>")
+@server.route("/movement_pdf/<order_number>")
 @login_required
 def movement_pdf(order_number):
     movement_type = db.execute("SELECT type FROM movements WHERE order_number = ?", order_number)[0]["type"]
     def products_in_order(element):
         product = {}
-        product["product_name"] = db.execute("SELECT product_name FROM inventory JOIN movements ON inventory.SKU = movements.SKU WHERE movements.SKU = ?", 
-                                            element["SKU"]
-                                            )[0]["product_name"]
+        product["product_name"] = db.execute(
+            "SELECT product_name FROM inventory JOIN movements ON inventory.SKU = movements.SKU WHERE movements.SKU = ?", 
+            element["SKU"]
+            )[0]["product_name"]
         product["SKU"] = element["SKU"]
         product["quantity"] = element["quantity"]
         product["price"] = element["price"]
         return product        
 
     if movement_type == 'outbound':
-        order_raw = db.execute("SELECT * FROM movements JOIN clients ON movements.buyer = clients.id WHERE order_number = ?", order_number)
+        order_raw = db.execute("SELECT * FROM movements JOIN clients ON movements.buyer = clients.id WHERE order_number = ?", 
+                               order_number)
     else:
         order_raw = db.execute("SELECT * FROM movements WHERE order_number = ?", order_number)
 
-    author_name = db.execute("SELECT name FROM users JOIN movements ON users.id = movements.author WHERE movements.author = ?", order_raw[0]["author"])[0]["name"]
+    author_name = db.execute("SELECT name FROM users JOIN movements ON users.id = movements.author WHERE movements.author = ?", 
+                             order_raw[0]["author"])[0]["name"]
     order_object = prototype_order(order_raw[0]["order_number"], 
                                 order_raw[0]["type"], 
                                 order_raw[0]["date"], 
@@ -389,7 +433,370 @@ def movement_pdf(order_number):
     return response
 
 
-@app.route("/reports")
+@server.route("/reports", methods=["GET", "POST"])
 @login_required
 def reports():
-    return render_template("reports.html")
+    if request.method == "POST":
+        datatype = request.form.get("datatype")
+        global data_report
+        match datatype:
+            case "Clients":
+                data_report = db.execute("""
+                                  SELECT external_id AS 'Identification',
+                                  client_name AS Client, 
+                                  phone AS 'Contact Phone', 
+                                  email AS 'E-mail' 
+                                  FROM clients
+                                  """)
+                data_report.append({'datatype':'Clients', 'keyword':'Client'})
+            case 'Products':
+                data_report = db.execute("""
+                                  SELECT SKU, 
+                                  product_name AS Product,
+                                  external_code AS 'External code',
+                                  quantity AS Quantity,
+                                  sell_price AS Price
+                                  FROM inventory
+                                  """)
+                data_report.append({'datatype':'Products', 'keyword':'Product'})
+            case 'Inbound':
+                data_report = db.execute("""
+                                  SELECT date AS Date,
+                                  order_number AS 'Order',                                  
+                                  SUM(quantity) AS 'Products delivered',
+                                  SUM(price) AS Amount,
+                                  name AS Receiver
+                                  FROM movements 
+                                  JOIN users 
+                                  ON movements.author = users.id
+                                  WHERE type = 'inbound'
+                                  GROUP BY order_number
+                                  ORDER BY date DESC
+                                  """)
+                data_report.append({'datatype':'Inbound', 'keyword':'Order'})
+            case 'Outbound': 
+                data_report = db.execute("""
+                                  SELECT date AS Date,
+                                  order_number AS 'Order',                                  
+                                  SUM(quantity) AS 'Products bought',
+                                  SUM(price) AS Amount,
+                                  users.name AS Seller,
+                                  clients.client_name AS Client
+                                  FROM movements 
+                                  JOIN clients
+                                  ON movements.buyer = clients.id
+                                  JOIN users
+                                  ON movements.author = users.id
+                                  WHERE type = 'outbound'
+                                  GROUP BY order_number
+                                  ORDER BY date DESC
+                                  """)
+                data_report.append({'datatype':'Outbound', 'keyword':'Order'})
+            case 'Users':
+                data_report = db.execute("""
+                                  SELECT username AS Username, 
+                                  name as 'User', 
+                                  email AS 'E-mail', 
+                                  phone AS 'Contact phone', 
+                                  start_date AS 'Start date', 
+                                  end_date AS 'End date',
+                                  status AS Status 
+                                  FROM users
+                                  """)
+                data_report.append({'datatype':'Users', 'keyword':'User'})
+            case 'Activity':
+                data_report = db.execute("SELECT * FROM sqlite_sequence")
+                data_report.append({'datatype':'Activity', 'keyword':'seq'})
+        return render_template("reports.html", data=data_report)
+    
+    else:
+        return render_template("reports.html")
+
+
+@server.route("/")
+@server.route("/dashboard")
+@login_required
+def dashboard():
+    def wrap_labels(str, width=20):
+        return '<br>'.join(textwrap.wrap(str, width=width))
+
+    engine = sqlalchemy.create_engine("sqlite:///general_data.db")
+    #Inventory graph
+    inv_graph = pandas.read_sql_query("""
+                                      SELECT quantity AS Quantity, 
+                                      product_name AS Product 
+                                      FROM inventory 
+                                      ORDER BY quantity 
+                                      LIMIT 10
+                                      """, engine)
+    inv_graph['Product'] = inv_graph['Product'].apply(wrap_labels)
+    inv_fig = plotly.express.bar(inv_graph, x='Quantity', y='Product', orientation='h', text_auto=True)
+    inv_fig.update_traces(marker_color='gray')
+    inv_fig.update_layout(plot_bgcolor='lightgray', paper_bgcolor='white', barcornerradius=5)    
+    inventory_figure = inv_fig.to_html(full_html=False, config={'displayModeBar':False, 'staticPlot':True})
+    #Outbound graph
+    out_graph = pandas.read_sql_query("""
+                                      SELECT date(date) AS Day,
+                                      SUM(quantity) AS Quantity,
+                                      SUM(quantity * price) AS Total
+                                      FROM movements 
+                                      WHERE type = "outbound" 
+                                      AND date >= DATE("now", "-7 days")
+                                      GROUP BY Day
+                                      """, engine)
+    other_days = pandas.date_range(start=(datetime.now()-timedelta(days=6)), end=datetime.now())
+    other_days_df = pandas.DataFrame(other_days, columns=['Day'])
+    other_days_df['Day'] = other_days_df['Day'].dt.strftime('%Y-%m-%d')
+    merged_df = pandas.merge(other_days_df, out_graph, on='Day', how='left')
+    merged_df['Quantity'] = merged_df['Quantity'].fillna(0)
+    merged_df['Total'] = merged_df['Total'].fillna(0)
+    out_fig = plotly.express.scatter(merged_df, x='Day', y='Total', size='Quantity', text='Quantity', size_max=50)
+    out_fig.update_traces(marker_color='gray')
+    out_fig.update_layout(plot_bgcolor='lightgray', paper_bgcolor='white')
+    out_figure = out_fig.to_html(full_html=False, config={'displayModeBar':False, 'staticPlot':True})
+    #Best_sellers graph 
+    bs_graph = pandas.read_sql_query("""
+                                     SELECT movements.SKU AS SKU,
+                                     product_name AS Products,
+                                     SUM(movements.quantity) AS Quantity
+                                     FROM movements 
+                                     JOIN inventory 
+                                     ON movements.SKU = inventory.SKU
+                                     GROUP BY movements.SKU
+                                     ORDER BY SUM(movements.quantity) DESC 
+                                     LIMIT 5
+                                     """, engine)
+    bs_graph['Products'] = bs_graph['Products'].apply(wrap_labels)
+    bs_fig = plotly.express.bar(bs_graph, x='Products', y='Quantity', text_auto=True)
+    bs_fig.update_traces(marker_color='gray')
+    bs_fig.update_layout(plot_bgcolor='lightgray', paper_bgcolor='white', barcornerradius=5)    
+    bs_figure = bs_fig.to_html(full_html=False, config={'displayModeBar':False, 'staticPlot':True})
+
+    return render_template("dashboard.html", inventory=inventory_figure, outbound=out_figure, best_sellers=bs_figure)
+
+
+@server.route("/search")
+@login_required
+def search():
+    q = request.args.get('q')
+    if q:
+        term = "%" + q + "%"
+        products = db.execute("""
+            SELECT product_name AS 'Product'
+            FROM inventory
+            WHERE product_name LIKE ? 
+            OR SKU LIKE ?
+            OR external_code LIKE ? 
+            LIMIT 10""",
+            term, term, term
+            )
+        
+        clients = db.execute("""
+            SELECT client_name AS 'Client'
+            FROM clients
+            WHERE client_name LIKE ?
+            OR phone LIKE ?
+            OR external_id LIKE ? 
+            OR email LIKE ?
+            LIMIT 10""", 
+            term, term, term, term
+            )
+
+        movements = db.execute("""
+            SELECT order_number AS 'Order'
+            FROM movements
+            WHERE order_number LIKE ?
+            OR SKU LIKE ?
+            OR date LIKE ?
+            GROUP BY order_number
+            LIMIT 10""", 
+            term, term, term
+            )
+        
+        users = db.execute("""
+            SELECT name AS 'User'
+            FROM users
+            WHERE name LIKE ?
+            OR username LIKE ?
+            LIMIT 10""", 
+            term, term
+            )
+        search_results = [products, clients, movements, users]
+        
+    else:
+        search_results = []
+
+    return render_template_string("""
+        {% for dicts in search_results %}
+        {% for element in dicts %}
+        {% for key, value in element.items() %}
+        <a href="/result/{{ value }}/{{ key }}" {% if key == 'Order' %}target='_blank'{% endif %}><div class="suggestion"><span class="item_name">{{ value }}</span><span class="item_type">{{ key }}</span></div></a>
+        {% endfor %}
+        {% endfor %}
+        {% endfor %}
+        """, search_results=search_results)
+
+
+@server.route('/result/<search_term>/<type>')
+@login_required
+def result(search_term, type):
+    match type:
+        case 'Product':
+            item = db.execute("SELECT * FROM inventory WHERE product_name = ?", search_term)
+            item_transactions = db.execute("""
+                                           SELECT order_number, type, date, price, client_name, quantity 
+                                           FROM movements 
+                                           JOIN clients 
+                                           ON movements.buyer = clients.id 
+                                           WHERE SKU = (
+                                           SELECT SKU 
+                                           FROM inventory 
+                                           WHERE product_name = ?)
+                                           """, search_term)
+            return render_template("products_result.html", item=item, transactions=item_transactions)
+        
+        case 'Client':
+            item = db.execute("SELECT * FROM clients WHERE client_name = ?", search_term)
+            item_transactions = db.execute("""
+                                           SELECT movements.order_number, 
+                                           movements.type, 
+                                           movements.date, 
+                                           SUM(movements.price) AS price, 
+                                           movements.SKU, 
+                                           SUM(movements.quantity) AS quantity,
+                                           users.name AS seller 
+                                           FROM movements 
+                                           JOIN inventory 
+                                           ON movements.SKU = inventory.SKU
+                                           JOIN users
+                                           ON movements.author = users.id 
+                                           WHERE buyer = ?
+                                           GROUP BY movements.order_number 
+                                           ORDER BY date DESC
+                                           """, item[0]['id'])            
+            return render_template("clients_result.html", item=item, transactions=item_transactions)
+        
+        case 'Inbound':
+            return redirect(f"/movement_pdf/{search_term}")
+        
+        case 'Outbound':
+            return redirect(f"/movement_pdf/{search_term}")
+        
+        case 'User':
+            item = db.execute("""
+                              SELECT username, name, access_profile, email, phone, start_date, end_date, status 
+                              FROM users 
+                              WHERE name = ?"""
+                              , search_term)
+            item_transactions = db.execute("""
+                                           SELECT movements.order_number AS 'Order', 
+                                           movements.type AS 'Type', 
+                                           movements.date AS Date, 
+                                           SUM(movements.price) AS 'Amount', 
+                                           SUM(movements.quantity) AS Quantity,
+                                           clients.client_name AS Buyer
+                                           FROM movements 
+                                           JOIN inventory 
+                                           ON movements.SKU = inventory.SKU
+                                           JOIN clients
+                                           ON movements.buyer = clients.id 
+                                           WHERE movements.author = 
+                                           (SELECT id
+                                           FROM users
+                                           WHERE name = ?)
+                                           GROUP BY movements.order_number 
+                                           ORDER BY date DESC
+                                           """, search_term)
+            return render_template("users_result.html", item=item, transactions=item_transactions)
+        
+        case _:
+            return render_template("results.html", message="Error: Element not found")
+
+
+@server.route('/generate_report/<doc_type>')
+@login_required
+def generate_doc(doc_type):
+    file_name = f'{data_report[-1]['datatype']}_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}'
+    data_report_noType = data_report[:-1]
+    
+    match doc_type:
+        case 'pdf':
+            rendered = render_template("generate_report_pdf.html", data=data_report)
+            path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+            config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)    
+            pdf = pdfkit.from_string(rendered, False, options={"enable-local-file-access": ""}, configuration=config)    
+            response = make_response(pdf)
+            response.headers['Content-Type'] = 'application/pdf'
+            response.headers['Content-Disposition'] = f'attachment; filename={file_name}.pdf'
+
+        case 'csv':
+            output = io.StringIO()
+            fieldnames = data_report_noType[0].keys()
+            writer = csv.DictWriter(output, fieldnames=fieldnames)
+            writer.writeheader()
+            for element in data_report_noType:
+                writer.writerow(element)
+            response = make_response(output.getvalue())
+            response.headers['Content-Disposition'] = f'attachment; filename={file_name}.csv'
+            response.headers['Content-type'] = 'text/csv'
+
+        case 'xls':
+            df = pandas.DataFrame(data_report_noType)
+            excel_buffer = io.BytesIO()
+            df.to_excel(excel_buffer, index=False)
+            excel_buffer.seek(0)
+            return send_file(excel_buffer, 
+                             as_attachment=True, 
+                             download_name=f'{file_name}.xlsx', 
+                             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            
+        case _:
+            return render_template("results.html", message="Error: Element not found")
+        
+    return response
+
+
+@server.route("/get_client")
+@login_required
+def get_client():
+    client_name = request.args.get('client-name')
+
+    if client_name:
+        term = "%" + client_name + "%"
+        clients = db.execute("""
+                             SELECT client_name
+                             FROM clients
+                             WHERE client_name LIKE ?
+                             """, term)
+    else:
+        clients = []
+ 
+    return render_template_string("""
+                                  {% for client in clients %}
+                                  <div class="suggestion">
+                                  <span class="item_name"
+                                  hx-get="{{ url_for('get_client_data', name=client['client_name']) }}" 
+                                  hx-trigger="click" 
+                                  hx-target="#client-name, #client-id, #client-phone, #client-email" 
+                                  hx-ext="json-enc" 
+                                  hx-swap="none">
+                                  {{ client['client_name'] }}
+                                  </span>
+                                  </div>
+                                  {% endfor %}
+                                  """, clients=clients)
+
+
+@server.route("/get_client_data/<name>")
+@login_required
+def get_client_data(name):
+    client_data = db.execute("""
+                             SELECT client_name AS 'client-name', 
+                             external_id AS 'client-id', 
+                             phone AS 'client-phone', 
+                             email AS 'client-email'
+                             FROM clients
+                             WHERE client_name = ?
+                             """, name)
+    
+    return jsonify(client_data)

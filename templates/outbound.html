@@ -8,10 +8,10 @@
     <article class="movement-container container-fluid" id="{{ movement.order_number }}">
         <section class="movements" aria-expanded="false">
             <div class="mov-info">
-                <p class="mov-data"><b>Order number:</b> {{ movement.order_number }}</p>
+                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_number, type='Outbound') }}" target="_blank"><b>Order number:</b> {{ movement.order_number }} </a></p>
                 <p class="mov-data"><b>Date:</b> {{ movement.order_date }}</p>
-                <p class="mov-data"><b>Client:</b> {{ movement.order_buyer }}</p>
-                <p class="mov-data"><b>Seller:</b> {{ movement.order_author }}</p>
+                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_buyer, type='Client') }}"><b>Client:</b> {{ movement.order_buyer }} </a></p>
+                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>Seller:</b> {{ movement.order_author }} </a></p>
             </div>
             <div class="mov-pdf">
                 <a href="/movement_pdf/{{ movement.order_number }}" target="_blank">
@@ -32,7 +32,7 @@
                 </thead>
                 <tbody>
                     {% for product in movement.order_products %}
-                    <tr>
+                    <tr onclick="window.location='{{ url_for('result', search_term=product['product_name'], type='Product') }}';">
                         <td>{{ product["SKU"] }}</td>
                         <td>{{ product["product_name"] }}</td>
                         <td>{{ product["quantity"] }}</td>

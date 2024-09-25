@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+
+<div>
+    <div class="image_container" style="text-align:center;">
+        <img class="result_image" src="{{ url_for('static', filename=item[0]['image_route']) }}">
+    </div>
+    
+    <section>
+        <div><span>Product name: </span><span>{{ item[0]['product_name'] }}</span></div>
+        <div><span>SKU: </span><span>{{ item[0]['SKU'] }}</span></div>
+        <div><span>External code: </span><span>{{ item[0]['external_code'] }}</span></div>
+        <div><span>Price: </span><span>{{ item[0]['sell_price'] | cop }}</span></div>
+        <div><span>Quantity: </span><span>{{ item[0]['quantity'] }}</span></div>
+    </section>
+    <section>
+        <h3 class="data_title">Movements</h3>
+        {% if transactions %}
+        <div class="p-2">
+            <table class="table table-striped table-secondary table-borderless">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Order Number</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total sale</th>
+                        <th>Client</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in transactions %}
+                    {% if item['type'] == 'outbound' %}
+                    <tr>
+                        <td>{{ item['date'] }}</td>
+                        <td><a href="{{ url_for('movement_pdf', order_number=item['order_number'], type='Order') }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['order_number'] }}</a></td>
+                        <td>{{ item['quantity'] }}</td>
+                        <td>{{ item['price'] | cop }}</td>
+                        <td>{{ (item['price'] * item['quantity']) | cop }}</td>
+                        <td><a href="{{ url_for('result', search_term=item['client_name'], type='Client') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['client_name'] }}</a></td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>    
+        {% endif %}
+    </section>
+    <div>
+    </div>
+</div>
+
+{% endblock %}

@@ -21,11 +21,23 @@ h3 {
     font-weight: 300;
 }
 
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+tr:hover {
+    cursor: pointer;    
+}
+
 #sidebar {
     background-color:#d9d9d9;
     min-height: 100vh;
     z-index: -1;
     box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.25);
+    /*position: fixed;
+    top: 0;
+    left: 0;*/
 }
 
 #logo-frame {
@@ -92,7 +104,9 @@ h3 {
 #header {
     background-color: #d9d9d9;
     height: 12vh;
-    z-index: 0;
+    z-index: 1;
+    /*position: fixed;
+    top: 0;*/
 }
 
 #search-bar, .search-container {
@@ -101,7 +115,7 @@ h3 {
     justify-content: center;
 }
 
-#search, #search2, #search3 {
+#q, #search2, #search3 {
     border-radius: 10px;
     border: 1px solid #d7d7d7;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
@@ -125,6 +139,49 @@ h3 {
     display: flex;
     justify-content: center;
     flex-direction: column;
+}
+
+#suggestions {
+    position: absolute;
+    top: 76px;
+    background-color: white;
+    border: 1px solid #d7d7d7;
+    z-index: 2;
+    width: 30vw;
+    font-size: 22px;
+    border-radius: 10px;
+    /*box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);*/
+}
+
+#suggestions2 {
+    position: absolute;
+    translate: 0 41px;
+    background-color: white;
+    border: 1px solid #d7d7d7;
+    z-index: 2;
+    width: 29.6vw;
+    font-size: 22px;
+    border-radius: 10px;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.suggestion {
+padding: 10px;
+cursor: pointer;
+}
+
+.suggestion:hover {
+    background-color: #d9d9d9;
+}
+
+.item_type {
+    float: right;
+    font-size: smaller;
+    border: solid 1px lightgrey;
+    color: grey;
+    padding: 0 4px;
+    border-radius: 8px;
+    translate: 0 2px;
 }
 
 #error-output {
@@ -453,10 +510,6 @@ main {
     flex: 8;
 }
 
-/*.mov-pdf svg {
-    
-}*/
-
 .collapsible {
     background-color: #d7d7d7;
     border-radius: 0 0 15px 15px;
@@ -473,4 +526,62 @@ main {
     overflow: hidden;
     transition: max-height, padding-top 0.2s ease;
     position: relative;
+}
+
+#datatype-container {
+    text-align: center;
+    padding: 6vh 0;
+}
+
+#datatype {
+    padding: 0 5px;
+    margin: 10px;
+    height: 45px;
+}
+
+.data_title {
+    text-align: center;
+    padding: 0;
+}
+
+.plotly_graph {
+    padding:20px;
+    width:33%;
+    display: inline-block;
+}
+
+#choose_data_type {
+    color: #ADACAC;
+}
+
+#generate_doc_container {
+    float: right;
+}
+
+.button {
+    background-color: #ADACAC;
+    border-radius: 10px;
+    border-style: none;
+    text-align: center;
+    box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
+    transition: 200ms ease;
+}
+
+.button:hover {
+    background-color: #d7d7d7;    
+    transform: scale(1.1, 1.1);
+}
+
+.result_image {
+    max-height: 40vh;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
+}
+
+.link_button {
+    display: inline-block;
+    margin: 2px;
+    padding: 2px;
 }

@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+<section class="plotly_graph" id="inventory_graph1">
+    {{ inventory | safe }}
+</section>
+<section class="plotly_graph" id="inventory_graph2">
+    {{ outbound | safe }}
+</section>
+<section class="plotly_graph" id="inventory_graph3">
+    {{ best_sellers | safe }}
+</section>
+{% endblock %}
