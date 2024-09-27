@@ -139,7 +139,7 @@
         let product = myInventory.find(object => object.SKU === SKU);
         document.getElementById("table-header").style.visibility = "visible";
         let productAdded = document.getElementById("product-list").insertRow();
-        productAdded.classList.add('product-to-add');        
+        productAdded.classList.add('product-to-add');
         const cellClass = ['SKU', 'product', 'quantity', 'deleteButton'];
         const cellContent = [
             product.SKU, 
