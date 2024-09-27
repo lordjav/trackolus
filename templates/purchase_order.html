@@ -96,7 +96,26 @@
         setTimeout(eraseErrorMessage, 5000);
     } else {
       let product = myInventory.find(object => object.SKU === SKU);
-      document.getElementById("product-list").innerHTML += `
+      let productAdded = document.getElementById("product-list").insertRow();
+      productAdded.classList.add('product-to-add');
+      const cellClass = ['SKU', 'product', 'quantity', 'unit-price', 'total-price', 'deleteButton'];
+      const cellContent = [
+        product.SKU, 
+        product.product_name, 
+        `<input type="number" name="${product.SKU}" class="purchase-quantity" value="1" min="1" max="${product.quantity}">`, 
+        product.sell_price,
+        product.sell_price,
+        '&#x1F5D9;'
+      ];
+      for (let i = 0; i < 6; i++) {
+        let newCell = productAdded.insertCell();
+        newCell.classList.add(cellClass[i]);
+        newCell.innerHTML = cellContent[i];
+        if (i === 5) {
+            newCell.classList.add('delete-button');
+        }
+      }
+      /*document.getElementById("product-list").innerHTML += `
         <tr>
             <td>${product.SKU}</td>
             <td>${product.product_name}</td>
@@ -105,7 +124,7 @@
             <td class="total-price">${product.sell_price}</td>
             <td class="delete-button">&#x1F5D9;</td>
         </tr>
-      `;
+      `;*/
       document.getElementById("table-header").style.visibility = "visible";
       document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
     }
