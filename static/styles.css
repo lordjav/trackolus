@@ -308,6 +308,7 @@ main {
     position: fixed;
     bottom: 40px;
     right: 40px;
+    z-index: 2;
 }
 
 #add-button:hover {
@@ -584,4 +585,15 @@ main {
     display: inline-block;
     margin: 2px;
     padding: 2px;
+}
+
+.movement-button{
+    transition: 200ms ease;
+    border-radius: 15px;
+}
+
+.movement-button:hover{
+    background-color: #d7d7d7;    
+    transform: scale(1.05, 1.05);
+    cursor: pointer;
 }
