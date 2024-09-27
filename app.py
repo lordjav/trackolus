@@ -464,13 +464,13 @@ def reports():
                                   SELECT date AS Date,
                                   order_number AS 'Order',                                  
                                   SUM(quantity) AS 'Products delivered',
-                                  SUM(price) AS Amount,
+                                  SUM(price * quantity) AS Amount,
                                   name AS Receiver
                                   FROM movements 
                                   JOIN users 
                                   ON movements.author = users.id
                                   WHERE type = 'inbound'
-                                  GROUP BY order_number
+                                  GROUP BY order_number, date, Receiver
                                   ORDER BY date DESC
                                   """)
                 data_report.append({'datatype':'Inbound', 'keyword':'Order'})
@@ -479,7 +479,7 @@ def reports():
                                   SELECT date AS Date,
                                   order_number AS 'Order',                                  
                                   SUM(quantity) AS 'Products bought',
-                                  SUM(price) AS Amount,
+                                  SUM(price * quantity) AS Amount,
                                   users.name AS Seller,
                                   clients.client_name AS Client
                                   FROM movements 
@@ -488,9 +488,10 @@ def reports():
                                   JOIN users
                                   ON movements.author = users.id
                                   WHERE type = 'outbound'
-                                  GROUP BY order_number
+                                  GROUP BY order_number, date, users.name, clients.client_name
                                   ORDER BY date DESC
                                   """)
+                print(data_report)
                 data_report.append({'datatype':'Outbound', 'keyword':'Order'})
             case 'Users':
                 data_report = db.execute("""
