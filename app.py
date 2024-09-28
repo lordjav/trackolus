@@ -826,10 +826,13 @@ def get_events():
     end = request.args.get('end')
 
     start_date = datetime.fromisoformat(start.replace('Z', '+00:00')).astimezone(pytz.UTC)
-    end_date = datetime.fromisoformat(end.replace('Z', '+00:00')).astimezone(pytz.UTC)
-
     start_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
-    end_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
+
+    if end:
+        end_date = datetime.fromisoformat(end.replace('Z', '+00:00')).astimezone(pytz.UTC)
+        end_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        end_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     movements = db.execute("""
                            SELECT date AS start,
