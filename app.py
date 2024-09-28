@@ -1,4 +1,4 @@
-import pdfkit, sqlalchemy, pandas, plotly.express, textwrap, csv, io
+import pdfkit, sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz
 from cs50 import SQL
 from flask import Flask, jsonify, flash, redirect, render_template, render_template_string, request, session, make_response, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -442,66 +442,73 @@ def reports():
         match datatype:
             case "Clients":
                 data_report = db.execute("""
-                                  SELECT external_id AS 'Identification',
-                                  client_name AS Client, 
-                                  phone AS 'Contact Phone', 
-                                  email AS 'E-mail' 
-                                  FROM clients
-                                  """)
+                                        SELECT 
+                                            external_id AS 'Identification',
+                                            client_name AS Client, 
+                                            phone AS 'Contact Phone', 
+                                            email AS 'E-mail' 
+                                        FROM clients
+                                        """)
                 data_report.append({'datatype':'Clients', 'keyword':'Client'})
             case 'Products':
                 data_report = db.execute("""
-                                  SELECT SKU, 
-                                  product_name AS Product,
-                                  external_code AS 'External code',
-                                  quantity AS Quantity,
-                                  sell_price AS Price
-                                  FROM inventory
-                                  """)
+                                        SELECT 
+                                            SKU, 
+                                            product_name AS Product,
+                                            external_code AS 'External code',
+                                            quantity AS Quantity,
+                                            sell_price AS Price
+                                        FROM inventory
+                                        """)
                 data_report.append({'datatype':'Products', 'keyword':'Product'})
             case 'Inbound':
                 data_report = db.execute("""
-                                  SELECT date AS Date,
-                                  order_number AS 'Order',                                  
-                                  SUM(quantity) AS 'Products delivered',
-                                  SUM(price * quantity) AS Amount,
-                                  name AS Receiver
+                                  SELECT 
+                                        date AS Date,
+                                        order_number AS 'Order',                                  
+                                        SUM(quantity) AS 'Products received',
+                                        SUM(price * quantity) AS Amount,
+                                        name AS Receiver
                                   FROM movements 
-                                  JOIN users 
-                                  ON movements.author = users.id
+                                  JOIN users ON movements.author = users.id
                                   WHERE type = 'inbound'
-                                  GROUP BY order_number, date, Receiver
+                                  GROUP BY 
+                                         order_number, 
+                                         date, 
+                                         Receiver
                                   ORDER BY date DESC
                                   """)
                 data_report.append({'datatype':'Inbound', 'keyword':'Order'})
             case 'Outbound': 
                 data_report = db.execute("""
-                                  SELECT date AS Date,
-                                  order_number AS 'Order',                                  
-                                  SUM(quantity) AS 'Products bought',
-                                  SUM(price * quantity) AS Amount,
-                                  users.name AS Seller,
-                                  clients.client_name AS Client
+                                  SELECT 
+                                        date AS Date,
+                                        order_number AS 'Order',                                  
+                                        SUM(quantity) AS 'Products sold',
+                                        SUM(price * quantity) AS Amount,
+                                        users.name AS Seller,
+                                        clients.client_name AS Client
                                   FROM movements 
-                                  JOIN clients
-                                  ON movements.buyer = clients.id
-                                  JOIN users
-                                  ON movements.author = users.id
+                                  JOIN clients ON movements.buyer = clients.id
+                                  JOIN users ON movements.author = users.id
                                   WHERE type = 'outbound'
-                                  GROUP BY order_number, date, users.name, clients.client_name
+                                  GROUP BY 
+                                         order_number, 
+                                         date, users.name, 
+                                         clients.client_name
                                   ORDER BY date DESC
                                   """)
-                print(data_report)
                 data_report.append({'datatype':'Outbound', 'keyword':'Order'})
             case 'Users':
                 data_report = db.execute("""
-                                  SELECT username AS Username, 
-                                  name as 'User', 
-                                  email AS 'E-mail', 
-                                  phone AS 'Contact phone', 
-                                  start_date AS 'Start date', 
-                                  end_date AS 'End date',
-                                  status AS Status 
+                                  SELECT 
+                                         username AS Username, 
+                                         name as 'User', 
+                                         email AS 'E-mail', 
+                                         phone AS 'Contact phone', 
+                                         start_date AS 'Start date', 
+                                         end_date AS 'End date',
+                                         status AS Status 
                                   FROM users
                                   """)
                 data_report.append({'datatype':'Users', 'keyword':'User'})
@@ -524,8 +531,9 @@ def dashboard():
     engine = sqlalchemy.create_engine("sqlite:///general_data.db")
     #Inventory graph
     inv_graph = pandas.read_sql_query("""
-                                      SELECT quantity AS Quantity, 
-                                      product_name AS Product 
+                                      SELECT 
+                                        quantity AS Quantity, 
+                                        product_name AS Product 
                                       FROM inventory 
                                       ORDER BY quantity 
                                       LIMIT 10
@@ -537,9 +545,10 @@ def dashboard():
     inventory_figure = inv_fig.to_html(full_html=False, config={'displayModeBar':False, 'staticPlot':True})
     #Outbound graph
     out_graph = pandas.read_sql_query("""
-                                      SELECT date(date) AS Day,
-                                      SUM(quantity) AS Quantity,
-                                      SUM(quantity * price) AS Total
+                                      SELECT 
+                                        date(date) AS Day,
+                                        SUM(quantity) AS Quantity,
+                                        SUM(quantity * price) AS Total
                                       FROM movements 
                                       WHERE type = "outbound" 
                                       AND date >= DATE("now", "-7 days")
@@ -557,12 +566,12 @@ def dashboard():
     out_figure = out_fig.to_html(full_html=False, config={'displayModeBar':False, 'staticPlot':True})
     #Best_sellers graph 
     bs_graph = pandas.read_sql_query("""
-                                     SELECT movements.SKU AS SKU,
-                                     product_name AS Products,
-                                     SUM(movements.quantity) AS Quantity
+                                     SELECT 
+                                        movements.SKU AS SKU,
+                                        product_name AS Products,
+                                        SUM(movements.quantity) AS Quantity
                                      FROM movements 
-                                     JOIN inventory 
-                                     ON movements.SKU = inventory.SKU
+                                     JOIN inventory ON movements.SKU = inventory.SKU
                                      GROUP BY movements.SKU
                                      ORDER BY SUM(movements.quantity) DESC 
                                      LIMIT 5
@@ -645,10 +654,14 @@ def result(search_term, type):
         case 'Product':
             item = db.execute("SELECT * FROM inventory WHERE product_name = ?", search_term)
             item_transactions = db.execute("""
-                                           SELECT order_number, type, date, price, client_name, quantity 
+                                           SELECT 
+                                            order_number,
+                                            type, date, 
+                                            price, 
+                                            client_name, 
+                                            quantity 
                                            FROM movements 
-                                           JOIN clients 
-                                           ON movements.buyer = clients.id 
+                                           JOIN clients ON movements.buyer = clients.id 
                                            WHERE SKU = (
                                            SELECT SKU 
                                            FROM inventory 
@@ -660,21 +673,19 @@ def result(search_term, type):
             item = db.execute("SELECT * FROM clients WHERE client_name = ?", search_term)
             item_transactions = db.execute("""
                                            SELECT movements.order_number, 
-                                           movements.type, 
-                                           movements.date, 
-                                           SUM(movements.price) AS price, 
-                                           movements.SKU, 
-                                           SUM(movements.quantity) AS quantity,
-                                           users.name AS seller 
+                                            movements.type, 
+                                            movements.date, 
+                                            SUM(movements.price) AS price, 
+                                            movements.SKU, 
+                                            SUM(movements.quantity) AS quantity,
+                                            users.name AS seller 
                                            FROM movements 
-                                           JOIN inventory 
-                                           ON movements.SKU = inventory.SKU
-                                           JOIN users
-                                           ON movements.author = users.id 
+                                           JOIN inventory ON movements.SKU = inventory.SKU
+                                           JOIN users ON movements.author = users.id 
                                            WHERE buyer = ?
                                            GROUP BY movements.order_number 
                                            ORDER BY date DESC
-                                           """, item[0]['id'])            
+                                           """, item[0]['id'])
             return render_template("clients_result.html", item=item, transactions=item_transactions)
         
         case 'Inbound':
@@ -690,17 +701,16 @@ def result(search_term, type):
                               WHERE name = ?"""
                               , search_term)
             item_transactions = db.execute("""
-                                           SELECT movements.order_number AS 'Order', 
-                                           movements.type AS 'Type', 
-                                           movements.date AS Date, 
-                                           SUM(movements.price) AS 'Amount', 
-                                           SUM(movements.quantity) AS Quantity,
-                                           clients.client_name AS Buyer
+                                           SELECT 
+                                            movements.order_number AS 'Order', 
+                                            movements.type AS 'Type', 
+                                            movements.date AS Date, 
+                                            SUM(movements.price) AS 'Amount', 
+                                            SUM(movements.quantity) AS Quantity,
+                                            clients.client_name AS Buyer
                                            FROM movements 
-                                           JOIN inventory 
-                                           ON movements.SKU = inventory.SKU
-                                           JOIN clients
-                                           ON movements.buyer = clients.id 
+                                           JOIN inventory ON movements.SKU = inventory.SKU
+                                           JOIN clients ON movements.buyer = clients.id 
                                            WHERE movements.author = 
                                            (SELECT id
                                            FROM users
@@ -793,11 +803,62 @@ def get_client():
 def get_client_data(name):
     client_data = db.execute("""
                              SELECT client_name AS 'client-name', 
-                             external_id AS 'client-id', 
-                             phone AS 'client-phone', 
-                             email AS 'client-email'
+                                external_id AS 'client-id', 
+                                phone AS 'client-phone', 
+                                email AS 'client-email'
                              FROM clients
                              WHERE client_name = ?
                              """, name)
     
     return jsonify(client_data)
+
+
+@server.route('/calendar')
+@login_required
+def calendar():
+    return render_template("calendar.html")
+
+
+@server.route("/get_events")
+@login_required
+def get_events():
+    start = request.args.get('start')
+    end = request.args.get('end')
+
+    start_date = datetime.fromisoformat(start.replace('Z', '+00:00')).astimezone(pytz.UTC)
+    end_date = datetime.fromisoformat(end.replace('Z', '+00:00')).astimezone(pytz.UTC)
+
+    start_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
+    end_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
+
+    movements = db.execute("""
+                           SELECT date AS start,
+                               order_number AS title,                     
+                               SUM(quantity) AS 'quantity',
+                               SUM(price * quantity) AS amount,
+                               UPPER(SUBSTR(type, 1, 1)) || LOWER(SUBSTR(type, 2)) AS event_type
+                           FROM movements 
+                           JOIN users ON movements.author = users.id
+                           WHERE date BETWEEN ? AND ?
+                           GROUP BY order_number, date, type
+                           ORDER BY date DESC
+                           """, start_str, end_str)
+    events = []
+    for movement in movements:
+        start_datetime = datetime.strptime(movement['start'], '%Y-%m-%d %H:%M:%S')
+
+        event = {
+            'start': start_datetime.isoformat(),
+            'title': f"{movement['title']} ({movement['event_type']})",
+            'extendedProps': {
+                'quantity': movement['quantity'],
+                'amount': movement['amount'],
+                'event_type': movement['event_type']
+            },
+            'allDay': False,
+            'url': f'result/{movement['title']}/{movement['event_type']}',
+            'color': '#878787'
+        }
+        events.append(event)
+
+    return jsonify(events)

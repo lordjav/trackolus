@@ -1,0 +1,59 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+<div id="calendar-container">
+    <div id='calendar'></div>
+</div>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      themeSystem: 'bootstrap5',
+      height: '100vh',
+      initialView: 'dayGridMonth',
+      selectable: true,
+      headerToolbar: {
+        start: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth',
+        center: 'title',
+        end: 'prev,today,next'
+      },
+      dayMaxEvents: true,
+      events: '/get_events',
+      eventContent: function(arg) {
+        if (arg.view.type === 'timeGridDay') {
+          return {
+          html: `
+          <div>
+            ${arg.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            <strong style="font-weight:500;">${arg.event.title}</strong><br>
+            Quantity: ${arg.event.extendedProps.quantity} - 
+            Transaction cost: ${arg.event.extendedProps.amount}
+          </div>
+          `
+          };
+        } else {
+            return {
+                html: `<div style="overflow:hidden"><div><strong style="font-weight:500">${arg.event.title}</strong></div></div>`
+            };
+        }
+      },
+      dayRender: function(date, cell) {
+        if (date.isSame(new Date(), 'day')) {
+          cell.addClass('fc-day-today');
+        }
+      },
+      dateClick: function(info) {
+            calendar.changeView('timeGridDay', info.dateStr);
+      },
+      eventClick: function(info) {
+        if (info.event.url) {
+            info.jsEvent.preventDefault();
+            window.open(info.event.url, '_blank');
+        }
+      }
+    });
+    calendar.render();
+  });
+</script>
+{% endblock %}

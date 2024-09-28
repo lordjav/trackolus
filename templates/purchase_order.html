@@ -115,16 +115,6 @@
             newCell.classList.add('delete-button');
         }
       }
-      /*document.getElementById("product-list").innerHTML += `
-        <tr>
-            <td>${product.SKU}</td>
-            <td>${product.product_name}</td>
-            <td><input type="number" class="purchase-quantity" name="${product.SKU}" value="1" min="1" max="${product.quantity}"></td>
-            <td>${product.sell_price}</td>
-            <td class="total-price">${product.sell_price}</td>
-            <td class="delete-button">&#x1F5D9;</td>
-        </tr>
-      `;*/
       document.getElementById("table-header").style.visibility = "visible";
       document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
     }
