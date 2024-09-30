@@ -1,6 +1,6 @@
-import pdfkit, sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz
+import pdfkit, sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz, time, json
 from cs50 import SQL
-from flask import Flask, jsonify, flash, redirect, render_template, render_template_string, request, session, make_response, send_file
+from flask import Flask, jsonify, flash, redirect, render_template, render_template_string, request, session, make_response, send_file, stream_with_context, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from trackolus.helpers import *
 from trackolus.image_uploader import upload_image
@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 server = Flask(__name__)
 server.secret_key = 'EsAlItErAsE'
-server.config["UPLOAD_DIRECTORY"] = "product_images/"
+server.config["UPLOAD_DIRECTORY"] = "static/product_images/"
 server.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 server.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
 
@@ -264,8 +264,9 @@ def add_product():
         return f"Error: {e}", 400
         
     if request.files["image_reference"]:
-        image_link = upload_image(request.files["image_reference"], request.form.get("SKU"), server.config["UPLOAD_DIRECTORY"], server.config["ALLOWED_EXTENSIONS"])
-        
+        image_upload = upload_image(request.files["image_reference"], request.form.get("SKU"), server.config["UPLOAD_DIRECTORY"], server.config["ALLOWED_EXTENSIONS"])
+        image_link = image_upload[7:]
+
     date = datetime.now()
     try:
         db.execute(
@@ -278,11 +279,16 @@ def add_product():
             date, 
             image_link
             )
-        flash("Product succesfully added to inventory", category="success")
-        return redirect("/")
+        #Saving data for notification
+        user = db.execute("SELECT name FROM users WHERE id = ?", session['user_id'])
+        title_for_notification = 'New product'
+        message_for_notification = f'New product in inventory:\n{request.form.get("product_name")}\nAdded by: {user[0]['name']}'
+        save_notification(title_for_notification, message_for_notification)
+        
+        return redirect("/inventory")
     except Exception as e:
-        flash(f"There was a problem: {e}")
-        return redirect("/"), 400
+        print(f"There was a problem: {e}")
+        return redirect("/inventory"), 400
 
 
 @server.route("/purchase_order", methods=["GET", "POST"])
@@ -318,8 +324,15 @@ def purchase_order():
                         "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
                         order_number, movement_type, date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
                     )
-            flash("Order succesfully registered", category="success")
+            #Saving data for notification
+            user = db.execute("SELECT name FROM users WHERE id = ?", session['user_id'])
+            client_name = db.execute("SELECT client_name FROM clients WHERE id = ?", client_id)
+            title_for_notification = 'New sale'
+            message_for_notification = f'New outbound order placed.\nOrder: {order_number} \nClient: {client_name[0]['client_name']} \nSeller: {user[0]['name']}'
+            save_notification(title_for_notification, message_for_notification)
+
             return redirect("/purchase_order")
+        
         except Exception as e:
             print(f"There was a problem: {e}")
             return redirect("/purchase_order")
@@ -362,8 +375,14 @@ def inbound():
                     "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
                     order_number, movement_type, date, item.SKU, item.quantity, buy_price, session["user_id"], 0
                 )
-            flash("Order succesfully registered", category="success")
+            #Saving data for notification
+            user = db.execute("SELECT name FROM users WHERE id = ?", session['user_id'])
+            title_for_notification = 'New incoming shipment'
+            message_for_notification = f'New goods received:\nOrder: {order_number}\nSupplier: Grupo Corbeta \nReceiver: {user[0]['name']}'
+            save_notification(title_for_notification, message_for_notification)
+
             return redirect("/inbound")
+        
         except Exception as e:
             print(f"There was a problem: {e}")
             return redirect("/inbound")
@@ -863,5 +882,54 @@ def get_events():
             'color': '#878787'
         }
         events.append(event)
-
+ 
     return jsonify(events)
+
+
+@server.route("/notifications")
+@login_required
+def notifications():
+    @stream_with_context
+    def generate_notifications():
+        while True:
+            notifications = db.execute("""
+                                        SELECT 
+                                            notifications.id AS id,
+                                            notifications.title AS title,
+                                            notifications.message AS message,
+                                            notifications.date AS date,
+                                            notified_users.seen AS isSeen
+                                        FROM notifications
+                                        JOIN notified_users ON notifications.id = notified_users.notification_id
+                                        WHERE notifications.date >= datetime("now", "-24 hours", "localtime")
+                                        AND notified_users.user_id = ?
+                                        ORDER BY notifications.date
+                                        """, session['user_id'])
+
+            for notification in notifications:
+                yield f"""data: {json.dumps(dict(notification))}\n\n"""
+                
+            time.sleep(5)
+    return Response(generate_notifications(), content_type='text/event-stream')
+
+
+@server.route("/mark_read", methods=['POST'])
+@login_required
+def mark_read():
+    notifications_read = request.form.getlist('notifications_read')
+    notifications_list = []
+    notifications_saved = db.execute("SELECT id FROM notifications WHERE date >= datetime('now', '-24 hours', 'localtime')")
+    
+    try:
+        for id in notifications_saved:
+            notifications_list.append(id['id'])
+            
+        for id in notifications_read:
+            if int(id) in notifications_list:
+                db.execute("UPDATE notified_users SET seen = 1 WHERE notification_id = ?", int(id))
+                
+        return render_template_string("Success!")
+
+    except Exception as e:
+        print(f'Error marking notifications as read: {e}')
+        return render_template_string("Failure")
