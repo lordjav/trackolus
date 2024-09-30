@@ -27,4 +27,80 @@ searchBar.addEventListener('blur', function () {
     setTimeout(function() {
         suggestions.style.visibility = 'hidden';
     }, 150)
-}); 
+});
+
+//Add new notifications
+let notificationsRead = [];
+const evtSource = new EventSource("/notifications");
+evtSource.onmessage = function(event) {
+    const notificationsDiv = document.getElementById("notifications");
+    const notification = JSON.parse(event.data);
+    const existingNotification = document.getElementById(notification.id);
+    if (existingNotification) {        
+        return;
+    }
+    const newNotification = document.createElement("div");
+    newNotification.id = notification.id;
+    newNotification.className = "notification";
+
+    const title = document.createElement("h3");
+    title.textContent = notification.title;
+
+    const date = document.createElement("p");
+    date.textContent = new Date(notification.date).toLocaleString();
+
+    const message = document.createElement("p");
+    message.style.whiteSpace = 'pre-line';
+    message.textContent = notification.message;
+
+    newNotification.appendChild(title);
+    newNotification.appendChild(date);
+    newNotification.appendChild(message);
+
+    notificationsDiv.insertBefore(newNotification, notificationsDiv.firstChild);
+
+    if (notification.isSeen === 0) {
+        newNotification.querySelectorAll('*').forEach(function(element) {
+            element.style.fontWeight = 'bold';
+        });
+    }    
+    //console.log(notification);
+};
+
+evtSource.onerror = function(err) {
+    console.error("EventSource failed:", err);
+};
+
+//Show/hide notifications window
+const notifications = document.getElementById('notifications');
+
+function markRead(container) {
+    const allNotifications = container.querySelectorAll("*");
+    allNotifications.forEach(function(element) {
+        element.style.fontWeight = 'inherit';
+    });
+};
+
+function showNotifications() {    
+    if (notifications.style.display === 'none') {
+        notifications.style.display = 'block';
+        notifications.querySelectorAll('.notification').forEach(function(element) {
+            notificationsRead.push(parseInt(element.id));
+        });
+        notifications.dispatchEvent(new CustomEvent("markRead"));
+    } else {
+        notifications.style.display = 'none';
+    }
+};
+document.addEventListener("DOMContentLoaded", function() {
+    const container = document.getElementById("notification-icon-container");
+    container.addEventListener("click", function(event) {
+        if (container.contains(event.target)) {
+            showNotifications();
+        }
+    });
+    window.onclick = function(event) {
+        if (!container.contains(event.target)) {
+            notifications.style.display = 'none';
+    }}
+});

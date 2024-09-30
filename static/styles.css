@@ -143,7 +143,7 @@ tr:hover {
 
 #suggestions {
     position: absolute;
-    top: 76px;
+    top: 62px;
     background-color: white;
     border: 1px solid #d7d7d7;
     z-index: 2;
@@ -182,6 +182,36 @@ cursor: pointer;
     padding: 0 4px;
     border-radius: 8px;
     translate: 0 2px;
+}
+
+#notifications {
+    position: absolute;
+    top: 45px;
+    background-color: white;
+    border: 1px solid #d7d7d7;
+    translate: -68px 0px;
+    z-index: 3;
+    width: 300px;
+    border-radius: 10px;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    max-height: 450px;
+    overflow-y: scroll;
+}
+
+.notification {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+}
+
+.notification h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.notification p {
+    margin: 5px 0;
 }
 
 #error-output {
