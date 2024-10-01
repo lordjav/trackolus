@@ -1,0 +1,341 @@
+# Translations template for PROJECT.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-10-01 14:11-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: templates/clients_result.html:11
+msgid "Client name"
+msgstr ""
+
+#: templates/clients_result.html:12
+msgid "External ID"
+msgstr ""
+
+#: templates/clients_result.html:13 templates/order_pdf.html:15
+#: templates/outbound_movement_pdf.html:15
+msgid "Phone"
+msgstr ""
+
+#: templates/clients_result.html:14 templates/order_pdf.html:16
+#: templates/outbound_movement_pdf.html:16 templates/purchase_order.html:13
+#: templates/users_result.html:14
+msgid "E-mail"
+msgstr ""
+
+#: templates/clients_result.html:18
+msgid "Records"
+msgstr ""
+
+#: templates/clients_result.html:23 templates/inbound.html:13
+#: templates/inbound_movement_pdf.html:16 templates/outbound.html:12
+#: templates/outbound_movement_pdf.html:19 templates/products_result.html:24
+#: templates/users_result.html:26
+msgid "Date"
+msgstr ""
+
+#: templates/clients_result.html:24 templates/users_result.html:27
+msgid "Order Number"
+msgstr ""
+
+#: templates/clients_result.html:25
+msgid "Products bought"
+msgstr ""
+
+#: templates/clients_result.html:26 templates/products_result.html:28
+#: templates/users_result.html:30
+msgid "Total sale"
+msgstr ""
+
+#: templates/clients_result.html:27 templates/outbound.html:14
+#: templates/outbound_movement_pdf.html:20
+msgid "Seller"
+msgstr ""
+
+#: templates/generate_report_pdf.html:9 templates/inbound_movement_pdf.html:9
+#: templates/order_pdf.html:9 templates/outbound_movement_pdf.html:9
+msgid "Purchase order"
+msgstr ""
+
+#: templates/generate_report_pdf.html:10 templates/inbound_movement_pdf.html:10
+#: templates/order_pdf.html:10 templates/outbound_movement_pdf.html:10
+msgid "Trackolus logo here"
+msgstr ""
+
+#: templates/generate_report_pdf.html:11 templates/inbound_movement_pdf.html:11
+#: templates/order_pdf.html:11 templates/outbound_movement_pdf.html:11
+msgid "Your logo here"
+msgstr ""
+
+#: templates/inbound.html:12 templates/inbound_movement_pdf.html:14
+#: templates/outbound.html:11 templates/outbound_movement_pdf.html:17
+#: templates/products_result.html:25
+msgid "Order number"
+msgstr ""
+
+#: templates/inbound.html:14 templates/inbound_movement_pdf.html:13
+msgid "Supplier"
+msgstr ""
+
+#: templates/inbound.html:15 templates/inbound_movement_pdf.html:17
+msgid "Receiver"
+msgstr ""
+
+#: templates/inbound.html:38 templates/inbound.html:85
+#: templates/inbound_movement_pdf.html:23 templates/inventory.html:49
+#: templates/order_pdf.html:22 templates/outbound.html:27
+#: templates/outbound_movement_pdf.html:26 templates/products_result.html:11
+#: templates/purchase_order.html:31
+msgid "Product name"
+msgstr ""
+
+#: templates/inbound.html:39 templates/inbound.html:86
+#: templates/inbound_movement_pdf.html:24 templates/order_pdf.html:23
+#: templates/outbound.html:28 templates/outbound_movement_pdf.html:27
+#: templates/products_result.html:15 templates/products_result.html:26
+#: templates/purchase_order.html:32
+msgid "Quantity"
+msgstr ""
+
+#: templates/inbound.html:56
+msgid "No inbound movements"
+msgstr ""
+
+#: templates/inbound.html:65
+msgid "Add new incoming shipment"
+msgstr ""
+
+#: templates/inbound.html:71 templates/purchase_order.html:17
+msgid "Search by SKU code or name"
+msgstr ""
+
+#: templates/inbound.html:87 templates/purchase_order.html:35
+msgid "Remove"
+msgstr ""
+
+#: templates/inbound.html:98 templates/purchase_order.html:51
+msgid "Save order"
+msgstr ""
+
+#: templates/inbound.html:137
+msgid "Item is already in the cart"
+msgstr ""
+
+#: templates/inbound.html:181
+msgid "There are no products added"
+msgstr ""
+
+#: templates/inbound_movement_pdf.html:15
+#: templates/outbound_movement_pdf.html:18
+msgid "Type of movement"
+msgstr ""
+
+#: templates/inbound_movement_pdf.html:25 templates/order_pdf.html:24
+#: templates/outbound.html:29 templates/outbound_movement_pdf.html:28
+#: templates/purchase_order.html:33
+msgid "Price (unit)"
+msgstr ""
+
+#: templates/inbound_movement_pdf.html:26 templates/order_pdf.html:25
+#: templates/outbound.html:30 templates/outbound_movement_pdf.html:29
+#: templates/purchase_order.html:34
+msgid "Total price"
+msgstr ""
+
+#: templates/inbound_movement_pdf.html:39 templates/order_pdf.html:38
+#: templates/outbound_movement_pdf.html:42
+msgid "Grand total"
+msgstr ""
+
+#: templates/inventory.html:6
+msgid "There are no products in stock"
+msgstr ""
+
+#: templates/inventory.html:14 templates/inventory.html:52
+#: templates/products_result.html:13
+msgid "External code"
+msgstr ""
+
+#: templates/inventory.html:15
+msgid "Product"
+msgstr ""
+
+#: templates/inventory.html:16
+msgid "Stock"
+msgstr ""
+
+#: templates/inventory.html:17 templates/products_result.html:14
+#: templates/products_result.html:27
+msgid "Price"
+msgstr ""
+
+#: templates/inventory.html:18
+msgid "Image"
+msgstr ""
+
+#: templates/inventory.html:43
+msgid "Add new product to stock"
+msgstr ""
+
+#: templates/inventory.html:50 templates/order_pdf.html:21
+#: templates/outbound.html:26 templates/outbound_movement_pdf.html:25
+#: templates/products_result.html:12 templates/purchase_order.html:30
+msgid "SKU"
+msgstr ""
+
+#: templates/inventory.html:54
+msgid "Initial quantity"
+msgstr ""
+
+#: templates/inventory.html:56
+msgid "Sell price"
+msgstr ""
+
+#: templates/inventory.html:57
+msgid "Select product image"
+msgstr ""
+
+#: templates/inventory.html:59
+msgid "Save product"
+msgstr ""
+
+#: templates/layout.html:39
+msgid "DASHBOARD"
+msgstr ""
+
+#: templates/layout.html:47
+msgid "REPORTS"
+msgstr ""
+
+#: templates/layout.html:55
+msgid "INVENTORY"
+msgstr ""
+
+#: templates/layout.html:64
+msgid "PURCHASE<br>ORDER"
+msgstr ""
+
+#: templates/layout.html:73
+msgid "INBOUND"
+msgstr ""
+
+#: templates/layout.html:81
+msgid "OUTBOUND"
+msgstr ""
+
+#: templates/layout.html:91
+msgid "Search"
+msgstr ""
+
+#: templates/login.html:33 templates/users_result.html:12
+msgid "Username"
+msgstr ""
+
+#: templates/login.html:37
+msgid "Password"
+msgstr ""
+
+#: templates/login.html:40
+msgid "Log In"
+msgstr ""
+
+#: templates/order_pdf.html:13 templates/outbound.html:13
+#: templates/outbound_movement_pdf.html:13 templates/products_result.html:29
+#: templates/purchase_order.html:7
+msgid "Client"
+msgstr ""
+
+#: templates/order_pdf.html:14 templates/outbound_movement_pdf.html:14
+#: templates/purchase_order.html:9
+msgid "Identification"
+msgstr ""
+
+#: templates/purchase_order.html:12 templates/users_result.html:13
+msgid "Contact phone"
+msgstr ""
+
+#: templates/purchase_order.html:20
+msgid "Available"
+msgstr ""
+
+#: templates/purchase_order.html:20
+msgid "items"
+msgstr ""
+
+#: templates/purchase_order.html:47
+msgid "View PDF"
+msgstr ""
+
+#: templates/reports.html:8
+msgid "Choose data type"
+msgstr ""
+
+#: templates/reports.html:9
+msgid "Clients"
+msgstr ""
+
+#: templates/reports.html:10
+msgid "Products"
+msgstr ""
+
+#: templates/reports.html:11
+msgid "Inbound"
+msgstr ""
+
+#: templates/reports.html:12
+msgid "Outbound"
+msgstr ""
+
+#: templates/reports.html:13
+msgid "Users"
+msgstr ""
+
+#: templates/reports.html:14
+msgid "Activity"
+msgstr ""
+
+#: templates/reports.html:17
+msgid "Get report"
+msgstr ""
+
+#: templates/users_result.html:11
+msgid "Full name"
+msgstr ""
+
+#: templates/users_result.html:15
+msgid "Active since"
+msgstr ""
+
+#: templates/users_result.html:16
+msgid "Active until"
+msgstr ""
+
+#: templates/users_result.html:17
+msgid "Status"
+msgstr ""
+
+#: templates/users_result.html:28
+msgid "Type of transaction"
+msgstr ""
+
+#: templates/users_result.html:29
+msgid "Products sold"
+msgstr ""
+
+#: templates/users_result.html:31
+msgid "Buyer"
+msgstr ""
+

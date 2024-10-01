@@ -9,10 +9,10 @@
     <article class="movement-container container-fluid">
         <section class="movements" aria-expanded="false">
             <div class="mov-info">
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_number, type='Inbound') }}" target="_blank"><b>Order number:</b> {{ movement.order_number }}</a></p>
-                <p class="mov-data"><b>Date:</b> {{ movement.order_date }}</p>
-                <p class="mov-data"><b>Supplier:</b> Grupo Corbeta </p>
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>Receiver:</b> {{ movement.order_author }}</a></p>
+                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_number, type='Inbound') }}" target="_blank"><b>{{ _('Order number') }}:</b> {{ movement.order_number }}</a></p>
+                <p class="mov-data"><b>{{ _('Date') }}:</b> {{ movement.order_date }}</p>
+                <p class="mov-data"><b>{{ _('Supplier') }}:</b> Grupo Corbeta </p>
+                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>{{ _('Receiver') }}:</b> {{ movement.order_author }}</a></p>
             </div>
             <div class="mov-pdf">
                 <a class="movement-button" href="{{ url_for('movement_pdf', order_number=movement.order_number) }}" target="_blank">
@@ -35,8 +35,8 @@
                 <thead>
                     <tr>
                         <th>SKU</th>
-                        <th>Product name</th>
-                        <th>Quantity</th>
+                        <th>{{ _('Product name') }}</th>
+                        <th>{{ _('Quantity') }}</th>
                     </tr>
                 </thead>
                 <tbody class="products-in-order" id="{{ movement.order_number }}">
@@ -53,7 +53,7 @@
     </article>
     {% endfor %}
     {% else %}
-    <h1>No inbound movements</h1>
+    <h1>{{ _('No inbound movements') }}</h1>
     {% endif %}
 </div>
 
@@ -62,13 +62,13 @@
 <div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
     <div id="inbound-modal-content">
         <div id="modal-header">
-            <h3 id="add-product-title">Add new incoming shipment</h3>
+            <h3 id="add-product-title">{{ _('Add new incoming shipment') }}</h3>
             <button type="button" class="btn-close" id="close-modal-button" onclick="closeModal()" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="inbound-modal-body">
             <form action="/inbound" id="add-shipment" method="POST" enctype="multipart/form-data">
                 <div class="search-container" id="search-box-3">
-                    <input list="products" class="form" id="search3" placeholder="Search by SKU code or name" autocomplete="off">
+                    <input list="products" class="form" id="search3" placeholder="{{ _('Search by SKU code or name') }}" autocomplete="off">
                     <datalist id="products">
                         {% for product in inventory %}
                         <option>{{ product['SKU'] }} - {{ product['product_name'] }}</option>
@@ -82,9 +82,9 @@
                             <thead class="table-light" id="table-header">
                                 <tr>
                                     <th>SKU</th>
-                                    <th>Product name</th>
-                                    <th>Quantity</th>
-                                    <th>Remove</th>
+                                    <th>{{ _('Product name') }}</th>
+                                    <th>{{ _('Quantity') }}</th>
+                                    <th>{{ _('Remove') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="product-list">
@@ -95,7 +95,7 @@
                 <select id="products-selected" name="products-selected" multiple></select>
                 <button type="submit" onclick="saveOrder()" class="menu-button purchase-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
-                    Save order
+                    {{ _('Save order') }}
                 </button>        
             </form>
         </div>
@@ -134,7 +134,7 @@
     let selectedOption = e.target.value;
     let SKU = selectedOption.slice(0, 8);
     if (document.getElementById(SKU) != null) {
-        errorMessage("Ya se encuentra en lista");
+        errorMessage("{{ _('Item is already in the cart') }}");
     } else {
         let product = myInventory.find(object => object.SKU === SKU);
         document.getElementById("table-header").style.visibility = "visible";
@@ -178,7 +178,7 @@
         document.getElementById("add-shipment").addEventListener('submit', function(event) {
             event.preventDefault();
         });
-        errorMessage("There are no products added");
+        errorMessage("{{ _('There are no products added') }}");
     }
   }
 </script>

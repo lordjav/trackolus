@@ -1,19 +1,24 @@
 import pdfkit, sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz, time, json
 from cs50 import SQL
-from flask import Flask, jsonify, flash, redirect, render_template, render_template_string, request, session, make_response, send_file, stream_with_context, Response
+from flask import Flask, jsonify, redirect, render_template, render_template_string, request, session, make_response, send_file, stream_with_context, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from trackolus.helpers import *
 from trackolus.image_uploader import upload_image
 from datetime import datetime, timedelta
+from flask_babel import Babel
 
 server = Flask(__name__)
 server.secret_key = 'EsAlItErAsE'
 server.config["UPLOAD_DIRECTORY"] = "static/product_images/"
 server.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 server.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
+server.config["BABEL_TRANSLATION_DIRECTORIES"] = "C:/Users/Hp/Desktop/Code/trackolus/translations"
 
 db = SQL("sqlite:///general_data.db")
 engine = sqlalchemy.create_engine("sqlite:///general_data.db")
+
+babel = Babel(server)
+babel.init_app(server, locale_selector=get_locale)
 
 server.jinja_env.filters["cop"] = cop
 
@@ -198,7 +203,7 @@ def inventory():
     catalogue = db.execute("SELECT SKU, product_name, external_code, quantity, sell_price, image_route FROM inventory")
 
     if len(catalogue) == 0:
-        return render_template("inventory.html", empty="There are no products in stock")
+        return render_template("inventory.html")
     else:
         return render_template("inventory.html", catalogue=catalogue)
 

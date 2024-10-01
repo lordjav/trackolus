@@ -442,7 +442,7 @@ main {
     background-color: #aaaaaa;
     border: none;
     color:#000;    
-    width: 30%;
+    width: fit-content;
     box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
 }
 
@@ -480,10 +480,14 @@ main {
 }
 
 .purchase-button {
-    width: 185px;
+    width: fit-content;
     height: 45px;
-    padding: 5px;
+    padding: 5px 10px;
     text-align: center;
+}
+
+#get-report {
+    width: fit-content;
 }
 
 .delete-button {    

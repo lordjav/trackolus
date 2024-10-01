@@ -3,7 +3,7 @@
 {% block main %}
 
 {% if empty %}
-    <h1 style="text-align:center">{{ empty }}</h1>
+    <h1 style="text-align:center">{{ _('There are no products in stock') }}</h1>
 
 {% else %}
     <div class="p-2">
@@ -11,11 +11,11 @@
             <thead class="table-light">
                 <tr>
                     <th id="SKU" hx-get="{{ url_for('ordered_inventory', parameter='SKU') }}" hx-trigger="click" hx-target="tbody">SKU <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
-                    <th id="external_code" hx-get="{{ url_for('ordered_inventory', parameter='external_code') }}" hx-trigger="click" hx-target="tbody">External code <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
-                    <th id="product_name" hx-get="{{ url_for('ordered_inventory', parameter='product_name') }}" hx-trigger="click" hx-target="tbody">Product <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
-                    <th id="quantity" hx-get="{{ url_for('ordered_inventory', parameter='quantity') }}" hx-trigger="click" hx-target="tbody">Stock <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
-                    <th id="sell_price" hx-get="{{ url_for('ordered_inventory', parameter='sell_price') }}" hx-trigger="click" hx-target="tbody">Price <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
-                    <th>Image</th>
+                    <th id="external_code" hx-get="{{ url_for('ordered_inventory', parameter='external_code') }}" hx-trigger="click" hx-target="tbody">{{ _('External code') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
+                    <th id="product_name" hx-get="{{ url_for('ordered_inventory', parameter='product_name') }}" hx-trigger="click" hx-target="tbody">{{ _('Product') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
+                    <th id="quantity" hx-get="{{ url_for('ordered_inventory', parameter='quantity') }}" hx-trigger="click" hx-target="tbody">{{ _('Stock') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
+                    <th id="sell_price" hx-get="{{ url_for('ordered_inventory', parameter='sell_price') }}" hx-trigger="click" hx-target="tbody">{{ _('Price') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
+                    <th>{{ _('Image') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -40,26 +40,25 @@
     <div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
         <div id="inventory-modal-content">
             <div id="modal-header">
-                <h3 id="add-product-title">Add new product to stock</h3>
+                <h3 id="add-product-title">{{ _('Add new product to stock') }}</h3>
                 <button type="button" class="btn-close" id="close-modal-button" onclick="closeModal()" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="inventory-modal-body">
                 <form action="/add_product" method="POST" enctype="multipart/form-data">
                     <input autocomplete="off" autofocus class="input" id="product_name" type="text" name="product_name"
-                        placeholder="Product name"><br>
-                    <input autocomplete="off" class="input" id="SKU" type="text" name="SKU" placeholder="SKU"><br>
+                        placeholder="{{ _('Product name') }}"><br>
+                    <input autocomplete="off" class="input" id="SKU" type="text" name="SKU" placeholder="{{ _('SKU') }}"><br>
                     <input autocomplete="off" class="input" id="external_code" type="text" name="external_code"
-                        placeholder="External code"><br>
+                        placeholder="{{ _('External code') }}"><br>
                     <input autocomplete="off" class="input" id="initial_quantity" type="number" name="initial_quantity"
-                        placeholder="Initial quantity"><br>
+                        placeholder="{{ _('Initial quantity') }}"><br>
                     <input autocomplete="off" class="input" id="sell_price" type="number" name="sell_price"
-                        placeholder="Sell price"><br>
-                    <label for="image_reference">Select product image</label>
+                        placeholder="{{ _('Sell price') }}"><br>
+                    <label for="image_reference">{{ _('Select product image') }}</label>
                     <input class="input" id="image_reference" type="file" name="image_reference"><br>
-                    <input type="submit" id="save-product-button" action="/add_product" value="Save product"></input>
+                    <input type="submit" id="save-product-button" action="/add_product" value="{{ _('Save product') }}"></input>
                 </form>
             </div>
         </div>
     </div>
-    <!-- <script src="{{ url_for('static', filename='changeOrder.js') }}"></script> -->
 {% endblock %}

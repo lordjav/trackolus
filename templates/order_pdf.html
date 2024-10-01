@@ -6,23 +6,23 @@
         </style>
     </head>
     <body>
-        <h1 id="title">Purchase order</h1>
-        <h2 id="trackolus-logo">Trackolus logo here</h2>
-        <h2 id="company-logo">Your logo here</h2>
+        <h1 id="title">{{ _('Purchase order') }}</h1>
+        <h2 id="trackolus-logo">{{ _('Trackolus logo here') }}</h2>
+        <h2 id="company-logo">{{ _('Your logo here') }}</h2>
 
-        <p>Client: {{ data[0].name }}</p>
-        <p>Identification: {{ data[0].id }}</p>
-        <p>Phone: {{ data[0].phone }}</p>
-        <p>E-mail: {{ data[0].email }}</p>
+        <p>{{ _('Client') }}: {{ data[0].name }}</p>
+        <p>{{ _('Identification') }}: {{ data[0].id }}</p>
+        <p>{{ _('Phone') }}: {{ data[0].phone }}</p>
+        <p>{{ _('E-mail') }}: {{ data[0].email }}</p>
 
         <table>
             <thead class="table-light" id="table-header">
                 <tr>
-                    <th>SKU</th>
-                    <th>Product name</th>
-                    <th>Quantity</th>
-                    <th>Price (unit)</th>
-                    <th>Total price</th>
+                    <th>{{ _('SKU') }}</th>
+                    <th>{{ _('Product name') }}</th>
+                    <th>{{ _('Quantity') }}</th>
+                    <th>{{ _('Price (unit)') }}</th>
+                    <th>{{ _('Total price') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,7 +35,7 @@
                     <td>{{ (item.sell_price * item.quantity) | cop }}</td>
                 </tr>
                 {% endfor %}
-                <tr><td colspan="4">Grand total</td><td>{{ data[2] | cop }}</td></tr>
+                <tr><td colspan="4">{{ _('Grand total') }}</td><td>{{ data[2] | cop }}</td></tr>
             </tbody>
         </table>
     </body>

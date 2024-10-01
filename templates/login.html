@@ -30,14 +30,14 @@
             <div class="mb-3">
                 <input autocomplete="off" autofocus
                     class="form-control mx-auto w-auto d-inline-flex focus-ring py-1 px-2 text-decoration-none border rounded-2"
-                    style="--bs-focus-ring-color: rgba(var(--bs-dark-rgb), .25)" name="username" placeholder="Username" type="text">
+                    style="--bs-focus-ring-color: rgba(var(--bs-dark-rgb), .25)" name="username" placeholder="{{ _('Username') }}" type="text">
             </div>
             <div class="mb-3">
                 <input class="form-control mx-auto w-auto d-inline-flex focus-ring py-1 px-2 text-decoration-none border rounded-2"
-                    style="--bs-focus-ring-color: rgba(var(--bs-dark-rgb), .25)" name="password" placeholder="Password"
+                    style="--bs-focus-ring-color: rgba(var(--bs-dark-rgb), .25)" name="password" placeholder="{{ _('Password') }}"
                     type="password">
             </div>
-            <button class="btn btn-dark" type="submit">Log In</button>
+            <button class="btn btn-dark" type="submit">{{ _('Log In') }}</button>
         </form>
     </div>
 </body>

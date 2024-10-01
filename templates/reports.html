@@ -5,16 +5,16 @@
 <div id="datatype-container">
     <form action="/reports" method="POST" id="data-form">
         <select class="form" id="datatype" name="datatype" required>
-            <option value="" id="choose_data_type">Choose data type</option>
-            <option value="Clients">Clients</option>
-            <option value="Products">Products</option>
-            <option value="Inbound">Inbound</option>
-            <option value="Outbound">Outbound</option>
-            <option value="Users">Users</option>
-            <option value="Activity">Activity</option>
+            <option value="" id="choose_data_type">{{ _('Choose data type') }}</option>
+            <option value="Clients">{{ _('Clients') }}</option>
+            <option value="Products">{{ _('Products') }}</option>
+            <option value="Inbound">{{ _('Inbound') }}</option>
+            <option value="Outbound">{{ _('Outbound') }}</option>
+            <option value="Users">{{ _('Users') }}</option>
+            <option value="Activity">{{ _('Activity') }}</option>
         </select>
         <br>
-        <input class="menu-button purchase-button" type="submit" value="Get report">
+        <input class="menu-button purchase-button" id="get-report" type="submit" value="{{ _('Get report') }}">
     </form>
 </div>
 {% if data %}
@@ -51,11 +51,11 @@
                 {% elif key == 'Amount' %}
                 <td>{{ item[key] | cop }}</td>
                 {% elif key == 'Order' %}
-                <td><a href="{{ url_for('result', search_term=item[key], type=data[-1]['datatype']) }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+                <td><a href="{{ url_for('result', search_term=item[key], type=data[-1]['datatype']) }}" target="_blank">{{ item[key] }}</a></td>
                 {% elif key in ['Product', 'Client', 'User'] %}
-                <td><a href="{{ url_for('result', search_term=item[key], type=key) }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+                <td><a href="{{ url_for('result', search_term=item[key], type=key) }}">{{ item[key] }}</a></td>
                 {% elif key in ['Receiver', 'Seller'] %}
-                <td><a href="{{ url_for('result', search_term=item[key], type='User') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+                <td><a href="{{ url_for('result', search_term=item[key], type='User') }}">{{ item[key] }}</a></td>
                 {% else %}
                 <td>{{ item[key] }}</td>
                 {% endif %}
