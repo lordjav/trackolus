@@ -158,6 +158,12 @@ def inject_locale():
     return {'get_locale': get_locale}
 
 
+@server.context_processor
+@login_required
+def show_name():
+    return {'user_name': session['name']}
+
+
 @server.route("/login", methods=["GET", "POST"])
 def login():
     
@@ -185,6 +191,7 @@ def login():
 
         # Remember which user has logged in and personal settings
         session["user_id"] = rows[0]["id"]
+        session["name"] = rows[0]["name"]
         session["inventory_order"] = False
 
         # Redirect user to home page

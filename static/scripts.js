@@ -64,22 +64,26 @@ evtSource.onmessage = function(event) {
             element.style.fontWeight = 'bold';
         });
     }    
-    //console.log(notification);
 };
 
 evtSource.onerror = function(err) {
     console.error("EventSource failed:", err);
 };
 
-//Show/hide notifications window
-const notifications = document.getElementById('notifications');
-
+//Mark notifications as read
 function markRead(container) {
     const allNotifications = container.querySelectorAll("*");
     allNotifications.forEach(function(element) {
         element.style.fontWeight = 'inherit';
     });
 };
+
+//Show/hide notifications and language selection
+const notifications = document.getElementById('notifications');
+const notificationContainer = document.getElementById("notification-icon-container");
+
+const languageSelect = document.getElementById("language-select-container");
+const languageContainer = document.getElementById("language-container");
 
 function showNotifications() {    
     if (notifications.style.display === 'none') {
@@ -92,23 +96,14 @@ function showNotifications() {
         notifications.style.display = 'none';
     }
 };
+
 document.addEventListener("DOMContentLoaded", function() {
-    const notificationContainer = document.getElementById("notification-icon-container");
     notificationContainer.addEventListener("click", function(event) {
         if (notificationContainer.contains(event.target)) {
             showNotifications();
         }
     });
-    window.onclick = function(event) {
-        if (!notificationContainer.contains(event.target)) {
-            notifications.style.display = 'none';
-    }}
-});
 
-//Show/hide language selection
-const languageSelect = document.getElementById("language-select-container");
-document.addEventListener("DOMContentLoaded", function() {
-    const languageContainer = document.getElementById("language-container");
     languageContainer.addEventListener("click", function(event) {
         if (languageContainer.contains(event.target)) {
             if (languageSelect.style.display === 'none') {
@@ -121,6 +116,10 @@ document.addEventListener("DOMContentLoaded", function() {
     window.onclick = function(event) {
         if (!languageContainer.contains(event.target)) {
             languageSelect.style.display = 'none';
-    }}
+        }
+        if (!notificationContainer.contains(event.target)) {
+            notifications.style.display = 'none';
+        }
+    }
 });
 
