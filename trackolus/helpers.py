@@ -1,6 +1,6 @@
 from cs50 import SQL
 from datetime import datetime
-from flask import redirect, session, request
+from flask import redirect, session, request, g
 from functools import wraps
 
 db = SQL("sqlite:///general_data.db")
@@ -30,10 +30,25 @@ def save_notification(title, message):
         db.execute("INSERT INTO notified_users (user_id, notification_id) VALUES (?, ?)", user['id'], notification_id[0]['id'])
 
 
-#function: get browser's language
+#Function: 
+
+
+
+#Function: get user's language
 def get_locale():
-    language = request.accept_languages.best_match(['en', 'es'])
-    print('Selected language:', language)
-    return language
+    if 'language' in request.args:
+        language = request.args.get('language')
+        if language in ['en', 'fr']:
+            session['language'] = language
+            return session['language']
+    elif 'language' in session:
+        return session.get('language')
+    return request.accept_languages.best_match(['en', 'es'])
+    #{{ 'selected' if get_locale == 'es' else '' }}
 
 
+#Function: get user's time zone
+def get_timezone():
+    user = getattr(g, 'user', None)
+    if user is not None:
+        return user.timezone

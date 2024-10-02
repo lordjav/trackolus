@@ -12,13 +12,14 @@ server.secret_key = 'EsAlItErAsE'
 server.config["UPLOAD_DIRECTORY"] = "static/product_images/"
 server.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 server.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
-server.config["BABEL_TRANSLATION_DIRECTORIES"] = "C:/Users/Hp/Desktop/Code/trackolus/translations"
+server.config["BABEL_TRANSLATION_DIRECTORIES"] = "./translations"
+server.config["BABEL_DEFAULT_LOCALE"] = 'en'
 
 db = SQL("sqlite:///general_data.db")
 engine = sqlalchemy.create_engine("sqlite:///general_data.db")
 
 babel = Babel(server)
-babel.init_app(server, locale_selector=get_locale)
+babel.init_app(server, locale_selector=get_locale, timezone_selector=get_timezone)
 
 server.jinja_env.filters["cop"] = cop
 
@@ -149,6 +150,12 @@ def separate_movements(type_of_movement):
             movements_objects.append(movement)
 
     return movements_objects
+
+
+#Decorator: Makes the function 'get_locale' available directly in the template
+@server.context_processor
+def inject_locale():
+    return {'get_locale': get_locale}
 
 
 @server.route("/login", methods=["GET", "POST"])
@@ -913,7 +920,7 @@ def notifications():
 
             for notification in notifications:
                 yield f"""data: {json.dumps(dict(notification))}\n\n"""
-                
+            
             time.sleep(5)
     return Response(generate_notifications(), content_type='text/event-stream')
 
@@ -938,3 +945,12 @@ def mark_read():
     except Exception as e:
         print(f'Error marking notifications as read: {e}')
         return render_template_string("Failure")
+
+
+@server.route('/set_language', methods=['POST'])
+@login_required
+def set_language():
+    language = request.form.get('language', 'en')
+    session['language'] = language
+
+    return redirect(request.referrer)

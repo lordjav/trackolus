@@ -93,14 +93,34 @@ function showNotifications() {
     }
 };
 document.addEventListener("DOMContentLoaded", function() {
-    const container = document.getElementById("notification-icon-container");
-    container.addEventListener("click", function(event) {
-        if (container.contains(event.target)) {
+    const notificationContainer = document.getElementById("notification-icon-container");
+    notificationContainer.addEventListener("click", function(event) {
+        if (notificationContainer.contains(event.target)) {
             showNotifications();
         }
     });
     window.onclick = function(event) {
-        if (!container.contains(event.target)) {
+        if (!notificationContainer.contains(event.target)) {
             notifications.style.display = 'none';
     }}
 });
+
+//Show/hide language selection
+const languageSelect = document.getElementById("language-select-container");
+document.addEventListener("DOMContentLoaded", function() {
+    const languageContainer = document.getElementById("language-container");
+    languageContainer.addEventListener("click", function(event) {
+        if (languageContainer.contains(event.target)) {
+            if (languageSelect.style.display === 'none') {
+                languageSelect.style.display = 'block';
+            } else {
+                languageSelect.style.display = 'none';
+            }
+        }
+    });
+    window.onclick = function(event) {
+        if (!languageContainer.contains(event.target)) {
+            languageSelect.style.display = 'none';
+    }}
+});
+
