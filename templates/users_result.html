@@ -39,7 +39,7 @@
                         <td>{{ item['Type'] }}</td>
                         <td>{{ item['Quantity'] }}</td>
                         <td>{{ (item['Amount'] * item['Quantity']) | cop }}</td>
-                        <td><a href="{{ url_for('result', search_term=item['Buyer'], type='Client') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['Buyer'] }}</a></td>
+                        <td><a href="{{ url_for('result', search_term=item['Buyer'], type='Customer') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['Buyer'] }}</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

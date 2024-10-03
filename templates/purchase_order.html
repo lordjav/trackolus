@@ -4,13 +4,13 @@
 
 <form id="purchase-form" method="POST">
     <div id="name-id">
-        <input type="text" class="form" id="client-name" name="client-name" autofocus autocomplete="off" placeholder="{{ _('Client') }}" required hx-get="{{ url_for('get_client') }}" hx-trigger="keyup changed delay:500ms" hx-target="#suggestions2" hx-ext="suggestions">
-        <div id="suggestions2"></div>
-        <input type="text" class="form" id="client-id" name="client-id" autocomplete="off" placeholder="{{ _('Identification') }}" required>
+        <input type="text" class="form" id="customer-name" name="customer-name" autofocus autocomplete="new-password" placeholder="{{ _('Customer') }}" required hx-get="{{ url_for('get_customer') }}" hx-trigger="keyup changed delay:500ms" hx-target="#suggestions2" hx-ext="suggestions">
+        <div id="suggestions2" style="display: block;"></div>
+        <input type="text" class="form" id="customer-id" name="customer-id" autocomplete="off" placeholder="{{ _('Identification') }}" required>
     </div>
     <div id="phone-email">
-        <input type="text" class="form" id="client-phone" name="client-phone" autocomplete="off" placeholder="{{ _('Contact phone') }}" required>
-        <input type="email" class="form" id="client-email" name="client-email" autocomplete="off" placeholder="{{ _('E-mail') }}" required>
+        <input type="text" class="form" id="customer-phone" name="customer-phone" autocomplete="off" placeholder="{{ _('Contact phone') }}" required>
+        <input type="email" class="form" id="customer-email" name="customer-email" autocomplete="off" placeholder="{{ _('E-mail') }}" required>
     </div>
     <br>
     <div class="search-container" id="search-box-2">
@@ -42,11 +42,11 @@
     </div>
     <select id="products-selected" name="products-selected" multiple></select>
     <div id="buttons-purchase-container">        
-        <button type="submit" onclick="getPDF()" class="menu-button purchase-button">
+        <button type="submit" class="menu-button purchase-button" id="get-PDF">
           <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12V5a2 2 0 0 1 2-2h7l5 5v4M5 18h1.5a1.5 1.5 0 0 0 0-3H5v6m12-3h2m1-3h-3v6m-6-6v6h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2z"/></g></svg>
           {{ _('View PDF') }}
         </button>
-        <button type="submit" onclick="saveOrder()" class="menu-button purchase-button">
+        <button type="submit" class="menu-button purchase-button" id="save-order">
           <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 19a2 2 0 1 0 4 0a2 2 0 0 0-4 0"/><path d="M12.5 17H6V3H4"/><path d="m6 5l14 1l-.86 6.017M16.5 13H6m10 6h6m-3-3v6"/></g></svg>
           {{ _('Save order') }}
         </button>
@@ -54,7 +54,7 @@
 </form>
 
 <script>
-  //Retrieve client data if client is in database
+  //Retrieve customer data if customer is in database
   document.body.addEventListener('htmx:afterRequest', function(event) {
     if (event.detail.elt.classList.contains('item_name') && event.detail.successful) {      
       var data = JSON.parse(event.detail.xhr.responseText);      
@@ -69,18 +69,18 @@
     }
   });
 
-  // Show suggestions box if client-name input is focused and hide if doesn't
-  let clientNameInput = document.getElementById('client-name');
-  let suggestions2 = document.getElementById('suggestions2');
+  // Show suggestions box if customer-name input is focused and hide if doesn't
+  const customerNameInput = document.getElementById('customer-name');
+  const suggestions2 = document.getElementById('suggestions2');
   
-  clientNameInput.addEventListener('focus', function () {
-    suggestions2.style.visibility = 'visible';
+  customerNameInput.addEventListener('focus', function () {
+    suggestions2.style.display = 'block';
   });
 
-  clientNameInput.addEventListener('blur', function () {
-    setTimeout(function() {
-      suggestions2.style.visibility = 'hidden';
-    }, 150)
+  document.addEventListener('click', function(event) {
+    if (!customerNameInput.contains(event.target) && !suggestions2.contains(event.target)) {
+      suggestions2.style.display = 'none';
+    }
   });
 
   //Add product in a new row
@@ -142,17 +142,26 @@
   }
   document.querySelector("table").addEventListener("input", updatePrice);
 
-  //Generate purchase order as pdf
-  form = document.getElementById("purchase-form")
-  function getPDF() {
-    form.action = "/view_pdf";
-    form.target = "_blank";
-  }
+  //Generate quote as pdf or save purchase order in database
+  const form = document.getElementById("purchase-form");
+  const getPDF = document.getElementById("get-PDF");
+  const saveOrder = document.getElementById("save-order");
+
+  function handleSubmit(event) {
+    event.preventDefault();
   
-  //Save order in transaction list
-  function saveOrder() {
-    form.action = "/purchase_order";
-    form.target = "_self";
+    const clickedButton = event.submitter;
+  
+    if (clickedButton === getPDF) {
+      form.action = "/view_pdf";
+      form.target = "_blank";
+    } else if (clickedButton === saveOrder) {
+      form.action = "/purchase_order";
+      form.target = "_self";
+    }
+  
+    form.submit();
   }
+  form.addEventListener('submit', handleSubmit);
 </script>
 {% endblock %}

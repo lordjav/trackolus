@@ -6,7 +6,7 @@
     <form action="/reports" method="POST" id="data-form">
         <select class="form" id="datatype" name="datatype" required>
             <option value="" id="choose_data_type">{{ _('Choose data type') }}</option>
-            <option value="Clients">{{ _('Clients') }}</option>
+            <option value="Customers">{{ _('Customers') }}</option>
             <option value="Products">{{ _('Products') }}</option>
             <option value="Inbound">{{ _('Inbound') }}</option>
             <option value="Outbound">{{ _('Outbound') }}</option>
@@ -52,7 +52,7 @@
                 <td>{{ item[key] | cop }}</td>
                 {% elif key == 'Order' %}
                 <td><a href="{{ url_for('result', search_term=item[key], type=data[-1]['datatype']) }}" target="_blank">{{ item[key] }}</a></td>
-                {% elif key in ['Product', 'Client', 'User'] %}
+                {% elif key in ['Product', 'Customer', 'User'] %}
                 <td><a href="{{ url_for('result', search_term=item[key], type=key) }}">{{ item[key] }}</a></td>
                 {% elif key in ['Receiver', 'Seller'] %}
                 <td><a href="{{ url_for('result', search_term=item[key], type='User') }}">{{ item[key] }}</a></td>

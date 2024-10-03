@@ -13,8 +13,8 @@
   document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
-      locale: navigator.language,
-      buttonText: buttonTextLanguage[navigator.language],
+      locale: '{{ get_locale() }}',
+      buttonText: buttonTextLanguage['{{ get_locale() }}'],
       themeSystem: 'bootstrap5',
       height: '80vh',
       initialView: 'dayGridMonth',

@@ -37,13 +37,13 @@ class prototype_product:
         self.addition_date = addition_date
         self.image_route = image_route
 
-#Create class "client"
-class client:
-    def __init__(self, client_name, client_id, client_phone, client_email):
-        self.name = client_name
-        self.id = client_id
-        self.phone = client_phone
-        self.email = client_email
+#Create class "customer"
+class customer:
+    def __init__(self, name, customer_id, customer_phone, customer_email):
+        self.name = name
+        self.id = customer_id
+        self.phone = customer_phone
+        self.email = customer_email
 
 #Create class "order_object"
 class prototype_order:
@@ -82,12 +82,12 @@ def create_catalogue():
 #Function: get data to create order
 def get_order_data():
     products_list = request.form.getlist("products-selected")
-    name = request.form.get("client-name")
-    id = request.form.get("client-id")
-    phone = request.form.get("client-phone")
-    email = request.form.get("client-email")
+    name = request.form.get("name")
+    id = request.form.get("customer-id")
+    phone = request.form.get("customer-phone")
+    email = request.form.get("customer-email")
 
-    client_data = client(name, id, phone, email)
+    customer_data = customer(name, id, phone, email)
     products = []
     total = 0
     catalogue = create_catalogue()
@@ -97,7 +97,7 @@ def get_order_data():
     for object in products:
         object.quantity = int(request.form.get(object.SKU))
         total += (object.quantity * object.sell_price)
-    data = [client_data, products, total]
+    data = [customer_data, products, total]
     return data
 
 #Function: configurate pdfkit and wkhtmltopdf to create pdf 
@@ -127,11 +127,11 @@ def separate_movements(type_of_movement):
 
     for element in movements:
         author_name = db.execute("SELECT name FROM users JOIN movements ON users.id = movements.author WHERE movements.author = ?", element["author"])[0]["name"]
-        client = db.execute("SELECT client_name FROM clients JOIN movements ON clients.id = movements.buyer WHERE movements.buyer = ?", element["buyer"])
-        if not client:
-            client_name = ""
+        customer = db.execute("SELECT name FROM customers_suppliers JOIN movements ON customers_suppliers.id = movements.buyer WHERE movements.buyer = ?", element["buyer"])
+        if not customer:
+            customer_name = ""
         else:
-            client_name = client[0]["client_name"]
+            customer_name = customer[0]["name"]
         order_in_list = False
         for object in movements_objects:
             if element["order_number"] == object.order_number:
@@ -143,7 +143,7 @@ def separate_movements(type_of_movement):
                                        element["type"], 
                                        element["date"], 
                                        author_name, 
-                                       client_name
+                                       customer_name
                                        )
             product_data = products_to_movements(element)
             movement.add_products(product_data)
@@ -318,14 +318,14 @@ def purchase_order():
         date = datetime.now()
 
         try:
-            is_client = db.execute("SELECT id FROM clients WHERE external_id = ?", data[0].id)
-            if len(is_client) != 1:
+            is_customer = db.execute("SELECT id FROM customers_suppliers WHERE identification = ?", data[0].id)
+            if len(is_customer) != 1:
                 db.execute(
-                    "INSERT INTO clients (client_name, external_id, phone, email) VALUES (?, ?, ?, ?)", 
-                    data[0].name, data[0].id, data[0].phone, data[0].email
+                    "INSERT INTO customers_suppliers (name, identification, phone, email, relation, status) VALUES (?, ?, ?, ?, ?, ?)", 
+                    data[0].name, data[0].id, data[0].phone, data[0].email, 'customer', 'active',
                 )
             else:
-                client_id = is_client[0]["id"]
+                customer_id = is_customer[0]["id"]
             order_number = db.execute("SELECT order_number FROM movements ORDER BY order_number DESC LIMIT 1")[0]["order_number"]
             order_number += 1
             movement_type = "outbound"
@@ -341,13 +341,13 @@ def purchase_order():
                     )
                     db.execute(
                         "INSERT INTO movements (order_number, type, date, SKU, quantity, price, author, buyer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-                        order_number, movement_type, date, item.SKU, item.quantity, item.sell_price, session["user_id"], client_id
+                        order_number, movement_type, date, item.SKU, item.quantity, item.sell_price, session["user_id"], customer_id
                     )
             #Saving data for notification
             user = db.execute("SELECT name FROM users WHERE id = ?", session['user_id'])
-            client_name = db.execute("SELECT client_name FROM clients WHERE id = ?", client_id)
+            customer_name = db.execute("SELECT name FROM customers_suppliers WHERE id = ?", customer_id)
             title_for_notification = 'New sale'
-            message_for_notification = f'New outbound order placed.\nOrder: {order_number} \nClient: {client_name[0]['client_name']} \nSeller: {user[0]['name']}'
+            message_for_notification = f'New outbound order placed.\nOrder: {order_number} \ncustomer: {customer_name[0]['name']} \nSeller: {user[0]['name']}'
             save_notification(title_for_notification, message_for_notification)
 
             return redirect("/purchase_order")
@@ -435,7 +435,7 @@ def movement_pdf(order_number):
         return product        
 
     if movement_type == 'outbound':
-        order_raw = db.execute("SELECT * FROM movements JOIN clients ON movements.buyer = clients.id WHERE order_number = ?", 
+        order_raw = db.execute("SELECT * FROM movements JOIN customers_suppliers ON movements.buyer = customers_suppliers.id WHERE order_number = ?", 
                                order_number)
     else:
         order_raw = db.execute("SELECT * FROM movements WHERE order_number = ?", order_number)
@@ -455,10 +455,10 @@ def movement_pdf(order_number):
         grand_total += element["price"] * element["quantity"]
     
     if movement_type == "outbound":
-        additional_data = {"client_name": order_raw[0]["client_name"], 
-                        "client_external_id": order_raw[0]["external_id"], 
-                        "client_phone": order_raw[0]["phone"], 
-                        "client_email": order_raw[0]["email"],
+        additional_data = {"customer_name": order_raw[0]["name"], 
+                        "customer_identification": order_raw[0]["identification"], 
+                        "customer_phone": order_raw[0]["phone"], 
+                        "customer_email": order_raw[0]["email"],
                         "grand_total": grand_total
                         }
         rendered = render_template("outbound_movement_pdf.html", order=order_object, data=additional_data)
@@ -478,16 +478,16 @@ def reports():
         datatype = request.form.get("datatype")
         global data_report
         match datatype:
-            case "Clients":
+            case "Customers":
                 data_report = db.execute("""
                                         SELECT 
-                                            external_id AS 'Identification',
-                                            client_name AS Client, 
+                                            identification AS 'Identification',
+                                            name AS Customer, 
                                             phone AS 'Contact Phone', 
                                             email AS 'E-mail' 
-                                        FROM clients
+                                        FROM customers_suppliers
                                         """)
-                data_report.append({'datatype':'Clients', 'keyword':'Client'})
+                data_report.append({'datatype':'Customers', 'keyword':'Customer'})
             case 'Products':
                 data_report = db.execute("""
                                         SELECT 
@@ -525,15 +525,15 @@ def reports():
                                         SUM(quantity) AS 'Products sold',
                                         SUM(price * quantity) AS Amount,
                                         users.name AS Seller,
-                                        clients.client_name AS Client
+                                        customers_suppliers.name AS Customer
                                   FROM movements 
-                                  JOIN clients ON movements.buyer = clients.id
+                                  JOIN customers_suppliers ON movements.buyer = customers_suppliers.id
                                   JOIN users ON movements.author = users.id
                                   WHERE type = 'outbound'
                                   GROUP BY 
                                          order_number, 
                                          date, users.name, 
-                                         clients.client_name
+                                         customers_suppliers.name
                                   ORDER BY date DESC
                                   """)
                 data_report.append({'datatype':'Outbound', 'keyword':'Order'})
@@ -639,12 +639,12 @@ def search():
             term, term, term
             )
         
-        clients = db.execute("""
-            SELECT client_name AS 'Client'
-            FROM clients
-            WHERE client_name LIKE ?
+        customers = db.execute("""
+            SELECT name AS 'Customer'
+            FROM customers_suppliers
+            WHERE name LIKE ?
             OR phone LIKE ?
-            OR external_id LIKE ? 
+            OR identification LIKE ? 
             OR email LIKE ?
             LIMIT 10""", 
             term, term, term, term
@@ -669,7 +669,7 @@ def search():
             LIMIT 10""", 
             term, term
             )
-        search_results = [products, clients, movements, users]
+        search_results = [products, customers, movements, users]
         
     else:
         search_results = []
@@ -696,10 +696,10 @@ def result(search_term, type):
                                             order_number,
                                             type, date, 
                                             price, 
-                                            client_name, 
+                                            name, 
                                             quantity 
                                            FROM movements 
-                                           JOIN clients ON movements.buyer = clients.id 
+                                           JOIN customers_suppliers ON movements.buyer = customers_suppliers.id 
                                            WHERE SKU = (
                                            SELECT SKU 
                                            FROM inventory 
@@ -707,8 +707,8 @@ def result(search_term, type):
                                            """, search_term)
             return render_template("products_result.html", item=item, transactions=item_transactions)
         
-        case 'Client':
-            item = db.execute("SELECT * FROM clients WHERE client_name = ?", search_term)
+        case 'Customer':
+            item = db.execute("SELECT * FROM customers_suppliers WHERE name = ?", search_term)
             item_transactions = db.execute("""
                                            SELECT movements.order_number, 
                                             movements.type, 
@@ -724,7 +724,7 @@ def result(search_term, type):
                                            GROUP BY movements.order_number 
                                            ORDER BY date DESC
                                            """, item[0]['id'])
-            return render_template("clients_result.html", item=item, transactions=item_transactions)
+            return render_template("customers_result.html", item=item, transactions=item_transactions)
         
         case 'Inbound':
             return redirect(f"/movement_pdf/{search_term}")
@@ -745,10 +745,10 @@ def result(search_term, type):
                                             movements.date AS Date, 
                                             SUM(movements.price) AS 'Amount', 
                                             SUM(movements.quantity) AS Quantity,
-                                            clients.client_name AS Buyer
+                                            customers_suppliers.name AS Buyer
                                            FROM movements 
                                            JOIN inventory ON movements.SKU = inventory.SKU
-                                           JOIN clients ON movements.buyer = clients.id 
+                                           JOIN customers_suppliers ON movements.buyer = customers_suppliers.id 
                                            WHERE movements.author = 
                                            (SELECT id
                                            FROM users
@@ -805,50 +805,51 @@ def generate_doc(doc_type):
     return response
 
 
-@server.route("/get_client")
+@server.route("/get_customer")
 @login_required
-def get_client():
-    client_name = request.args.get('client-name')
+def get_customer():
+    name = request.args.get('customer-name')
 
-    if client_name:
-        term = "%" + client_name + "%"
-        clients = db.execute("""
-                             SELECT client_name
-                             FROM clients
-                             WHERE client_name LIKE ?
+    if name:
+        term = "%" + name + "%"
+        customers = db.execute("""
+                             SELECT name
+                             FROM customers_suppliers
+                             WHERE name LIKE ?
                              """, term)
     else:
-        clients = []
- 
+        customers = []
+
     return render_template_string("""
-                                  {% for client in clients %}
+                                  {% for customer in customers %}
                                   <div class="suggestion">
                                   <span class="item_name"
-                                  hx-get="{{ url_for('get_client_data', name=client['client_name']) }}" 
+                                  hx-get="{{ url_for('get_customer_data', name=customer['name']) }}" 
                                   hx-trigger="click" 
-                                  hx-target="#client-name, #client-id, #client-phone, #client-email" 
+                                  hx-target="#customer-name, #customer-id, #customer-phone, #customer-email" 
                                   hx-ext="json-enc" 
                                   hx-swap="none">
-                                  {{ client['client_name'] }}
+                                  {{ customer['name'] }}
                                   </span>
                                   </div>
                                   {% endfor %}
-                                  """, clients=clients)
+                                  """, customers=customers)
 
 
-@server.route("/get_client_data/<name>")
+@server.route("/get_customer_data/<name>")
 @login_required
-def get_client_data(name):
-    client_data = db.execute("""
-                             SELECT client_name AS 'client-name', 
-                                external_id AS 'client-id', 
-                                phone AS 'client-phone', 
-                                email AS 'client-email'
-                             FROM clients
-                             WHERE client_name = ?
+def get_customer_data(name):
+    customer_data = db.execute("""
+                             SELECT 
+                                name AS 'customer-name', 
+                                identification AS 'customer-id', 
+                                phone AS 'customer-phone', 
+                                email AS 'customer-email'
+                             FROM customers_suppliers
+                             WHERE name = ?
                              """, name)
-    
-    return jsonify(client_data)
+    print(customer_data)
+    return jsonify(customer_data)
 
 
 @server.route('/calendar')
