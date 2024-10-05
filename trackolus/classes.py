@@ -47,6 +47,19 @@ class prototype_product:
         else:
             raise ValueError(f'Warehouse "{warehouse_id}" not found.')
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'SKU': self.SKU,
+            'product_name': self.product_name,
+            'buy_price': self.buy_price,
+            'sell_price': self.sell_price,
+            'author': self.author,
+            'addition_date': self.addition_date,
+            'image_route': self.image_route,
+            'warehouses': self.warehouses,
+            'other_props': self.other_props,
+        }
 
 #Create class "customer"
 class customer:

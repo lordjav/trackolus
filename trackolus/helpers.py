@@ -52,3 +52,20 @@ def get_timezone():
     user = getattr(g, 'user', None)
     if user is not None:
         return user.timezone
+    
+
+#Function: Format products from dictionaries to objects.
+def products_to_movements(element):
+    product = {}
+    product_dict = db.execute("""
+                            SELECT product_name, SKU
+                            FROM inventory 
+                            WHERE id = ?
+                            """, element["product_id"]
+                            )[0]
+    product['name'] = product_dict["product_name"]
+    product["SKU"] = product_dict["SKU"]
+    product["quantity"] = element["quantity"]
+    product["price"] = element["price"]
+
+    return product
