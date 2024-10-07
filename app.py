@@ -207,6 +207,7 @@ def login():
             return redirect("/login")
 
         # Remember which user has logged in and personal settings
+        session['role'] = rows[0]['role']
         session["user_id"] = rows[0]["id"]
         session["name"] = rows[0]["name"]
         session["inventory_order"] = False
@@ -230,6 +231,7 @@ def logout():
 
 @server.route("/inventory")
 @login_required
+@role_required(['admin', 'user', 'observer'])
 def inventory():
     catalogue = create_catalogue()
 
@@ -369,6 +371,7 @@ def add_product():
 
 @server.route("/purchase_order", methods=["GET", "POST"])
 @login_required
+@role_required(['admin'])
 def purchase_order():
     if request.method == "POST":
         data = get_order_data()
@@ -1148,7 +1151,7 @@ def result(search_term, type):
                               SELECT 
                                 identification, 
                                 name, 
-                                access_profile, 
+                                role, 
                                 email, 
                                 phone, 
                                 start_date, 
@@ -1185,8 +1188,8 @@ def result(search_term, type):
         
         case _:
             return render_template(
-                "results.html", 
-                message="Error: Element not found")
+                "error.html", 
+                message="Error: Element not found"), 404
     
     return render_template(
         template, 
@@ -1244,9 +1247,9 @@ def generate_doc(doc_type):
             
         case _:
             return render_template(
-                "results.html", 
-                message="Error: Element not found"
-                )
+                "error.html", 
+                message="Error: Type of document unknown."
+                ), 404
         
     return response
 
@@ -1443,30 +1446,15 @@ def set_language():
 
     return redirect(request.referrer)
 
-"""@server.route('/set_mov', methods=['GET'])
-def set_mov():
-    movement_data = db.execute("
-                               SELECT 
-                                movements.order_number AS movement_id,
-                                inventory.id AS product_id,
-                                quantity,
-                                movements.price
-                               FROM movements
-                               JOIN inventory ON inventory.SKU = movements.SKU
-                               ")
-    for movement in movement_data:
-        db.execute("INSERT INTO products_movement (
-                   movement_id,
-                   product_id,
-                   quantity,
-                   price
-                   ) VALUES (
-                   ?, ?, ?, ?
-                   )      
-                   ",
-                   (movement['movement_id'] - 1000000),
-                   movement['product_id'],
-                   movement['quantity'],
-                   movement['price']
-                   )
-    return render_template_string("<h1>Success!</h1>")"""
+@server.route('/settings', methods=['GET'])
+@login_required
+def settings():
+    return render_template("settings.html")
+
+@server.route('/create_user', methods=['GET', 'POST'])
+@login_required
+def create_user():
+    if request.method == 'POST':
+        pass
+    else:
+        return render_template('create_user.html')

@@ -1,11 +1,11 @@
 from cs50 import SQL
 from datetime import datetime
-from flask import redirect, session, request, g
+from flask import redirect, session, request, g, render_template
 from functools import wraps
 
 db = SQL("sqlite:///general_data.db")
 
-#Function: limits access through routes only to logged users.
+#Function: limits access only to logged users.
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -14,6 +14,20 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+#Function: manage permissions according to role.
+def role_required(roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if session.get("role") not in roles:
+                message = "Forbbiden: you do not have permission to access this section."
+                return render_template("error.html", message), 403
+            return f(*args, **kwargs)
+
+        return decorated_function
+    return decorator
 
 
 #Function: format currency value as COP

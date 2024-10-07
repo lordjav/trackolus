@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+
+<form action="/create_user" id="purchase-form" method="POST"></form>
+    <input type="text" class="form" id="user-name" name="user-name" autofocus autocomplete="new-password" placeholder="{{ _('Full name') }}" required>
+    <select id="id-type" name="id-type" required>
+        <option value="" disabled>{{ _('Choose type of ID') }}</option>
+        <option value="IC">IC {{ _('Identity card') }}</option>
+        <option value="FC">FC {{ _('Foreigner card') }}</option>
+        <option value="IC">IC {{ _('Inmigration card') }}</option>
+        <option value="PP">PP {{ _('Passport') }}</option>
+        <option value="DNI">DNI {{ _('National Identity Document') }}</option>
+        <option value="DL">DL {{ _('Driving license') }}</option>
+        <option value="SS">SS {{ _('Social security number') }}</option>
+        <option value="CC">CC {{ _('Citizenship card') }}</option>
+        <option value="EIN">EIN {{ _('Employer Identification Number') }}</option>
+        <option value="NIT">NIT {{ _('Tax Identification Number') }}</option>
+        <option value="CURP">CURP {{ _('Individual Registration Number') }}</option>
+    </select>
+    <input type="text" class="form" id="identification" name="identification" autocomplete="new-password" placeholder="{{ _('Identification') }}" required>
+    <input type="text" class="form" id="user-phone" name="user-phone" autocomplete="new-password" placeholder="{{ _('Contact phone') }}" required>
+    <input type="email" class="form" id="customer-email" name="customer-email" autocomplete="new-password" placeholder="{{ _('E-mail') }}" required>
+    <select id="role" name="role" required>
+        <option value="" disabled>{{ _('Choose role') }}</option>
+        <option value="admin">IC {{ _('Administrator') }}</option>
+        <option value="user">FC {{ _('User') }}</option>
+        <option value="observer">IC {{ _('Observer') }}</option>
+    </select>
+    <button class="purchase-button" type="submit" value="Save user">
+        <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
+    </button>
+</form>
+{% endblock %}
