@@ -11,7 +11,7 @@
             <div class="mov-info">
                 <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_number, type='Inbound') }}" target="_blank"><b>{{ _('Order number') }}:</b> {{ movement.order_number }}</a></p>
                 <p class="mov-data"><b>{{ _('Date') }}:</b> {{ movement.order_date }}</p>
-                <p class="mov-data"><b>{{ _('Supplier') }}:</b> Grupo Corbeta </p>
+                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_counterpart, type='Supplier') }}"><b>{{ _('Supplier') }}:</b> {{ movement.order_counterpart }} </a></p>
                 <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>{{ _('Receiver') }}:</b> {{ movement.order_author }}</a></p>
             </div>
             <div class="mov-pdf">
@@ -43,7 +43,7 @@
                     {% for product in movement.order_products %}
                     <tr id="{{ product['product_name'] }}">
                         <td><a href="{{ url_for('result', search_term=product['product_name'], type='Product') }}">{{ product["SKU"] }}</a></td>
-                        <td><a href="{{ url_for('result', search_term=product['product_name'], type='Product') }}">{{ product["product_name"] }}</a></td>
+                        <td><a href="{{ url_for('result', search_term=product['product_name'], type='Product') }}">{{ product["name"] }}</a></td>
                         <td><a href="{{ url_for('result', search_term=product['product_name'], type='Product') }}">{{ product["quantity"] }}</a></td>
                     </tr>
                     {% endfor %}
@@ -132,7 +132,9 @@
   let myInventory = {{ inventory | tojson | safe }};
   document.getElementById('search3').addEventListener('input', function(e) {
     let selectedOption = e.target.value;
-    let SKU = selectedOption.slice(0, 8);
+    let index = selectedOption.indexOf(' ');
+    let SKU = selectedOption.substring(0, index);
+
     if (document.getElementById(SKU) != null) {
         errorMessage("{{ _('Item is already in the cart') }}");
     } else {

@@ -10,7 +10,7 @@
             <div class="mov-info">
                 <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_number, type='Outbound') }}" target="_blank"><b>{{ _('Order number') }}:</b> {{ movement.order_number }} </a></p>
                 <p class="mov-data"><b>{{ _('Date') }}:</b> {{ movement.order_date }}</p>
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_buyer, type='customer') }}"><b>{{ _('customer') }}:</b> {{ movement.order_buyer }} </a></p>
+                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_counterpart, type='Customer') }}"><b>{{ _('Customer') }}:</b> {{ movement.order_counterpart }} </a></p>
                 <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>{{ _('Seller') }}:</b> {{ movement.order_author }} </a></p>
             </div>
             <div class="mov-pdf movement-button">
@@ -34,7 +34,7 @@
                     {% for product in movement.order_products %}
                     <tr onclick="window.location='{{ url_for('result', search_term=product['product_name'], type='Product') }}';">
                         <td>{{ product["SKU"] }}</td>
-                        <td>{{ product["product_name"] }}</td>
+                        <td>{{ product["name"] }}</td>
                         <td>{{ product["quantity"] }}</td>
                         <td>{{ product["price"] | cop }}</td>
                         <td>{{ (product["quantity"] * product["price"]) | cop }}</td>

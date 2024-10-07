@@ -8,11 +8,13 @@
     </div>
     
     <section>
-        <div><span>{{ _('Product name') }}: </span><span>{{ item[0]['product_name'] }}</span></div>
+        <div><span>{{ _('Product name') }}: </span><span>{{ item[0]['Product'] }}</span></div>
         <div><span>{{ _('SKU') }}: </span><span>{{ item[0]['SKU'] }}</span></div>
-        <div><span>{{ _('External code') }}: </span><span>{{ item[0]['external_code'] }}</span></div>
-        <div><span>{{ _('Price') }}: </span><span>{{ item[0]['sell_price'] | cop }}</span></div>
-        <div><span>{{ _('Quantity') }}: </span><span>{{ item[0]['quantity'] }}</span></div>
+        <div><span>{{ _('Price') }}: </span><span>{{ item[0]['Price'] | cop }}</span></div>
+        <div><span>{{ _('Total stock') }}: </span><span>{{ item[0]['Total stock'] }}</span></div>
+        {% for warehouse in item[0]['warehouses'] %}
+        <div><span>{{ warehouse['name'] | capitalize }}: </span><span>{{ item[0][warehouse['name'] | capitalize] }}</span></div>
+        {% endfor %}
     </section>
     <section>
         <h3 class="data_title">Movements</h3>
@@ -24,23 +26,19 @@
                         <th>{{ _('Date') }}</th>
                         <th>{{ _('Order number') }}</th>
                         <th>{{ _('Quantity') }}</th>
-                        <th>{{ _('Price') }}</th>
-                        <th>{{ _('Total sale') }}</th>
+                        <th>{{ _('Sale') }}</th>
                         <th>{{ _('Customer') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in transactions %}
-                    {% if item['type'] == 'outbound' %}
                     <tr>
-                        <td>{{ item['date'] }}</td>
-                        <td><a href="{{ url_for('movement_pdf', order_number=item['order_number'], type='Order') }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['order_number'] }}</a></td>
-                        <td>{{ item['quantity'] }}</td>
-                        <td>{{ item['price'] | cop }}</td>
-                        <td>{{ (item['price'] * item['quantity']) | cop }}</td>
-                        <td><a href="{{ url_for('result', search_term=item['name'], type='Customer') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['name'] }}</a></td>
+                        <td>{{ item['Date'] }}</td>
+                        <td><a href="{{ url_for('movement_pdf', order_number=item['Order']) }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['Order'] }}</a></td>
+                        <td>{{ item['Quantity'] }}</td>
+                        <td>{{ item['Amount'] | cop }}</td>
+                        <td><a href="{{ url_for('result', search_term=item['Customer'], type='Customer') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['Customer'] }}</a></td>
                     </tr>
-                    {% endif %}
                     {% endfor %}
                 </tbody>
             </table>

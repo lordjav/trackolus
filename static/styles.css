@@ -430,15 +430,25 @@ main {
     text-align: left;
 }
 
-.modal-body input {
+.modal-body input, #warehouse {
     border-radius: 7px;
     border: none;
     height: 35px;
     margin: 15px 0;    
 }
 
+#warehouse {
+    padding: 5px;
+    font-size: inherit;
+    width: 100%;
+}
+
 #inventory-modal-body input {
     margin: 15px 0;    
+}
+
+#image_reference {
+    text-align:center;
 }
 
 #inventory-modal-body input[type="text"], #inventory-modal-body input[type="number"] {
@@ -498,11 +508,12 @@ main {
     visibility: hidden;
 }
 
-.purchase-quantity, .inbound-quantity {
+.purchase-input, .inbound-quantity {
     border-radius: 10px;
     border: 1px solid #d7d7d7;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
     width: 50px !important;
+    height: 30px;
     padding-left: 10px;
     text-align: center;
 }
@@ -686,4 +697,10 @@ main {
 
 .fc-day-today {
     background-color: #d9d9d9 !important;
+}
+
+.purchase-order-warehouse {
+    width: fit-content !important;
+    font-size: inherit;
+    padding: 5px;
 }

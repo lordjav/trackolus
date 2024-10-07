@@ -104,14 +104,17 @@
       let product = myInventory.find(object => object.SKU === SKU);
       let productAdded = document.getElementById("product-list").insertRow();
       productAdded.classList.add('product-to-add');
+      let wh = '';
+      for (const [key, value] of Object.entries(product.warehouses)) {
+        wh += `<option value="${key}">${key}: ${value} items</option>`;
+      };
       const cellClass = ['SKU', 'product', 'warehouse', 'quantity', 'unit-price', 'total-price', 'delete-button'];
       const cellContent = [
         product.SKU, 
         product.product_name, 
-        `<select class="input form purchase-input purchase-order-warehouse" type="select" name="warehouse-${product.SKU}">
-                        <option value="" style="color: grey">Choose warehouse</option>
-                        <option value="principal">Warehouse 1: ${product.warehouses.principal} items</option>
-                        <option value="secondary">Warehouse 2: ${product.warehouses.secondary} items</option>
+        `<select class="input form purchase-input purchase-order-warehouse" type="select" name="warehouse-stock-of-${product.SKU}">
+                        <option value="" selected disabled style="color: grey">Choose warehouse</option>
+                        ${wh}
                     </select>`,
         `<input type="number" name="${product.SKU}" class="purchase-input purchase-quantity" value="1" min="1" max="${product.warehouses.principal + product.warehouses.secondary}">`, 
         product.sell_price,
@@ -141,14 +144,31 @@
   }
   document.querySelector("table").addEventListener("click", deleteRow);
   
-  //Dynamically multiply quantity by price
+  //Dynamically multiply quantity by price.
   function updatePrice(e) {
     if (e.target.classList.contains("purchase-quantity")) {
       let total_price = e.target.value * parseInt(e.target.parentNode.nextElementSibling.innerHTML);
       e.target.parentNode.nextElementSibling.nextElementSibling.innerHTML = total_price;
-    }    
+    }
   }
   document.querySelector("table").addEventListener("input", updatePrice);
+
+  //Dynamically set quantity's max value according to warehouse selected.
+  function updateMaxQuantity(e) {    
+    if (e.target.classList.contains("purchase-order-warehouse")) {
+      let quantity = e.target.parentNode.nextElementSibling.firstElementChild;
+      let warehouse = e.target.value;
+      let productSKU = e.target.getAttribute('name').substring(19);
+      let product = myInventory.find(object => object.SKU === productSKU);
+      let maxValue = product.warehouses[warehouse];
+      quantity.setAttribute('max', maxValue);
+      if (quantity.value > product.warehouses[warehouse]) {
+        quantity.value = maxValue;
+      }
+      quantity.parentNode.nextElementSibling.nextElementSibling.innerHTML = quantity.value * parseInt(quantity.parentNode.nextElementSibling.innerHTML);      
+    }
+  }
+  document.querySelector("table").addEventListener("change", updateMaxQuantity);
 
   //Generate quote as pdf or save purchase order in database
   const form = document.getElementById("purchase-form");

@@ -2,18 +2,14 @@
 
 {% block main %}
 
-{% if empty %}
-    <h1 style="text-align:center">{{ _('There are no products in stock') }}</h1>
-
-{% else %}
+{% if catalogue %}
     <div class="p-2">
         <table class="table table-striped table-secondary table-borderless table-hover">
             <thead class="table-light">
                 <tr>
                     <th id="SKU" hx-get="{{ url_for('ordered_inventory', parameter='SKU') }}" hx-trigger="click" hx-target="tbody">SKU <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
-                    <th id="external_code" hx-get="{{ url_for('ordered_inventory', parameter='external_code') }}" hx-trigger="click" hx-target="tbody">{{ _('External code') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
                     <th id="product_name" hx-get="{{ url_for('ordered_inventory', parameter='product_name') }}" hx-trigger="click" hx-target="tbody">{{ _('Product') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
-                    <th id="quantity" hx-get="{{ url_for('ordered_inventory', parameter='quantity') }}" hx-trigger="click" hx-target="tbody">{{ _('Stock') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
+                    <th id="total_stock" hx-get="{{ url_for('ordered_inventory', parameter='total_stock') }}" hx-trigger="click" hx-target="tbody">{{ _('Stock') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
                     <th id="sell_price" hx-get="{{ url_for('ordered_inventory', parameter='sell_price') }}" hx-trigger="click" hx-target="tbody">{{ _('Price') }}<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.25 10.75L8 14.25l-3.25-3.5m6.5-5.5L8 1.75l-3.25 3.5"/></svg></th>
                     <th>{{ _('Image') }}</th>
                 </tr>
@@ -22,16 +18,24 @@
                 {% for product in catalogue %}
                 <tr onclick="window.location='{{ url_for('result', search_term=product['product_name'], type='Product') }}';">
                     <td>{{ product['SKU'] }}</td>
-                    <td>{{ product['external_code'] }}</td>
                     <td>{{ product['product_name'] }}</td>
-                    <td>{{ product['quantity'] }}</td>
+                    <td class="stock" id="stock-{{ product.SKU }}">Total: {{ product['total_stock'] }}.
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="none" stroke="black" d="m18 9l-6 6l-6-6"/></svg>
+                        <div class="warehouses" id="warehouses-{{ product.SKU }}">
+                            {% for key in product.warehouses %}
+                                {{ key | capitalize }}: {{ product.warehouses[key] }}.<br>
+                            {% endfor %}
+                        </div>
+                    </td>
                     <td>{{ product['sell_price'] | cop }}</td>
                     <td><img id="{{ product['image_route'] }}" src="{{ url_for('static', filename=product['image_route']) }}" style="height:50px;"></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div>    
+    </div>
+{% else %}
+<h1 style="text-align:center">{{ _('There are no products in stock') }}</h1>
 {% endif %}
     <!-- Button trigger modal -->
     <button type="button" id="add-button" onclick="showModal()" data-bs-target="#add-product">+</button>
@@ -48,8 +52,12 @@
                     <input autocomplete="off" autofocus class="input" id="product_name" type="text" name="product_name"
                         placeholder="{{ _('Product name') }}"><br>
                     <input autocomplete="off" class="input" id="SKU" type="text" name="SKU" placeholder="{{ _('SKU') }}"><br>
-                    <input autocomplete="off" class="input" id="external_code" type="text" name="external_code"
-                        placeholder="{{ _('External code') }}"><br>
+                    <select class="input form" id="warehouse" type="select" name="warehouse">
+                        <option value="" style="color: grey">Choose warehouse</option>
+                        {% for key in catalogue[0].warehouses %}
+                        <option value="{{ key }}">{{ key | capitalize }}</option>
+                        {% endfor %}
+                    </select><br>
                     <input autocomplete="off" class="input" id="initial_quantity" type="number" name="initial_quantity"
                         placeholder="{{ _('Initial quantity') }}"><br>
                     <input autocomplete="off" class="input" id="sell_price" type="number" name="sell_price"
@@ -61,4 +69,5 @@
             </div>
         </div>
     </div>
+
 {% endblock %}

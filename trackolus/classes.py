@@ -78,14 +78,14 @@ class prototype_order:
             order_type, 
             order_date, 
             order_author, 
-            order_buyer
+            order_counterpart
             ):
         self.order_number = order_number
         self.order_type = order_type
         self.order_date = order_date
         self.order_products = []
         self.order_author = order_author
-        self.order_buyer = order_buyer
+        self.order_counterpart = order_counterpart
 
     def add_products(self, product_object):
         self.order_products.append(product_object)
