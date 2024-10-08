@@ -21,9 +21,8 @@ def role_required(roles):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if session.get("role") not in roles:
-                message = "Forbbiden: you do not have permission to access this section."
-                return render_template("error.html", message), 403
+            if session.get("role") not in roles:                
+                return render_template("error.html", message="Forbbiden: you do not have permission to access this section."), 403
             return f(*args, **kwargs)
 
         return decorated_function

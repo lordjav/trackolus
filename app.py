@@ -1446,15 +1446,48 @@ def set_language():
 
     return redirect(request.referrer)
 
+
 @server.route('/settings', methods=['GET'])
 @login_required
 def settings():
     return render_template("settings.html")
 
+
 @server.route('/create_user', methods=['GET', 'POST'])
 @login_required
 def create_user():
     if request.method == 'POST':
-        pass
+        id_type = request.form.get('id-type-hidden')
+        identification = request.form.get('identification')
+        name = request.form.get('user-name')
+        role = request.form.get('role')
+        email = request.form.get('user-email')
+        phone = request.form.get('user-phone')
+        password_hash = generate_password_hash(identification)
+        db.execute("""
+                   INSERT INTO users (
+                    identification_type, 
+                    identification, 
+                    name, 
+                    role, 
+                    hash,
+                    email, 
+                    phone, 
+                    start_date,
+                    status
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                    id_type,
+                    identification,
+                    name,
+                    role,
+                    password_hash,
+                    email,
+                    phone,
+                    datetime.now(),
+                    'active'
+                   ) 
+        return render_template('create_user.html')
+    
     else:
         return render_template('create_user.html')
+
