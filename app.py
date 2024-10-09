@@ -373,6 +373,8 @@ def view_pdf():
 @login_required
 def inbound():
     if request.method == "POST":
+        if session['role'] == 'observer':
+            return render_template("error.html", message="Forbbiden: you do not have permission to access this section."), 403
         data = get_order_data()
         
         try:
@@ -433,7 +435,7 @@ def inbound():
                            item.other_props['items_to_transact'], 
                            item.price, 
                            )
-                
+
             #Saving data for notification
             user = db.execute("""
                               SELECT name 
@@ -463,8 +465,13 @@ def inbound():
         for product in catalogue:
             catalogue_dict.append(product.to_dict())
         
+        if session['role'] == 'observer':
+            template = 'inbound-o.html'
+        else:
+            template = 'inbound.html'
+
         return render_template(
-            "inbound.html", 
+            template, 
             catalogue=movements_objects, 
             inventory=catalogue_dict
             )
@@ -1325,6 +1332,7 @@ def settings():
 
 @server.route('/create_user', methods=['GET', 'POST'])
 @login_required
+@role_required(['admin'])
 def create_user():
     if request.method == 'POST':
         id_type = request.form.get('id-type-hidden')
