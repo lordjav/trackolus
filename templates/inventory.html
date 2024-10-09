@@ -49,19 +49,21 @@
             </div>
             <div class="modal-body" id="inventory-modal-body">
                 <form action="/add_product" method="POST" enctype="multipart/form-data">
-                    <input autocomplete="off" autofocus class="input" id="product_name" type="text" name="product_name"
+                    <input autocomplete="off" autofocus class="input" id="product_name_modal" type="text" name="product_name_modal"
                         placeholder="{{ _('Product name') }}"><br>
-                    <input autocomplete="off" class="input" id="SKU" type="text" name="SKU" placeholder="{{ _('SKU') }}"><br>
-                    <select class="input form" id="warehouse" type="select" name="warehouse">
-                        <option value="" style="color: grey">Choose warehouse</option>
-                        {% for key in catalogue[0].warehouses %}
-                        <option value="{{ key }}">{{ key | capitalize }}</option>
-                        {% endfor %}
-                    </select><br>
-                    <input autocomplete="off" class="input" id="initial_quantity" type="number" name="initial_quantity"
-                        placeholder="{{ _('Initial quantity') }}"><br>
-                    <input autocomplete="off" class="input" id="sell_price" type="number" name="sell_price"
-                        placeholder="{{ _('Sell price') }}"><br>
+                    <input autocomplete="off" class="input" id="SKU-modal" type="text" name="SKU-modal" placeholder="{{ _('SKU') }}"><br>
+                    <select class="input form" id="status" type="select" name="status">
+                        <option value="" selected disabled style="color: grey">{{ _('Choose status') }}</option>
+                        <option value="active">{{ _('Active') }}</option>
+                        <option value="discontinued">{{ _('Discontinued') }}</option>
+                    </select>
+                    <div id="prices-container">
+                        <input autocomplete="off" class="price-input input" id="buy_price" type="number" name="buy_price"
+                        placeholder="{{ _('Buy price') }}">
+                    <input autocomplete="off" class="price-input input" id="sell_price" type="number" name="sell_price"
+                        placeholder="{{ _('Sell price') }}">
+                    </div>
+                    <textarea class="input" id="comments" name="comments" placeholder="{{ _('Comments') }}"></textarea>
                     <label for="image_reference">{{ _('Select product image') }}</label>
                     <input class="input" id="image_reference" type="file" name="image_reference"><br>
                     <input type="submit" id="save-product-button" action="/add_product" value="{{ _('Save product') }}"></input>

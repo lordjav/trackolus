@@ -5,7 +5,7 @@ from flask import render_template_string, request, make_response, stream_with_co
 from werkzeug.security import generate_password_hash, check_password_hash
 from trackolus.helpers import *
 from trackolus.classes import *
-from trackolus.additional_translations import *
+from trackolus.native_translator import *
 from datetime import datetime, timedelta
 from flask_babel import Babel
 
@@ -75,6 +75,7 @@ def login():
         session["user_id"] = rows[0]["id"]
         session["name"] = rows[0]["name"]
         session["inventory_order"] = False
+        session['language'] = get_locale()
 
         # Redirect user to home page
         return redirect('/dashboard')
@@ -160,65 +161,80 @@ def ordered_inventory(parameter):
 @server.route("/add_product", methods=["POST"])
 @login_required
 @role_required(['admin', 'user'])
-def add_product():
+def add_product():    
     try:
         #Ensure product name is submitted
-        if not request.form.get("product_name"):
+        if not request.form.get("product_name_modal"):
             raise ValueError("Product name is empty")
         #Ensure SKU code is submitted
-        elif not request.form.get("SKU"):
+        elif not request.form.get("SKU-modal"):
             raise ValueError("SKU code is empty")
-        #Ensure warehouse is submitted
-        elif not request.form.get("warehouse"):
-            raise ValueError("Warehouse not selected")
+        #Ensure status is submitted
+        elif not request.form.get("status"):
+            raise ValueError("Status not selected")
         #Ensure warehouse selected is a valid option
-        elif request.form.get("warehouse") not in ['warehouse_1', 'warehouse_2']:
-            raise ValueError("Warehouse not valid")
-        #Ensure sell price is submitted
-        elif not request.form.get("sell_price"):
-            raise ValueError("Sell price is empty")
-        #Ensure a valid quantity
-        elif int(request.form.get("initial_quantity")) <= 0:
-            raise ValueError("Quantity must be a positive number")
-        #Ensure sell price is a number without special characters
-        elif not request.form.get("sell_price").isdigit():
+        elif request.form.get("status") not in ['active', 'discontinued']:
+            raise ValueError("Status not valid")
+        #Ensure prices are submitted
+        elif not request.form.get("sell_price") or not request.form.get("buy_price"):
+            raise ValueError("One of the prices are empty")
+        #Ensure prices are numbers without special characters
+        elif not request.form.get("sell_price").isdigit() or not request.form.get("buy_price").isdigit():
             raise ValueError("Price must contain only numbers")
-        #Ensure sell price is a positive number
-        elif int(request.form.get("sell_price")) <= 0:
-            raise ValueError("Sell price must be a positive number")
+        #Ensure prices are positive numbers
+        elif int(request.form.get("sell_price")) <= 0 or int(request.form.get("buy_price")) <= 0:
+            raise ValueError("Price must be a positive number")
     except ValueError as e:
         return f"Error: {e}", 400
         
     if request.files["image_reference"]:
         image_upload = upload_image(
             request.files["image_reference"], 
-            request.form.get("SKU"), 
+            request.form.get("SKU-modal"), 
             server.config["UPLOAD_DIRECTORY"], 
             server.config["ALLOWED_EXTENSIONS"]
             )
         image_link = image_upload[7:]
 
     date = datetime.now()
+    warehouses = []
+    for id in db.execute("SELECT id FROM warehouses"):
+        warehouses.append(id['id'])
+
     try:
         db.execute("""
-            INSERT INTO inventory (
-                   SKU, 
-                   product_name, 
-                   ?, 
-                   sell_price, 
-                   author, 
-                   addition_date, 
-                   image_route) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", 
-            request.form.get("warehouse"),
-            request.form.get("SKU"), 
-            request.form.get("product_name"), 
-            request.form.get("initial_quantity"), 
-            request.form.get("sell_price"), 
-            session["user_id"], 
-            date, 
-            image_link
-            )
+                   INSERT INTO inventory (
+                    product_name, 
+                    SKU, 
+                    status,
+                    buy_price, 
+                    sell_price, 
+                    author, 
+                    addition_date, 
+                    image_route,
+                    comments
+                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                   request.form.get("product_name_modal"), 
+                   request.form.get("SKU-modal"), 
+                   request.form.get("status"),
+                   request.form.get("buy_price"), 
+                   request.form.get("sell_price"), 
+                   session["user_id"], 
+                   date, 
+                   image_link,
+                   request.form.get("comments")
+                   )
+        product_id = db.execute("SELECT last_insert_rowid() AS id")[0]['id']
+        for w in warehouses:
+            db.execute("""
+                       INSERT INTO allocation (
+                       product_id,
+                       warehouse,
+                       stock
+                       ) VALUES (?, ?, ?)
+                       """, product_id, w, 0)
+
+
         #Saving data for notification
         user = db.execute("""
                           SELECT name 
@@ -229,14 +245,13 @@ def add_product():
         title_for_notification = 'New product'
         message_for_notification = f"""
         New product in inventory:\n
-        {request.form.get("product_name")}\n
+        {request.form.get("product_name_modal")}\n
         Added by: {user[0]['name']}"""
         save_notification(title_for_notification, message_for_notification)
         
         return redirect("/inventory")
-    except Exception as e:
-        print(f"There was a problem: {e}")
-        return redirect("/inventory"), 400
+    except Exception as e:        
+        return render_template("error.html", message=f"{e}"), 400
 
 
 @server.route("/purchase_order", methods=["GET", "POST"])
