@@ -5,7 +5,7 @@ from flask import render_template_string, request, make_response, stream_with_co
 from werkzeug.security import generate_password_hash, check_password_hash
 from trackolus.helpers import *
 from trackolus.classes import *
-from trackolus.image_uploader import upload_image
+from trackolus.additional_translations import *
 from datetime import datetime, timedelta
 from flask_babel import Babel
 
@@ -561,34 +561,35 @@ def reports():
     if request.method == "POST":
         datatype = request.form.get("datatype")
         global data_report
+        tr = translations(session['language'])
         match datatype:
             case "Customers":
-                data_report = db.execute("""
+                data_report = db.execute(f"""
                                         SELECT 
-                                            identification_type AS 'ID type', 
-                                            identification AS 'Identification',
-                                            name AS 'Customer', 
-                                            phone AS 'Contact Phone', 
-                                            email AS 'E-mail', 
-                                            status AS Status
+                                            identification_type AS '{tr['id-type']}', 
+                                            identification AS '{tr['id']}',
+                                            name AS '{tr['customer']}', 
+                                            phone AS '{tr['phone']}', 
+                                            email AS '{tr['email']}', 
+                                            status AS '{tr['status']}'
                                         FROM customers_suppliers 
                                         WHERE relation = 'customer' 
                                         """)
-                data_report.append({'datatype':'Customers', 'keyword':'Customer'})
+                data_report.append({'datatype':f'{tr['customers']}', 'keyword':'Customer'})
 
             case "Suppliers":
-                data_report = db.execute("""
+                data_report = db.execute(f"""
                                         SELECT 
-                                            identification_type AS 'ID type', 
-                                            identification AS 'Identification',
-                                            name AS 'Supplier', 
-                                            phone AS 'Contact Phone', 
-                                            email AS 'E-mail', 
-                                            status AS Status
+                                            identification_type AS '{tr['id-type']}', 
+                                            identification AS '{tr['id']}',
+                                            name AS '{tr['supplier']}', 
+                                            phone AS '{tr['phone']}', 
+                                            email AS '{tr['email']}', 
+                                            status AS {tr['status']}
                                         FROM customers_suppliers 
                                         WHERE relation = 'supplier' 
                                         """)
-                data_report.append({'datatype':'Suppliers', 'keyword':'Supplier'})
+                data_report.append({'datatype':f'{tr['suppliers']}', 'keyword':'Supplier'})
 
             case 'Products':
                 warehouses = db.execute("SELECT * FROM warehouses")
@@ -603,9 +604,9 @@ def reports():
                 data_report = db.execute(f"""
                                         SELECT 
                                             SKU, 
-                                            product_name AS Product,
-                                            sell_price AS Price,
-                                            SUM(stock) AS 'Total stock',
+                                            product_name AS {tr['product']},
+                                            sell_price AS {tr['price']},
+                                            SUM(stock) AS '{tr['stock']}',
                                             {wh_columns}
                                         FROM inventory i
                                         JOIN allocation a 
@@ -616,18 +617,18 @@ def reports():
                                             sell_price,
                                             'Total stock'
                                         """)
-                data_report.append({'datatype':'Products', 'keyword':'Product'})
+                data_report.append({'datatype':f'{tr['products']}', 'keyword':'Product'})
 
             case 'Inbound':
-                data_report = db.execute("""
+                data_report = db.execute(f"""
                                          SELECT 
-                                            m.date AS Date,
-                                            m.order_number AS 'Order', 
-                                            SUM(p.quantity) AS 'Products received', 
+                                            m.date AS {tr['date']},
+                                            m.order_number AS '{tr['order']}', 
+                                            SUM(p.quantity) AS '{tr['p-received']}', 
                                             UPPER(SUBSTR(w.name, 1, 1)) || LOWER(SUBSTR(w.name, 2)) 
-                                                AS Warehouse,
-                                            c.name AS Supplier, 
-                                            u.name AS Receiver 
+                                                AS {tr['warehouse']},
+                                            c.name AS {tr['supplier']}, 
+                                            u.name AS {tr['receiver']} 
                                          FROM movements m 
                                          JOIN users u 
                                             ON m.author = u.id 
@@ -639,24 +640,24 @@ def reports():
                                             ON m.counterpart = c.id 
                                          WHERE type = 'inbound' 
                                          GROUP BY 
-                                            Date, 
-                                            'Order', 
-                                            Warehouse,
-                                            Supplier, 
-                                            Receiver
+                                            m.date, 
+                                            m.order_number, 
+                                            w.name,
+                                            c.name, 
+                                            u.name
                                          ORDER BY date DESC
                                          """)
-                data_report.append({'datatype':'Inbound', 'keyword':'Order'})
+                data_report.append({'datatype':f'{tr['inbound']}', 'keyword':'Order'})
 
-            case 'Outbound': 
-                data_report = db.execute("""
+            case 'Outbound':
+                data_report = db.execute(f"""
                                          SELECT 
-                                            m.date AS Date, 
-                                            m.order_number AS 'Order', 
-                                            SUM(p.quantity) AS 'Products sold', 
-                                            SUM(p.price * p.quantity) AS Amount,
-                                            u.name AS Seller,
-                                            c.name AS Customer
+                                            m.date AS {tr['date']},
+                                            m.order_number AS '{tr['order']}', 
+                                            SUM(p.quantity) AS '{tr['p-sold']}', 
+                                            SUM(p.price * p.quantity) AS {tr['amount']},
+                                            u.name AS {tr['seller']},
+                                            c.name AS {tr['customer']}
                                          FROM movements m 
                                          JOIN customers_suppliers c 
                                             ON m.counterpart = c.id 
@@ -672,29 +673,30 @@ def reports():
                                          c.name
                                   ORDER BY date DESC
                                   """)                
-                data_report.append({'datatype':'Outbound', 'keyword':'Order'})
+                data_report.append({'datatype':f'{tr['outbound']}', 'keyword':'Order'})
 
             case 'Users':
-                data_report = db.execute("""
+                data_report = db.execute(f"""
                                          SELECT 
-                                            identification AS Identification, 
-                                            name as 'User', 
-                                            email AS 'E-mail', 
-                                            phone AS 'Contact phone', 
-                                            start_date AS 'Start date', 
-                                            end_date AS 'End date', 
-                                            status AS Status 
+                                            identification AS {tr['id']}, 
+                                            name as '{tr['user']}', 
+                                            email AS '{tr['email']}', 
+                                            phone AS '{tr['phone']}', 
+                                            start_date AS '{tr['start']}', 
+                                            end_date AS '{tr['end']}', 
+                                            status AS {tr['status']} 
                                          FROM users
                                          """)
-                data_report.append({'datatype':'Users', 'keyword':'User'})
+                data_report.append({f'datatype':f'{tr['users']}', 'keyword':'User'})
 
             case 'Activity':
                 data_report = db.execute("SELECT * FROM sqlite_sequence")
-                data_report.append({'datatype':'Activity', 'keyword':'seq'})
+                data_report.append({f'datatype':f'{tr['activity']}', 'keyword':'seq'})
 
         return render_template("reports.html", data=data_report)
     
     else:
+        print(session)
         return render_template("reports.html")
 
 
@@ -702,27 +704,29 @@ def reports():
 @server.route("/dashboard")
 @login_required
 def dashboard():
+    tr = translations(session['language'])
+
     def wrap_labels(str, width=20):
         return '<br>'.join(textwrap.wrap(str, width=width))
 
     engine = sqlalchemy.create_engine("sqlite:///general_data.db")
     #Inventory graph
-    inv_graph = pandas.read_sql_query("""
+    inv_graph = pandas.read_sql_query(f"""
                                       SELECT 
-                                        SUM(a.stock) AS Quantity, 
-                                        i.product_name AS Product 
+                                        SUM(a.stock) AS {tr['quantity']}, 
+                                        i.product_name AS {tr['product']} 
                                       FROM inventory i
                                       JOIN allocation a
                                         ON i.id = a.product_id
-                                      GROUP BY Product
-                                      ORDER BY Quantity 
+                                      GROUP BY i.product_name
+                                      ORDER BY SUM(a.stock) 
                                       LIMIT 10
                                       """, engine)
-    inv_graph['Product'] = inv_graph['Product'].apply(wrap_labels)
+    inv_graph[f'{tr['product']}'] = inv_graph[f'{tr['product']}'].apply(wrap_labels)
     inv_fig = plotly.express.bar(
         inv_graph, 
-        x='Quantity', 
-        y='Product', 
+        x=f'{tr['quantity']}', 
+        y=f'{tr['product']}', 
         orientation='h', 
         text_auto=True
         )
@@ -738,33 +742,33 @@ def dashboard():
         )
     
     #Outbound graph
-    out_graph = pandas.read_sql_query("""
+    out_graph = pandas.read_sql_query(f"""
                                       SELECT 
-                                        date(m.date) AS Day,
-                                        SUM(p.quantity) AS Quantity,
-                                        SUM(p.quantity * p.price) AS Total
+                                        date(m.date) AS {tr['day']},
+                                        SUM(p.quantity) AS {tr['quantity']},
+                                        SUM(p.quantity * p.price) AS {tr['total']}
                                       FROM movements m 
                                       JOIN products_movement p 
                                         ON m.id = p.movement_id 
                                       WHERE type = "outbound" 
                                       AND date >= DATE("now", "-7 days")
-                                      GROUP BY Day
+                                      GROUP BY date(m.date)
                                       """, engine)
     other_days = pandas.date_range(
         start=(datetime.now()-timedelta(days=6)), 
         end=datetime.now()
         )
-    other_days_df = pandas.DataFrame(other_days, columns=['Day'])
-    other_days_df['Day'] = other_days_df['Day'].dt.strftime('%Y-%m-%d')
-    merged_df = pandas.merge(other_days_df, out_graph, on='Day', how='left')
-    merged_df['Quantity'] = merged_df['Quantity'].fillna(0)
-    merged_df['Total'] = merged_df['Total'].fillna(0)
+    other_days_df = pandas.DataFrame(other_days, columns=[f'{tr['day']}'])
+    other_days_df[f'{tr['day']}'] = other_days_df[f'{tr['day']}'].dt.strftime('%Y-%m-%d')
+    merged_df = pandas.merge(other_days_df, out_graph, on=f'{tr['day']}', how='left')
+    merged_df[f'{tr['quantity']}'] = merged_df[f'{tr['quantity']}'].fillna(0)
+    merged_df[f'{tr['total']}'] = merged_df[f'{tr['total']}'].fillna(0)
     out_fig = plotly.express.scatter(
         merged_df, 
-        x='Day', 
-        y='Total', 
-        size='Quantity', 
-        text='Quantity', 
+        x=f'{tr['day']}', 
+        y=f'{tr['total']}', 
+        size=f'{tr['quantity']}', 
+        text=f'{tr['quantity']}', 
         size_max=50
         )
     out_fig.update_traces(marker_color='gray')
@@ -775,10 +779,10 @@ def dashboard():
         )
     
     #Best_sellers graph 
-    bs_graph = pandas.read_sql_query("""
+    bs_graph = pandas.read_sql_query(f"""
                                      SELECT 
-                                        i.product_name AS Products, 
-                                        SUM(p.quantity) AS Quantity 
+                                        i.product_name AS {tr['products']}, 
+                                        SUM(p.quantity) AS {tr['quantity']} 
                                      FROM movements m 
                                      JOIN products_movement p 
                                         ON m.id = p.movement_id 
@@ -789,11 +793,11 @@ def dashboard():
                                      ORDER BY SUM(p.quantity) DESC 
                                      LIMIT 5 
                                      """, engine)
-    bs_graph['Products'] = bs_graph['Products'].apply(wrap_labels)
+    bs_graph[f'{tr['products']}'] = bs_graph[f'{tr['products']}'].apply(wrap_labels)
     bs_fig = plotly.express.bar(
         bs_graph, 
-        x='Products', 
-        y='Quantity', 
+        x=f'{tr['products']}', 
+        y=f'{tr['quantity']}', 
         text_auto=True
         )
     bs_fig.update_traces(marker_color='gray')
@@ -801,7 +805,7 @@ def dashboard():
         plot_bgcolor='lightgray', 
         paper_bgcolor='white', 
         barcornerradius=5
-        )    
+        )
     bs_figure = bs_fig.to_html(
         full_html=False, 
         config={'displayModeBar':False, 'staticPlot':True})

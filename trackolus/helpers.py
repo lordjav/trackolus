@@ -1,4 +1,4 @@
-import pdfkit
+import pdfkit, os
 from cs50 import SQL
 from datetime import datetime
 from flask import redirect, session, request, g, render_template, make_response
@@ -24,7 +24,10 @@ def role_required(roles):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if session.get("role") not in roles:                
-                return render_template("error.html", message="Forbbiden: you do not have permission to access this section."), 403
+                return render_template(
+                    "error.html", 
+                    message="Forbbiden: you do not have permission to access this section."
+                    ), 403
             return f(*args, **kwargs)
 
         return decorated_function
@@ -38,28 +41,43 @@ def cop(value):
 
 #Function: register events in database as notifications
 def save_notification(title, message):
-    db.execute("INSERT INTO notifications (title, message, date) VALUES (?, ?, ?)", title, message, datetime.now())
-    notification_id = db.execute("SELECT id FROM notifications WHERE title = ? AND message = ?", title, message)
+    db.execute("""
+               INSERT INTO notifications (
+                title, 
+                message, 
+                date
+               ) VALUES (?, ?, ?)
+               """, 
+               title, 
+               message, 
+               datetime.now()
+               )
+    notification_id = db.execute("""
+                                 SELECT id 
+                                 FROM notifications 
+                                 WHERE title = ? 
+                                 AND message = ?
+                                 """, title, message)
     users = db.execute("SELECT id FROM users")
     for user in users:
-        db.execute("INSERT INTO notified_users (user_id, notification_id) VALUES (?, ?)", user['id'], notification_id[0]['id'])
-
-
-#Function: 
-
+        db.execute("""
+                   INSERT INTO notified_users (
+                    user_id, 
+                    notification_id
+                   ) VALUES (?, ?)
+                   """, user['id'], notification_id[0]['id'])
 
 
 #Function: get user's language
 def get_locale():
     if 'language' in request.args:
         language = request.args.get('language')
-        if language in ['en', 'fr']:
+        if language in ['en', 'es']:
             session['language'] = language
             return session['language']
     elif 'language' in session:
         return session.get('language')
     return request.accept_languages.best_match(['en', 'es'])
-    #{{ 'selected' if get_locale == 'es' else '' }}
 
 
 #Function: get user's time zone
@@ -88,7 +106,6 @@ def products_to_movements(element):
 
 #Create inventory (list of products as a database) and 
 #catalogue (list of products as objects)
-@login_required
 def create_catalogue():
     inventory = db.execute("""
                            SELECT 
@@ -220,3 +237,20 @@ def separate_movements(type_of_movement):
 
     return movements_objects
 
+
+#Function: upload product's image with SKU as name and route as a variable
+def upload_image(image, SKU, directory, extensions):
+    try:
+        if image:
+            extension = os.path.splitext(image.filename)[1].lower()
+            if extension not in extensions:
+                return ""
+            image_name = SKU + extension
+            image_route = os.path.join(directory, image_name)            
+            image.save(image_route)
+            return image_route
+        
+        else:
+            return ""
+    except Exception as e:
+        return f"There was a problem uploading image: {e}"
