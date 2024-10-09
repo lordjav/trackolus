@@ -243,10 +243,7 @@ def add_product():
                           session['user_id']
                           )
         title_for_notification = 'New product'
-        message_for_notification = f"""
-        New product in inventory:\n
-        {request.form.get("product_name_modal")}\n
-        Added by: {user[0]['name']}"""
+        message_for_notification = f"""New product in inventory:\n{request.form.get("product_name_modal")}\nAdded by: {user[0]['name']}"""
         save_notification(title_for_notification, message_for_notification)
         
         return redirect("/inventory")
@@ -351,12 +348,7 @@ def purchase_order():
                                        """, customer_id
                                        )
             title_for_notification = 'New sale'
-            message_for_notification = f"""
-            New outbound order placed.\n
-            Order: {order_number} \n
-            Customer: {customer_name[0]['name']}\n
-            Seller: {user[0]['name']}
-            """
+            message_for_notification = f"""New outbound order placed.\nOrder: {order_number}\nCustomer: {customer_name[0]['name']}\nSeller: {user[0]['name']}"""
             save_notification(title_for_notification, message_for_notification)
 
             return redirect("/purchase_order")
@@ -393,6 +385,13 @@ def inbound():
         data = get_order_data()
         
         try:
+            warehouse = request.form.get('warehouse')
+            warehouse_id = db.execute("""
+                                      SELECT id 
+                                      FROM warehouses 
+                                      WHERE name = ?""", 
+                                      warehouse
+                                      )[0]['id']
             order_number = db.execute("""
                                       SELECT order_number 
                                       FROM movements 
@@ -404,51 +403,49 @@ def inbound():
                        INSERT INTO movements (
                         order_number, 
                         type, 
+                        destination,
                         date, 
                         author, 
                         counterpart
-                        ) VALUES (?, ?, ?, ?, ?)
+                        ) VALUES (?, ?, ?, ?, ?, ?)
                        """, 
                        order_number, 
                        "inbound", 
+                       warehouse_id,
                        datetime.now(), 
                        session["user_id"], 
-                       0
+                       2
                        )
             movement_id = db.execute("""
                                      SELECT id 
                                      FROM movements
                                      WHERE order_number = ?
                                      """, order_number)[0]["id"]
-            for item in data[1]:
-                warehouse = request.form.get('warehouse')                
+            for item in data['products']:                                
                 if item.other_props['items_to_transact'] <= 0:
                     raise ValueError("Value must be a positive integer")
                 db.execute("""
                            UPDATE allocation 
                            SET stock = ? 
                            WHERE product_id = ?
-                           AND warehouse = (
-                           SELECT id 
-                           FROM warehouses
-                           WHERE name = ?
-                           )                        
+                           AND warehouse = ?
                            """, 
                            (item.warehouses[warehouse] + item.other_props['items_to_transact']), 
-                           warehouse
+                           item.id,
+                           warehouse_id
                            )                
                 db.execute("""
                            INSERT INTO products_movement (
                             movement_id, 
                             product_id, 
                             quantity, 
-                            price, 
+                            price 
                            ) VALUES (?, ?, ?, ?)
                            """, 
                            movement_id, 
                            item.id, 
                            item.other_props['items_to_transact'], 
-                           item.price, 
+                           item.buy_price 
                            )
 
             #Saving data for notification
@@ -459,19 +456,14 @@ def inbound():
                               """, session['user_id']
                               )[0]['name']
             title_for_notification = 'New incoming shipment'
-            message_for_notification = f"""
-            New goods received:\n
-            Order: {order_number}\n
-            Supplier: Grupo Corbeta \n
-            Receiver: {user}
-            """
+            message_for_notification = f"""New goods received:\nOrder: {order_number}\nSupplier: Grupo Corbeta \nReceiver: {user}"""
             save_notification(title_for_notification, message_for_notification)
 
             return redirect("/inbound")
         
         except Exception as e:
             print(f"There was a problem: {e}")
-            return redirect("/inbound")
+            return render_template("error.html", message=f"There was a problem: {e}"), 400
 
     else:
         movements_objects = separate_movements('inbound')
@@ -485,6 +477,7 @@ def inbound():
         else:
             template = 'inbound.html'
 
+        #print(catalogue[0].warehouses)
         return render_template(
             template, 
             catalogue=movements_objects, 

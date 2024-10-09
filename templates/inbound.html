@@ -67,6 +67,12 @@
         </div>
         <div class="modal-body" id="inbound-modal-body">
             <form action="/inbound" id="add-shipment" method="POST" enctype="multipart/form-data">
+                <select class="warehouse-status input form" id="warehouse" type="select" name="warehouse">
+                    <option value="" style="color: grey">{{ _('Choose warehouse') }}</option>
+                    {% for key in inventory[0].warehouses %}
+                    <option value="{{ key }}">{{ key | capitalize }}</option>
+                    {% endfor %}
+                </select>
                 <div class="search-container" id="search-box-3">
                     <input list="products" class="form" id="search3" placeholder="{{ _('Search by SKU code or name') }}" autocomplete="off">
                     <datalist id="products">

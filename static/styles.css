@@ -759,3 +759,9 @@ main {
     height: 35px !important;
     font-size: inherit;
 }
+
+#warehouse {
+    margin: 15px 0;
+    padding: 5px;
+    height: 42px;
+}
