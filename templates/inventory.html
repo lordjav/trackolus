@@ -37,17 +37,21 @@
 {% else %}
 <h1 style="text-align:center">{{ _('There are no products in stock') }}</h1>
 {% endif %}
-    <!-- Button trigger modal -->
-    <button type="button" id="add-button" onclick="showModal()" data-bs-target="#add-product">+</button>
-  
+    
+    <button type="button" class="button floating-button" id="more-button"><svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 18a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0m12-6a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0m12-6a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0M5 6a1 1 0 1 0 2 0a1 1 0 0 0-2 0"/></svg></button>
+    <div class="container" id="floating-button-container" style="display: none;">
+        <!-- Button trigger modal -->
+        <button type="button" class="button floating-button" id="add-product-button" onclick="showModal('add-product')" data-bs-target="#add-product">+</button>
+        <button type="button" class="button floating-button" id="transfer-button" onclick="showModal('transfer-products')" data-bs-target=""><svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="black" d="M8.207 11.757a1 1 0 0 1 0 1.415L6.38 15H16a1 1 0 1 1 0 2H6.38l1.828 1.828a1 1 0 1 1-1.414 1.415l-3.536-3.536a1 1 0 0 1 0-1.414l3.536-3.536a1 1 0 0 1 1.414 0Zm7.586-8a1 1 0 0 1 1.32-.083l.094.083l3.536 3.536a1 1 0 0 1 .083 1.32l-.083.094l-3.536 3.535a1 1 0 0 1-1.497-1.32l.083-.094L17.62 9H8a1 1 0 0 1-.117-1.993L8 7h9.621l-1.828-1.83a1 1 0 0 1 0-1.414Z"/></g></svg></button>
+    </div>
     <!-- Modal -->
     <div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
-        <div id="inventory-modal-content">
-            <div id="modal-header">
+        <div class="modal-content" id="add-product-modal-content">
+            <div class="modal-header" id="add-product-modal-header">
                 <h3 id="add-product-title">{{ _('Add new product to stock') }}</h3>
-                <button type="button" class="btn-close" id="close-modal-button" onclick="closeModal()" aria-label="Close"></button>
+                <button type="button" class="btn-close close-modal-button" id="close-modal-button-1" onclick="closeModal('add-product')" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="inventory-modal-body">
+            <div class="modal-body" class="inventory-modal-body" id="add-product-modal-body">
                 <form action="/add_product" method="POST" enctype="multipart/form-data">
                     <input autocomplete="off" autofocus class="input" id="product_name_modal" type="text" name="product_name_modal"
                         placeholder="{{ _('Product name') }}"><br>
@@ -71,5 +75,144 @@
             </div>
         </div>
     </div>
+    <div id="transfer-products" tabindex="-1" aria-labelledby="transfer-products-title" aria-hidden="true">        
+        <div class="modal-content" id="transfer-products-modal-content">
+            <div class="modal-header" id="-transfer-products-modal-header">
+                <h3 id="transfer-products-title">{{ _('Transfer to warehouses') }}</h3>
+                <button type="button" class="btn-close close-modal-button" id="close-modal-button-2" onclick="closeModal('transfer-products')" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" class="inventory-modal-body" id="transfer-products-modal-body">
+                <form action="/add_product" method="POST" enctype="multipart/form-data">
+                    <select class="warehouse input form" id="origin-warehouse" type="select" name="origin-warehouse">
+                        <option value="" style="color: grey">{{ _('Choose origin') }}</option>
+                        {% for key in catalogue[1].warehouses %}
+                        <option value="{{ key }}">{{ key | capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                    <select class="warehouse input form" id="destination-warehouse" type="select" name="destination-warehouse">
+                        <option value="" style="color: grey">{{ _('Choose destination') }}</option>
+                        {% for key in catalogue[1].warehouses %}
+                        <option value="{{ key }}">{{ key | capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="search-container" id="search-box-3">
+                        <input list="products" class="form" id="search3" placeholder="{{ _('Search by SKU code or name') }}" autocomplete="off">
+                        <datalist id="products">
+                            {% for product in catalogue %}
+                            <option>{{ product.SKU }} - {{ product.product_name }}</option>
+                            {% endfor %}
+                        </datalist>
+                        <p id="error-output" style="color:red;">.</p>
+                    </div>
+                    <div>
+                        <div class="p-2">
+                            <table class="table table-striped table-secondary table-borderless" id="products-in-list">
+                                <thead class="table-light" id="table-header">
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>{{ _('Product name') }}</th>
+                                        <th>{{ _('Quantity') }}</th>
+                                        <th>{{ _('Remove') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="product-list">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <select id="products-selected" name="products-selected" multiple></select>
+                    <button type="submit" onclick="saveOrder()" class="menu-button purchase-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
+                        {{ _('Save order') }}
+                    </button>        
+                </form>
+            </div>
+        </div>
+    </div>
+<script>
+  //Show error message
+  function errorMessage(message) {
+    document.getElementById("error-output").innerHTML = message;
+    document.getElementById("error-output").style.visibility = "visible";
+    function eraseErrorMessage() {        
+        document.getElementById("error-output").style.visibility = "hidden";
+     }
+     setTimeout(eraseErrorMessage, 5000);
+  }
+  
+  //Add product in a new row in table and to hidden input list
+  let myInventory = {{ inventory | tojson | safe }};
+  document.getElementById('search3').addEventListener('input', function(e) {
+    let selectedOption = e.target.value;
+    let index = selectedOption.indexOf(' ');
+    let SKU = selectedOption.substring(0, index);
 
+    if (document.getElementById(SKU) != null) {
+        errorMessage("{{ _('Item is already in the cart') }}");
+    } else {
+        let product = myInventory.find(object => object.SKU === SKU);
+        document.getElementById("table-header").style.visibility = "visible";
+        let productAdded = document.getElementById("product-list").insertRow();
+        productAdded.classList.add('product-to-add');
+        const cellClass = ['SKU', 'product', 'quantity', 'deleteButton'];
+        const cellContent = [
+            product.SKU, 
+            product.product_name, 
+            `<input type="number" name="${product.SKU}" class="inbound-quantity" value="1">`, 
+            '&#x1F5D9;'
+        ];
+        for (let i = 0; i < 4; i++) {
+            let newCell = productAdded.insertCell();
+            newCell.classList.add(cellClass[i]);
+            newCell.innerHTML = cellContent[i];
+            if (i === 3) {
+                newCell.classList.add('delete-button');
+            }
+        }
+        document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
+    }
+    document.getElementById('search3').value = "";
+  });
+  
+  //Delete product (from hidden input list and table)
+  function deleteRow(e) {
+    if (e.target.classList.contains("delete-button")) {
+        document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
+        e.target.closest("tr").remove();
+    }
+    if (document.querySelectorAll(".product-to-add").length == 0) {
+        document.getElementById("table-header").style.visibility = "hidden";
+    }
+  }
+  document.querySelector("#products-in-list").addEventListener("click", deleteRow);
+
+  //Validations
+  function saveOrder() {
+    if (document.getElementById("products-selected").options.length == 0) {
+        document.getElementById("add-shipment").addEventListener('submit', function(event) {
+            event.preventDefault();
+        });
+        errorMessage("{{ _('There are no products added') }}");
+    }
+  }
+  
+  //Shows floating buttons
+  const moreButton = document.getElementById('more-button');
+  const backgroundShadow = document.getElementById('floating-button-container');
+  document.addEventListener('DOMContentLoaded', (event) => {
+    moreButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (backgroundShadow.style.display === 'none' || backgroundShadow.style.display === '') {
+        backgroundShadow.style.display = 'block';
+      } else {
+        backgroundShadow.style.display = 'none';
+      }    
+    });
+    document.addEventListener('click', (e) => {
+      if (backgroundShadow.style.display === 'block' && !backgroundShadow.contains(e.target) && e.target !== moreButton) {
+        backgroundShadow.style.display = 'none';
+      }
+    });
+  });
+</script>
 {% endblock %}

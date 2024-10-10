@@ -56,16 +56,13 @@
     <h1>{{ _('No inbound movements') }}</h1>
     {% endif %}
 </div>
-<button type="button" class="button floating-button" id="more-button"><svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 18a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0m12-6a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0m12-6a1 1 0 1 0 2 0a1 1 0 0 0-2 0m-6 0a1 1 0 1 0 2 0a1 1 0 0 0-2 0M5 6a1 1 0 1 0 2 0a1 1 0 0 0-2 0"/></svg></button>
-<div class="container" id="floating-button-container" style="display: none;">
-    <button type="button" class="button floating-button" id="add-product-button" onclick="showModal()" data-bs-target="#add-product">+</button>
-    <button type="button" class="button floating-button" id="transfer-button" onclick="" data-bs-target=""><svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g fill="none"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="black" d="M8.207 11.757a1 1 0 0 1 0 1.415L6.38 15H16a1 1 0 1 1 0 2H6.38l1.828 1.828a1 1 0 1 1-1.414 1.415l-3.536-3.536a1 1 0 0 1 0-1.414l3.536-3.536a1 1 0 0 1 1.414 0Zm7.586-8a1 1 0 0 1 1.32-.083l.094.083l3.536 3.536a1 1 0 0 1 .083 1.32l-.083.094l-3.536 3.535a1 1 0 0 1-1.497-1.32l.083-.094L17.62 9H8a1 1 0 0 1-.117-1.993L8 7h9.621l-1.828-1.83a1 1 0 0 1 0-1.414Z"/></g></svg></button>
-</div>
+<button type="button" class="button" id="add-button" onclick="showModal('add-product')" data-bs-target="#add-product">+</button>
+
 <div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">
-    <div id="inbound-modal-content">
-        <div id="modal-header">
+    <div class="modal-content" id="inbound-modal-content">
+        <div class="modal-header" id="inbound-modal-header">
             <h3 id="add-product-title">{{ _('Add new incoming shipment') }}</h3>
-            <button type="button" class="btn-close" id="close-modal-button" onclick="closeModal()"></button>
+            <button type="button" class="btn-close close-modal-button" id="close-modal-button-1" onclick="closeModal('add-product')"></button>
         </div>
         <div class="modal-body" id="inbound-modal-body">
             <form action="/inbound" id="add-shipment" method="POST" enctype="multipart/form-data">
@@ -109,6 +106,7 @@
         </div>
     </div>
 </div>
+
 <script>
   //Collapsible
   var mov = document.getElementsByClassName("movements");
@@ -191,29 +189,6 @@
         errorMessage("{{ _('There are no products added') }}");
     }
   }
-
-  //Show buttons
-  const moreButton = document.getElementById('more-button');
-  const backgroundShadow = document.getElementById('floating-button-container');
-  /*const transferButton = document.getElementById('transfer-button');
-  const addButton = document.getElementById('add-product-button');*/
-  document.addEventListener('DOMContentLoaded', (event) => {
-    moreButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-      console.log('clicked');
-    
-      if (backgroundShadow.style.display === 'none' || backgroundShadow.style.display === '') {
-        backgroundShadow.style.display = 'block';
-      } else {
-        backgroundShadow.style.display = 'none';
-      }    
-    });
-    document.addEventListener('click', (e) => {
-      if (backgroundShadow.style.display === 'block' && !backgroundShadow.contains(e.target) && e.target !== moreButton) {
-        backgroundShadow.style.display = 'none';
-      }
-    });
-  });
 </script>
 
 {% endblock %}

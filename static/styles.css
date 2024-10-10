@@ -413,7 +413,7 @@ main {
 }
 
 /* The Modal (background) */
-#add-product {
+#add-product, #transfer-products {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 5; /* Sit on top */
@@ -425,9 +425,9 @@ main {
     overflow: auto; /* Enable scroll if needed */
     background-color: rgba(0,0,0,0.5); /* Black w/ opacity */    
 }
-  
+
   /* Modal Content */
-#inventory-modal-content, #inbound-modal-content {
+.modal-content {
     background-color: #d9d9d9;
     margin: auto;
     padding: 20px;
@@ -449,11 +449,11 @@ main {
     width: 700px;
 }
 
-#modal-header {
+.modal-header {
     position: relative;
 }
 
-#modal-header h3 {
+.modal-header h3 {
     margin: 10px auto;
     display: inline-block;
     text-align: left;
@@ -467,7 +467,7 @@ main {
     padding: 5px;
 }
 
-#inventory-modal-body input {
+.inventory-modal-body input {
     margin: 15px 0;
     padding: 5px;
 }
@@ -491,7 +491,7 @@ main {
 }
 
 /* The Close Button */
-#close-modal-button {
+.close-modal-button {
     color: #000;
     display: inline-block;
     position: absolute;
@@ -500,8 +500,8 @@ main {
     font-weight: bold;
 }
   
-#close-modal-button:hover,
-#close-modal-button:focus {
+.close-modal-button:hover,
+.close-modal-button:focus {
     color: #000;
     text-decoration: none;
     cursor: pointer;
@@ -793,4 +793,8 @@ main {
     margin: 15px 0;
     padding: 5px;
     height: 42px;
+}
+
+.warehouse {
+    width: 45%;
 }

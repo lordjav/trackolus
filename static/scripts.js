@@ -1,19 +1,15 @@
 // MODAL SCRIPT
-// Get the modal
-let addProductModal = document.getElementById("add-product");
 // When the user clicks the button, open the modal
-function showModal() {
-    addProductModal.style.display = "block";
+function showModal(id) {
+    let modal = document.getElementById(id);
+    modal.style.display = "block";
 }
 // When the user clicks on "x", close the modal
-function closeModal() {
-    addProductModal.style.display = "none";
+function closeModal(id) {
+    let modal = document.getElementById(id);
+    modal.style.display = "none";
 }
 // When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    if (event.target == addProductModal) {
-        addProductModal.style.display = "none";
-}}
 
 // SEARCH SCRIPT
 let searchBar = document.getElementById('q');
@@ -78,7 +74,7 @@ function markRead(container) {
     });
 };
 
-//Show/hide notifications and language selection
+//Show/hide notifications, modals and language selection
 const notifications = document.getElementById('notifications');
 const notificationContainer = document.getElementById("notification-icon-container");
 
@@ -120,6 +116,10 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         if (!notificationContainer.contains(event.target)) {
             notifications.style.display = 'none';
+        }
+        if (event.target == document.getElementById('add-product') || event.target == document.getElementById('transfer-products')) {
+            document.getElementById('add-product').style.display = "none";
+            document.getElementById('transfer-products').style.display = "none";
         }
     }
 });
