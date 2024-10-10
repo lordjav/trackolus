@@ -358,7 +358,22 @@ main {
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
 }
 
-#add-button {
+#floating-button-container {
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 15px;
+    width: 140px;
+    height: 300px;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 2;
+    box-shadow: 0 0 20px 20px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+#floating-button-container * { pointer-events: auto; }
+
+#add-button, .floating-button {
     width: 60px;
     height: 60px;
     background-color: #ACACAC;
@@ -371,10 +386,10 @@ main {
     position: fixed;
     bottom: 40px;
     right: 40px;
-    z-index: 2;
+    z-index: 3;
 }
 
-#add-button:hover {
+#add-button:hover, .floating-button:hover {
     background-color: #d7d7d7;    
     transform: scale(1.1, 1.1);
 }
@@ -383,11 +398,25 @@ main {
     transform: rotate(90deg);
 }
 
+#add-product-button {
+    bottom: 120px;
+    right: 40px;
+}
+
+#transfer-button {
+    bottom: 200px;
+    right: 40px;
+}
+
+#more-button {
+    z-index: 4;
+}
+
 /* The Modal (background) */
 #add-product {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 2; /* Sit on top */
+    z-index: 5; /* Sit on top */
     padding-top: 30px; /* Location of the box */
     left: 0;
     top: 0;

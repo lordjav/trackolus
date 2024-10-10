@@ -113,6 +113,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
+
     window.onclick = function(event) {
         if (!languageContainer.contains(event.target)) {
             languageSelect.style.display = 'none';
