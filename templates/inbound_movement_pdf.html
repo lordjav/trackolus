@@ -10,7 +10,9 @@
         <h2 id="trackolus-logo">{{ _('Trackolus logo here') }}</h2>
         <h2 id="company-logo">{{ _('Your logo here') }}</h2>
 
-        <p>{{ _('Supplier') }}: Grupo Corbeta</p>
+        <p>{{ _('Supplier') }}: {{ data['supplier_name'] }}</p>
+        <p>{{ _('Id type') }}: {{ data['supplier_id_type'] }}</p>
+        <p>{{ _('Identification') }}: {{ data['supplier_identification'] }}</p>
         <p>{{ _('Order number') }}: {{ order.order_number }}</p>
         <p>{{ _('Type of movement') }}: {{ order.order_type }}</p>
         <p>{{ _('Date') }}: {{ order.order_date }}</p>
