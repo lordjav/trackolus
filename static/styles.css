@@ -360,7 +360,7 @@ main {
 
 #floating-button-container {
     background-color: rgba(0,0,0,0.5);
-    border-radius: 35px;
+    border-radius: 35px 0 0 0;
     width: 140px;
     height: 300px;
     position: fixed;
@@ -368,10 +368,8 @@ main {
     right: 0;
     z-index: 2;
     box-shadow: 0 0 30px 30px rgba(0, 0, 0, 0.5);
-    pointer-events: none;
+    /*backdrop-filter: blur(10px);*/
 }
-
-#floating-button-container * { pointer-events: auto; }
 
 #add-button, .floating-button {
     width: 60px;
@@ -406,10 +404,6 @@ main {
 #transfer-button {
     bottom: 200px;
     right: 40px;
-}
-
-#more-button {
-    z-index: 4;
 }
 
 /* The Modal (background) */
@@ -664,7 +658,7 @@ main {
 
 .button, .fc-button {
     background-color: #ACACAC !important;
-    border-radius: 10px;
+    border-radius: 15px;
     border-style: none !important;
     text-align: center;
     transition: 200ms ease;
