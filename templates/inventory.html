@@ -78,7 +78,10 @@
                 <textarea class="input" id="comments" name="comments" placeholder="{{ _('Comments') }}"></textarea>
                 <label for="image_reference">{{ _('Select product image') }}</label>
                 <input class="input" id="image_reference" type="file" name="image_reference"><br>
-                <input type="submit" id="save-product-button" action="/add_product" value="{{ _('Save product') }}"></input>
+                <button type="submit" id="save-product-button" class="menu-button purchase-button" action="/add_product">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
+                    {{ _('Save product') }}
+                </button>
             </form>
         </div>
     </div>

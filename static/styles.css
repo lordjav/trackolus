@@ -74,6 +74,10 @@ tr:hover {
     transition: 200ms ease;
 }
 
+.menu-button > svg {
+    transition: 200ms ease;
+}
+
 .menu-button:hover > svg {
     transform: translateY(-10%);
 }

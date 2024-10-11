@@ -9,7 +9,6 @@ function closeModal(id) {
     let modal = document.getElementById(id);
     modal.style.display = "none";
 }
-// When the user clicks anywhere outside of the modal, close it
 
 // SEARCH SCRIPT
 let searchBar = document.getElementById('q');
@@ -117,9 +116,8 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!notificationContainer.contains(event.target)) {
             notifications.style.display = 'none';
         }
-        if (event.target == document.getElementById('add-product') || event.target == document.getElementById('transfer-products')) {
-            document.getElementById('add-product').style.display = "none";
-            document.getElementById('transfer-products').style.display = "none";
+        if (event.target.classList.contains('modal-window')) {
+            event.target.style.display = "none";
         }
     }
 });
