@@ -389,6 +389,11 @@ def inbound():
         
         try:
             warehouse = request.form.get('warehouse')
+            supplier_id = db.execute("""
+                                     SELECT id
+                                     FROM customers_suppliers 
+                                     WHERE name = ? 
+                                     """, request.form.get('supplier'))[0]['id']
             warehouse_id = db.execute("""
                                       SELECT id 
                                       FROM warehouses 
@@ -417,7 +422,7 @@ def inbound():
                        warehouse_id,
                        datetime.now(), 
                        session["user_id"], 
-                       2
+                       supplier_id
                        )
             movement_id = db.execute("""
                                      SELECT id 
@@ -474,7 +479,8 @@ def inbound():
         catalogue_dict = []
         for product in catalogue:
             catalogue_dict.append(product.to_dict())
-        
+        suppliers = db.execute("SELECT name AS 'supplier' FROM customers_suppliers WHERE relation = 'supplier'")
+
         if session['role'] == 'observer':
             template = 'inbound-o.html'
         else:
@@ -484,7 +490,8 @@ def inbound():
         return render_template(
             template, 
             catalogue=movements_objects, 
-            inventory=catalogue_dict
+            inventory=catalogue_dict,
+            suppliers=suppliers
             )
 
 

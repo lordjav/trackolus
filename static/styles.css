@@ -786,12 +786,14 @@ main {
     font-size: inherit;
 }
 
-.warehouses {
+#supplier-warehouse-container {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.modal-inventory-warehouses, .modal-inventory-select {
+    width: 40%;
     margin: 15px 0;
     padding: 5px;
     height: 42px;
-}
-
-.modal-inventory-warehouses {
-    width: 40%;
 }
