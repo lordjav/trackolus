@@ -66,8 +66,9 @@ def login():
 
         # Ensure identification exists and password is correct
         if len(rows) != 1 or not check_password_hash(
-            rows[0]["hash"], request.form.get("password")
-        ):
+            rows[0]["hash"], 
+            request.form.get("password")
+            ):
             return redirect("/login")
 
         # Remember which user has logged in and personal settings
@@ -76,6 +77,21 @@ def login():
         session["name"] = rows[0]["name"]
         session["inventory_order"] = False
         session['language'] = get_locale()
+
+        # Save Log in in users_log
+        db.execute("""
+                   INSERT INTO users_log (
+                    user_id, 
+                    date, 
+                    type, 
+                    ip
+                   ) VALUES (?, ?, ?, ?)
+                   """, 
+                   rows[0]['id'],
+                   datetime.now(),
+                   1,
+                   request.remote_addr
+                   )
 
         # Redirect user to home page
         return redirect('/dashboard')
@@ -87,6 +103,21 @@ def login():
 
 @server.route("/logout")
 def logout():
+    # Save Log out in users_log
+    db.execute("""
+                INSERT INTO users_log (
+                user_id, 
+                date, 
+                type, 
+                ip
+                ) VALUES (?, ?, ?, ?)
+                """, 
+                session['user_id'],
+                datetime.now(),
+                2,
+                request.remote_addr
+                ) 
+       
     #Forget any user id
     session.clear()
 
