@@ -56,17 +56,17 @@
     <h1>{{ _('No inbound movements') }}</h1>
     {% endif %}
 </div>
-<button type="button" class="button" id="add-button" onclick="showModal('add-product')" data-bs-target="#add-product">+</button>
+<button type="button" class="button" id="add-button" onclick="showModal('add-inbound')" data-bs-target="#add-inbound">+</button>
 
-<div id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">
+<div class="modal-window" id="add-inbound" tabindex="-1" aria-labelledby="add-inbound-title" aria-hidden="true">
     <div class="modal-content" id="inbound-modal-content">
         <div class="modal-header" id="inbound-modal-header">
-            <h3 id="add-product-title">{{ _('Add new incoming shipment') }}</h3>
-            <button type="button" class="btn-close close-modal-button" id="close-modal-button-1" onclick="closeModal('add-product')"></button>
+            <h3 id="add-inbound-title">{{ _('Add new incoming shipment') }}</h3>
+            <button type="button" class="btn-close close-modal-button" id="close-modal-button-1" onclick="closeModal('add-inbound')"></button>
         </div>
-        <div class="modal-body" id="inbound-modal-body">
+        <div class="modal-body inbound-modal-body" id="inbound-modal-body">
             <form action="/inbound" id="add-shipment" method="POST" enctype="multipart/form-data">
-                <select class="warehouse-status input form" id="warehouse" type="select" name="warehouse">
+                <select class="warehouses input form" id="warehouse" type="select" name="warehouse">
                     <option value="" style="color: grey">{{ _('Choose warehouse') }}</option>
                     {% for key in inventory[0].warehouses %}
                     <option value="{{ key }}">{{ key | capitalize }}</option>
@@ -136,48 +136,53 @@
   
   //Add product in a new row in table and to hidden input list
   let myInventory = {{ inventory | tojson | safe }};
-  document.getElementById('search3').addEventListener('input', function(e) {
-    let selectedOption = e.target.value;
-    let index = selectedOption.indexOf(' ');
-    let SKU = selectedOption.substring(0, index);
+  const search3 = document.getElementById('search3');
+  search3.addEventListener('input', function(e) {
+    let datalistProducts = Array.from(document.getElementById('products').options);
+    let validOption = datalistProducts.some(option => option.value === search3.value);
+    if (validOption) {
+        let selectedOption = e.target.value;
+        let index = selectedOption.indexOf(' ');
+        let SKU = selectedOption.substring(0, index);
 
-    if (document.getElementById(SKU) != null) {
-        errorMessage("{{ _('Item is already in the cart') }}");
-    } else {
-        let product = myInventory.find(object => object.SKU === SKU);
-        document.getElementById("table-header").style.visibility = "visible";
-        let productAdded = document.getElementById("product-list").insertRow();
-        productAdded.classList.add('product-to-add');
-        const cellClass = ['SKU', 'product', 'quantity', 'deleteButton'];
-        const cellContent = [
-            product.SKU, 
-            product.product_name, 
-            `<input type="number" name="${product.SKU}" class="inbound-quantity" value="1">`, 
-            '&#x1F5D9;'
-        ];
-        for (let i = 0; i < 4; i++) {
-            let newCell = productAdded.insertCell();
-            newCell.classList.add(cellClass[i]);
-            newCell.innerHTML = cellContent[i];
-            if (i === 3) {
-                newCell.classList.add('delete-button');
+        if (document.getElementById(SKU) != null) {
+            errorMessage("{{ _('Item is already in the cart') }}");
+        } else {
+            let product = myInventory.find(object => object.SKU === SKU);
+            document.getElementById("table-header").style.visibility = "visible";
+            let productAdded = document.getElementById("product-list").insertRow();
+            productAdded.classList.add('product-to-add');
+            const cellClass = ['SKU', 'product', 'quantity', 'deleteButton'];
+            const cellContent = [
+                product.SKU, 
+                product.product_name, 
+                `<input type="number" name="${product.SKU}" class="inbound-quantity" value="1" min="1">`, 
+                '&#x1F5D9;'
+            ];
+            for (let i = 0; i < 4; i++) {
+                let newCell = productAdded.insertCell();
+                newCell.classList.add(cellClass[i]);
+                newCell.innerHTML = cellContent[i];
+                if (i === 3) {
+                    newCell.classList.add('delete-button');
+                }
             }
-        }
         document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
-    }
-    document.getElementById('search3').value = "";
+        }
+        document.getElementById('search3').value = "";
+    };
   });
-  
+
   //Delete product (from hidden input list and table)
   function deleteRow(e) {
     if (e.target.classList.contains("delete-button")) {
         document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
         e.target.closest("tr").remove();
+        if (document.querySelectorAll(".product-to-add").length == 0) {
+            document.getElementById("table-header").style.visibility = "hidden";
+        }
     }
-    if (document.querySelectorAll(".product-to-add").length == 0) {
-        document.getElementById("table-header").style.visibility = "hidden";
-    }
-  }
+  };
   document.querySelector("#products-in-list").addEventListener("click", deleteRow);
 
   //Validations

@@ -99,13 +99,17 @@ def logout():
 @role_required(['admin', 'user', 'observer'])
 def inventory():
     catalogue = create_catalogue()
-    
+    catalogue_dict = []
+    for product in catalogue:
+        product.other_props['total_stock'] = product.total_stock
+        catalogue_dict.append(product.to_dict())
+
     if session['role'] == 'observer':
         template = 'inventory-o.html'
     else:
         template = 'inventory.html'
 
-    return render_template(template, catalogue=catalogue)
+    return render_template(template, catalogue=catalogue_dict)
 
 
 @server.route("/ordered_inventory/<parameter>")
@@ -242,9 +246,9 @@ def add_product():
                           WHERE id = ?""", 
                           session['user_id']
                           )
-        title_for_notification = 'New product'
-        message_for_notification = f"""New product in inventory:\n{request.form.get("product_name_modal")}\nAdded by: {user[0]['name']}"""
-        save_notification(title_for_notification, message_for_notification)
+        notification_title = 'New product'
+        notification_message = f"""New product in inventory:\n{request.form.get("product_name_modal")}\nAdded by: {user[0]['name']}"""
+        save_notification(notification_title, notification_message)
         
         return redirect("/inventory")
     except Exception as e:        
@@ -296,8 +300,7 @@ def purchase_order():
                 if item.warehouses[warehouse] == 0:
                     raise ValueError(f"{item.product_name} is out of stock in this warehouse.")
                 elif item.other_props['items_to_transact'] > item.warehouses[warehouse]:
-                    raise ValueError(f"""There is only {item.total_stock} items 
-                                     of this product in this warehouse""")
+                    raise ValueError(f"There is only {item.total_stock} items of {item.product_name} in this warehouse")
                 else:
                     db.execute("""
                                UPDATE allocation 
@@ -347,9 +350,9 @@ def purchase_order():
                                        WHERE id = ?
                                        """, customer_id
                                        )
-            title_for_notification = 'New sale'
-            message_for_notification = f"""New outbound order placed.\nOrder: {order_number}\nCustomer: {customer_name[0]['name']}\nSeller: {user[0]['name']}"""
-            save_notification(title_for_notification, message_for_notification)
+            notification_title = 'New sale'
+            notification_message = f"""New outbound order placed.\nOrder: {order_number}\nCustomer: {customer_name[0]['name']}\nSeller: {user[0]['name']}"""
+            save_notification(notification_title, notification_message)
 
             return redirect("/purchase_order")
         
@@ -370,7 +373,7 @@ def purchase_order():
 @login_required
 def view_pdf():
     data = get_order_data()
-    rendered = render_template("order_pdf.html", **data)
+    rendered = render_template("order_pdf.html", data=data)
     response = configurate_pdf(rendered)
     
     return response
@@ -455,9 +458,9 @@ def inbound():
                               WHERE id = ?
                               """, session['user_id']
                               )[0]['name']
-            title_for_notification = 'New incoming shipment'
-            message_for_notification = f"""New goods received:\nOrder: {order_number}\nSupplier: Grupo Corbeta \nReceiver: {user}"""
-            save_notification(title_for_notification, message_for_notification)
+            notification_title = 'New incoming shipment'
+            notification_message = f"""New goods received:\nOrder: {order_number}\nSupplier: Grupo Corbeta \nReceiver: {user}"""
+            save_notification(notification_title, notification_message)
 
             return redirect("/inbound")
         
@@ -1380,4 +1383,108 @@ def create_user():
     
     else:
         return render_template('create_user.html')
+
+
+@server.route("/transfer", methods=['POST'])
+@login_required
+@role_required(['admin', 'user'])
+def transfer():
+    data = get_order_data()
+    try:
+        order_number = db.execute("""
+                                SELECT order_number 
+                                FROM movements 
+                                ORDER BY order_number DESC 
+                                LIMIT 1
+                                """)[0]["order_number"]
+        order_number += 1
+        origin_warehouse = request.form.get('origin-warehouse')
+        origin_warehouse_id = db.execute("SELECT id FROM warehouses WHERE name = ?", origin_warehouse)[0]['id']
+        destination_warehouse = request.form.get('destination-warehouse')
+        destination_warehouse_id = db.execute("SELECT id FROM warehouses WHERE name = ?", destination_warehouse)[0]['id']
+
+        for item in data['products']:            
+            if item.warehouses[origin_warehouse] == 0:
+                raise ValueError(f"{item.product_name} is out of stock in this warehouse.")            
+            elif item.other_props['items_to_transact'] > item.warehouses[origin_warehouse]:
+                raise ValueError(f"There is only {item.total_stock} items of {item.product_name} in this warehouse.")
+            
+        db.execute("""
+                   INSERT INTO movements (
+                    order_number, 
+                    type, 
+                    origin,
+                    destination,
+                    date, 
+                    author                             
+                   ) VALUES (?, ?, ?, ?, ?, ?)
+                   """, 
+                   order_number, 
+                   "transfer", 
+                   origin_warehouse_id,
+                   destination_warehouse_id,
+                   datetime.now(),  
+                   session["user_id"]
+                   )
+        
+        movement_id = db.execute("""
+                                 SELECT id 
+                                 FROM movements 
+                                 ORDER BY id DESC 
+                                 LIMIT 1
+                                 """)[0]['id']
+        for item in data['products']:
+            if item.other_props['items_to_transact'] == 0:
+                continue
+
+            db.execute("""
+                       INSERT INTO products_movement (
+                        movement_id,
+                        product_id,
+                        quantity,
+                        price
+                       ) VALUES (?, ?, ?, ?)
+                       """, 
+                       movement_id,
+                       item.id,
+                       item.other_props['items_to_transact'],
+                       0
+                       )
+            
+            db.execute("""
+                       UPDATE allocation 
+                       SET stock = ? 
+                       WHERE product_id = ? AND warehouse = ?                           
+                       """, 
+                       (item.warehouses[origin_warehouse] - item.other_props['items_to_transact']), 
+                       item.id,
+                       origin_warehouse_id
+                       )
+            
+            db.execute("""
+                       UPDATE allocation 
+                       SET stock = ? 
+                       WHERE product_id = ? AND warehouse = ?                           
+                       """, 
+                       (item.warehouses[origin_warehouse] + item.other_props['items_to_transact']), 
+                       item.id,
+                       destination_warehouse_id
+                       )
+
+        #Saving data for notification
+        user = db.execute("""
+                          SELECT name 
+                          FROM users 
+                          WHERE id = ?
+                          """, session['user_id']
+                          )
+        notification_title = 'New transference of products'
+        notification_message = f"""Order: {order_number}.\nFrom: {origin_warehouse}.\nTo: {destination_warehouse}.\nBy: {user[0]['name']}"""
+        save_notification(notification_title, notification_message)
+
+        return redirect("/inventory")
+        
+    except Exception as e:
+        print(f"There was a problem: {e}")
+        return render_template("error.html", message=f"There was a problem: {e}"), 400
 

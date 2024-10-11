@@ -145,13 +145,16 @@ def create_catalogue():
 
 #Function: get data to create order
 def get_order_data():
+    data = {}
     products_list = request.form.getlist("products-selected")
-    name = request.form.get("customer-name")
-    id = request.form.get("customer-id")
-    phone = request.form.get("customer-phone")
-    email = request.form.get("customer-email")
-
-    customer_data = customer(name, id, phone, email)
+    if request.form.get("customer-name"):
+        name = request.form.get("customer-name")
+        id = request.form.get("customer-id")
+        phone = request.form.get("customer-phone")
+        email = request.form.get("customer-email")
+    
+        data['customer'] = customer(name, id, phone, email)
+    
     products = []
     total = 0
     catalogue = create_catalogue()
@@ -162,8 +165,10 @@ def get_order_data():
     for item in products:
         item.other_props['items_to_transact'] = int(request.form.get(item.SKU))
         total += (item.other_props['items_to_transact'] * item.sell_price)
-
-    data = {'customer': customer_data, 'products': products, 'total': total}
+    
+    data['products'] = products
+    data['total'] = total
+    
     return data
 
 

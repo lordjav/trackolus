@@ -360,14 +360,14 @@ main {
 
 #floating-button-container {
     background-color: rgba(0,0,0,0.5);
-    border-radius: 15px;
+    border-radius: 35px;
     width: 140px;
     height: 300px;
     position: fixed;
     bottom: 0;
     right: 0;
     z-index: 2;
-    box-shadow: 0 0 20px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 30px 30px rgba(0, 0, 0, 0.5);
     pointer-events: none;
 }
 
@@ -413,7 +413,7 @@ main {
 }
 
 /* The Modal (background) */
-#add-product, #transfer-products {
+.modal-window {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 5; /* Sit on top */
@@ -445,7 +445,7 @@ main {
     to {opacity: 1}
 }
 
-#inbound-modal-content {
+#inbound-modal-content, #transfer-products-modal-content {
     width: 700px;
 }
 
@@ -467,11 +467,6 @@ main {
     padding: 5px;
 }
 
-.inventory-modal-body input {
-    margin: 15px 0;
-    padding: 5px;
-}
-
 #image_reference {
     text-align:center;
 }
@@ -483,7 +478,7 @@ main {
     width: 100%;
 }
 
-#inbound-modal-body input[type="number"] {
+#inbound-modal-body input[type="number"], #transfer-products-modal-body input[type="number"] {
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
     width: 50px;
     height: 25px;
@@ -534,7 +529,7 @@ main {
     visibility: hidden;
 }
 
-.purchase-input, .inbound-quantity {
+.purchase-input, .inbound-quantity, .transfer-quantity {
     border-radius: 10px;
     border: 1px solid #d7d7d7;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
@@ -789,12 +784,12 @@ main {
     font-size: inherit;
 }
 
-#warehouse {
+.warehouses {
     margin: 15px 0;
     padding: 5px;
     height: 42px;
 }
 
-.warehouse {
-    width: 45%;
+.modal-inventory-warehouses {
+    width: 40%;
 }

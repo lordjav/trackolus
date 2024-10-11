@@ -30,9 +30,9 @@
                 <tr>
                     <td>{{ item.SKU }}</td>
                     <td>{{ item.product_name }}</td>
-                    <td>{{ item.other_props['items_to_buy'] }}</td>
+                    <td>{{ item.other_props['items_to_transact'] }}</td>
                     <td>{{ item.sell_price | cop }}</td>
-                    <td>{{ (item.sell_price * item.other_props['items_to_buy']) | cop }}</td>
+                    <td>{{ (item.sell_price * item.other_props['items_to_transact']) | cop }}</td>
                 </tr>
                 {% endfor %}
                 <tr><td colspan="4">{{ _('Grand total') }}</td><td>{{ data['total'] | cop }}</td></tr>
