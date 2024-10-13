@@ -20,7 +20,7 @@
                 <td>{{ product['SKU'] }}</td>
                 <td>{{ product['product_name'] }}</td>
                 <td class="stock" id="stock-{{ product.SKU }}">Total: {{ product.other_props['total_stock'] }}.
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="none" stroke="black" d="m18 9l-6 6l-6-6"/></svg>
+                    <!-- <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="none" stroke="black" d="m18 9l-6 6l-6-6"/></svg> -->
                     <div class="inventory-warehouses" id="warehouses-{{ product.SKU }}">
                         {% for key in product.warehouses %}
                             {{ key | capitalize }}: {{ product.warehouses[key] }}.<br>
@@ -53,7 +53,7 @@
     </button>
 </div>
 <!-- Modal -->
-<div class="modal-window" id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">        
+<div class="modal-window" id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">
     <div class="modal-content" id="add-product-modal-content">
         <div class="modal-header" id="add-product-modal-header">
             <h3 id="add-product-title">{{ _('Add new product to stock') }}</h3>

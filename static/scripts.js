@@ -15,12 +15,12 @@ let searchBar = document.getElementById('q');
 let suggestions = document.getElementById('suggestions');
 
 searchBar.addEventListener('focus', function () {
-    suggestions.style.visibility = 'visible';
+    suggestions.style.display = 'block';
 });
 
 searchBar.addEventListener('blur', function () {
     setTimeout(function() {
-        suggestions.style.visibility = 'hidden';
+        suggestions.style.display = 'none';
     }, 150)
 });
 
@@ -122,3 +122,60 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+// Sidebar modal in small screens
+const sidebarModal = document.getElementById('sidebar-modal');
+const sidebar = document.getElementById('sidebar-aux');
+
+function showSidebar() {
+    sidebarModal.style.display = "block";
+    sidebarModal.style.zIndex = 10;
+    sidebar.style.display = "block";
+    sidebar.style.zIndex = 11;
+}
+function closeSidebar() {
+    sidebarModal.style.display = "none";
+    sidebarModal.style.zIndex = -3;
+    sidebar.style.display = "none";
+    sidebar.style.zIndex = 1;
+}
+
+// Tools modal in small screens
+const toolsModal = document.getElementById('tools-modal');
+const toolsBar = document.getElementById('tools-modal-content');
+
+function showToolsbar() {
+    toolsModal.style.display = "block";
+    toolsModal.style.zIndex = 10;
+    toolsBar.style.display = "flex";
+    toolsBar.style.zIndex = 11;
+}
+function closeSidebar() {
+    toolsModal.style.display = "none";
+    toolsModal.style.zIndex = -3;
+    toolsBar.style.display = "none";
+    toolsBar.style.zIndex = 1;
+}
+//Responsive layout
+/*const sidebar = document.getElementById('sidebar');
+const sidebarSpace = document.getElementById('sidebar-space');
+const mainContent = document.getElementById('main-content');
+const header = document.getElementById('header');
+const lateralMenuButton = document.getElementById('lateral-menu-button');
+
+window.addEventListener('resize', function() {
+    const bodyWidthRaw = getComputedStyle(document.getElementById('body')).getPropertyValue('width');
+    const bodyWidth = parseInt(bodyWidthRaw.substring(0, bodyWidthRaw.indexOf('.')));
+    if (bodyWidth < 600) {
+        sidebar.style.display = 'none';
+        sidebarSpace.style.display = 'none';
+        mainContent.style.width = '100%';
+        header.style.width = '100%';
+        lateralMenuButton.style.display = 'block';
+    } else {
+        sidebar.style.display = 'block';
+        sidebarSpace.style.display = 'block';
+        mainContent.style.width = '83.33%';
+        header.style.width = '83.33%';
+        lateralMenuButton.style.display = 'none';
+    }
+});*/
