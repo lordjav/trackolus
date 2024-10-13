@@ -1,4 +1,4 @@
-/* Extra small devices (phones, 600px and down) */
+/* Extra extra small devices (phones, 420px and down) */
 @media only screen and (min-width: 150px) {
     html {
         font-size: 12px;
@@ -7,7 +7,7 @@
         margin: 0.5rem;
     }
     #purchase-order-text, #purchase-order-text-aux {
-        line-height: 2.5vw;
+        line-height: 5vw;
     }
     #trackolus-logo {
         width: 14vw;
@@ -22,10 +22,10 @@
     }
     #sidebar, #sidebar-space, #sidebar-aux {
         display: none;
-        width: 33.33%;
+        width: 50%;
     }
-    .menu-button, .menu-button-aux {
-        width: 28vw;
+    .menu-button-aux {
+        width: 46vw;
     }
     #user-box {
         margin-right: 0.6vw;
@@ -43,7 +43,44 @@
         right: 5px;
     }
     #search-bar {
+        width: 65%;
+    }
+    .header-tool-aux {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+    }
+    .header-tool-aux svg {
+        margin: auto;
+    }    
+}
+
+/* Extra small devices (phones, 420px and up) */
+@media only screen and (min-width: 420px) {
+    #search-bar {
         width: 80%;
+    }
+    #sidebar, #sidebar-space, #sidebar-aux {
+        width: 33.33%;
+    }
+    .menu-button-aux {
+        width: 28vw;
+    }
+    #purchase-order-text, #purchase-order-text-aux {
+        line-height: 2.5vw;
+    }
+    .header-tool-aux {
+        display: block;
+        margin: 10px 0;
+        padding: 0 10px;
+        text-align: start;
+    }
+    .header-tool-aux svg {
+        margin-right: 8px;
+    }
+    #logout-icon-aux-container {
+        position: absolute;
+        bottom: 10px;
     }
 }
 
@@ -230,7 +267,7 @@ tr:hover {
     box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.25);
     position: fixed;
     top: 0;
-    left: 1;
+    left: 1px;
 }
 
 /*#sidebar-space {
@@ -1030,20 +1067,7 @@ cursor: pointer;
     flex-wrap: wrap;
 }
 
-.header-tool-aux {
-    margin: 10px 0;
-    padding: 0 10px;
-}
-
-.header-tool-aux svg {
-    margin-right: 8px;
-}
-
 #lateral-menu-button {
     width: fit-content;
     height: auto;
-}
-#logout-icon-aux-container {
-    position: absolute;
-    bottom: 10px;
 }
