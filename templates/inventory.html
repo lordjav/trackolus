@@ -88,27 +88,30 @@
 </div>
 <div class="modal-window" id="transfer-products" tabindex="-1" aria-labelledby="transfer-products-title" aria-hidden="true">        
     <div class="modal-content" id="transfer-products-modal-content">
-        <div class="modal-header" id="-transfer-products-modal-header">
+        <div class="modal-header" id="transfer-products-modal-header">
             <h3 id="transfer-products-title">{{ _('Transfer to warehouses') }}</h3>
             <button type="button" class="btn-close close-modal-button" id="close-modal-button-2" onclick="closeModal('transfer-products')" aria-label="Close"></button>
         </div>
         <div class="modal-body inventory-modal-body" id="transfer-products-modal-body">
             <form action="/transfer" id="add-transfer" method="POST" enctype="multipart/form-data">
-                <select class="warehouses modal-inventory-warehouses input form" id="origin-warehouse" type="select" name="origin-warehouse" required>
-                    <option value="" style="color: grey">{{ _('Choose origin') }}</option>
-                    {% for key in catalogue[1].warehouses %}
-                    <option  class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
-                    {% endfor %}
-                </select>
-                <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0l-4 4m4-4l-4-4"/></svg>
-                <select class="warehouses modal-inventory-warehouses input form" id="destination-warehouse" type="select" name="destination-warehouse" required>
-                    <option id="choose-destination-warehouse" value="" style="color: grey">{{ _('Choose destination') }}</option>
-                    {% for key in catalogue[1].warehouses %}
-                    <option class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
-                    {% endfor %}
-                </select>
+                <div id="warehouses-container">
+                    <select class="warehouses modal-inventory-warehouses input form" id="origin-warehouse" type="select" name="origin-warehouse" required>
+                        <option value="" style="color: grey">{{ _('Choose origin') }}</option>
+                        {% for key in catalogue[1].warehouses %}
+                        <option  class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                    <svg xmlns="http://www.w3.org/2000/svg" id="inventory-arrow-right" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0l-4 4m4-4l-4-4"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" id="inventory-arrow-down" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 14l-4-4m4 4l4-4"/></svg>
+                    <select class="warehouses modal-inventory-warehouses input form" id="destination-warehouse" type="select" name="destination-warehouse" required>
+                        <option id="choose-destination-warehouse" value="" style="color: grey">{{ _('Choose destination') }}</option>
+                        {% for key in catalogue[1].warehouses %}
+                        <option class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <div class="search-container" id="search-box-3" style="visibility: hidden;">
-                    <input list="products" class="form" id="search3" name="search3" placeholder="{{ _('Search by SKU code or name') }}" autocomplete="off">
+                    <input list="products" class="form" id="search4" name="search4" placeholder="{{ _('Search by SKU code or name') }}" autocomplete="off">
                     <datalist id="products">
                         {% for product in catalogue %}
                         <option id="option-{{ product['SKU'] }}" value="{{ product['SKU'] }} - {{ product['product_name'] }}">{{ _('Available') }}: {% for key in product['warehouses'] %} {{ key | capitalize }}: {{ product['warehouses'][key] }}. {% endfor %}</option>
@@ -133,7 +136,7 @@
                     </div>
                 </div>
                 <select id="products-selected" name="products-selected" multiple></select>
-                <button type="submit" class="menu-button purchase-button">
+                <button type="submit" class="menu-button purchase-button" id="save-transfer-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
                     {{ _('Save order') }}
                 </button>
@@ -187,10 +190,10 @@
 
   //Add product in a new row in table and to hidden input list
   let myInventory = {{ catalogue | tojson | safe }};
-  const search3 = document.getElementById('search3');
-  search3.addEventListener('input', function(e) {
+  const search4 = document.getElementById('search4');
+  search4.addEventListener('input', function(e) {
     let datalistProducts = Array.from(document.getElementById('products').options);
-    let validOption = datalistProducts.some(option => option.value === search3.value);
+    let validOption = datalistProducts.some(option => option.value === search4.value);
     let selectedOption = e.target.value;
     if (validOption) {
         let selectedOption = e.target.value;
@@ -224,7 +227,7 @@
             }
             document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
         }
-        document.getElementById('search3').value = "";
+        document.getElementById('search4').value = "";
     }
   });
   
