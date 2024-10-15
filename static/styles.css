@@ -208,6 +208,7 @@ cursor: pointer;
     border: 1px solid #d7d7d7;
     translate: -68px 0px;
     z-index: 3;
+    font-size: 0.9rem;
     width: 300px;
     border-radius: 10px;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
@@ -778,6 +779,14 @@ cursor: pointer;
     padding: 5px;
 }
 
+.purchase-order-warehouse {
+    padding: 5px;
+    margin: auto;
+    height: 35px;
+    width: 70%;
+    display: flex;
+}
+
 #sidebar-modal, #tools-modal {
     display: none;
     position: fixed;
@@ -823,6 +832,11 @@ cursor: pointer;
     align-items: center;
     height: calc(100vh - 85px);
     flex-direction: column;
+    margin: auto;
+}
+
+#error-face {
+    height: 50vh;
 }
 
 #message {
@@ -919,6 +933,7 @@ cursor: pointer;
         height: 35px;
         z-index: 0;
     }
+    #warehouse
     #name-id, #phone-email {
         flex-wrap: wrap;
         justify-content: center;
@@ -929,15 +944,14 @@ cursor: pointer;
         margin-top: 4vh;
         z-index: 0;
     }
+    .purchase-order-warehouse {
+        width: 70%;
+    }
     table {
         font-size: 0.8rem;
     }    
     .purchase-input, .inbound-quantity, .transfer-quantity {
         width: 40px;
-    }
-    .purchase-order-warehouse {
-        width: 70px;
-        padding: 3px;
     }
     #suggestions2 {
         z-index: 1;
@@ -962,9 +976,8 @@ cursor: pointer;
     #q {
         width: 50vw;
     }
-    #error-face {
+    #error-message {
         width: 50%;
-        height: auto;
     }
 }
 
@@ -1040,7 +1053,7 @@ cursor: pointer;
     .modal-inventory-warehouses, .modal-inventory-select, #search3, #search4 {
         width: 40%;
         margin: 15px 0;
-        height: 42px;    
+        height: 42px;
     }
     #inventory-arrow-right {
         display: block;
@@ -1060,12 +1073,12 @@ cursor: pointer;
         width: 48%;
     }    
     #name-id, #phone-email {
-        margin: 20px auto;
+        margin: 10px auto;
         flex-wrap: nowrap;
         justify-content: space-between;
     }
     #search2 {
-        margin-top: 0;
+        margin-top: 4vh;
     }
     #suggestions2 {
         z-index: 1;
@@ -1137,10 +1150,6 @@ cursor: pointer;
     .purchase-input, .inbound-quantity, .transfer-quantity {
         width: 50px;
     }
-    .purchase-order-warehouse {
-        width: fit-content;
-        padding: 5px;
-    }
     #suggestions2 {
         z-index: 1;
         width: 30%;
@@ -1193,7 +1202,7 @@ cursor: pointer;
     #user-box {
         margin-right: 0.8vw;
     }
-    #search2 {
+    .purchase-order-warehouse, #search2 {
         width:30vw;
     }
     #suggestions2 {
@@ -1202,9 +1211,9 @@ cursor: pointer;
     .movement-container * {
         font-size: 0.9rem;
     }
-    #error-face {
+    #error-message {
         width: 70%;
-        height: auto;
+        
     }
 }
 

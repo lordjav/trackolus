@@ -13,11 +13,17 @@
         <input type="email" class="form customer-info" id="customer-email" name="customer-email" autocomplete="new-password" placeholder="{{ _('E-mail') }}" required>
     </div>
     <br>
-    <div class="search-container" id="search-box-2">
+    <select class="warehouses modal-inbound-warehouses input form purchase-order-warehouse" id="warehouse" type="select" name="warehouse" required>
+      <option value="" style="color: grey" selected disabled>{{ _('Choose origin') }}</option>
+      {% for key in catalogue[1].warehouses %}
+      <option  class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
+      {% endfor %}
+    </select>
+    <div class="search-container" id="search-box-2" style="visibility: hidden;">
         <input list="products" class="form" id="search2" placeholder="{{ _('Search by SKU code or name') }}" autocomplete="off">
         <datalist id="products">
             {% for product in catalogue %}
-            <option value="{{ product['SKU'] }} - {{ product['product_name'] }}">{{ _('Available') }}: {% for key in product['warehouses'] %} {{ key | capitalize }}: {{ product['warehouses'][key] }}. {% endfor %}</option>
+            <option value="{{ product['SKU'] }} - {{ product['product_name'] }}">{{ _('Available') }}: <span class="available-products" name="{{ product['SKU'] }}"></span> items</option>
             {% endfor %}
         </datalist>
         <p id="error-output" style="color:red;"></p>
@@ -29,7 +35,6 @@
                     <tr>
                         <th>{{ _('SKU') }}</th>
                         <th>{{ _('Product name') }}</th>
-                        <th>{{ _('Warehouse') }}</th>
                         <th>{{ _('Quantity') }}</th>
                         <th>{{ _('Price (unit)') }}</th>
                         <th>{{ _('Total price') }}</th>
@@ -104,24 +109,17 @@
       let product = myInventory.find(object => object.SKU === SKU);
       let productAdded = document.getElementById("product-list").insertRow();
       productAdded.classList.add('product-to-add');
-      let wh = '';
-      for (const [key, value] of Object.entries(product.warehouses)) {
-        wh += `<option value="${key}">${key}: ${value} items</option>`;
-      };
-      const cellClass = ['SKU', 'product', 'warehouse', 'quantity', 'unit-price', 'total-price', 'delete-button'];
+      let wh = document.getElementById('warehouse').value;
+      const cellClass = ['SKU', 'product', 'quantity', 'unit-price', 'total-price', 'delete-button'];
       const cellContent = [
         product.SKU, 
         product.product_name, 
-        `<select class="input form purchase-input purchase-order-warehouse" type="select" name="warehouse-stock-of-${product.SKU}">
-                        <option value="" selected disabled style="color: grey">Choose warehouse</option>
-                        ${wh}
-                    </select>`,
-        `<input type="number" name="${product.SKU}" class="purchase-input purchase-quantity" value="1" min="1" max="${product.warehouses.principal + product.warehouses.secondary}">`, 
+        `<input type="number" name="${product.SKU}" class="purchase-input purchase-quantity" value="1" min="1" max="${product.warehouses[wh]}">`, 
         product.sell_price,
         product.sell_price,
         '&#x1F5D9;'
       ];
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 6; i++) {
         let newCell = productAdded.insertCell();
         newCell.classList.add(cellClass[i]);
         newCell.innerHTML = cellContent[i];
@@ -153,23 +151,6 @@
   }
   document.querySelector("table").addEventListener("input", updatePrice);
 
-  //Dynamically set quantity's max value according to warehouse selected.
-  function updateMaxQuantity(e) {    
-    if (e.target.classList.contains("purchase-order-warehouse")) {
-      let quantity = e.target.parentNode.nextElementSibling.firstElementChild;
-      let warehouse = e.target.value;
-      let productSKU = e.target.getAttribute('name').substring(19);
-      let product = myInventory.find(object => object.SKU === productSKU);
-      let maxValue = product.warehouses[warehouse];
-      quantity.setAttribute('max', maxValue);
-      if (quantity.value > product.warehouses[warehouse]) {
-        quantity.value = maxValue;
-      }
-      quantity.parentNode.nextElementSibling.nextElementSibling.innerHTML = quantity.value * parseInt(quantity.parentNode.nextElementSibling.innerHTML);      
-    }
-  }
-  document.querySelector("table").addEventListener("change", updateMaxQuantity);
-
   //Generate quote as pdf or save purchase order in database
   const form = document.getElementById("purchase-form");
   const getPDF = document.getElementById("get-PDF");
@@ -191,5 +172,28 @@
     form.submit();
   }
   form.addEventListener('submit', handleSubmit);
+
+  // Shows search input only when warehouse is chosen and dynamically set quantity's max value
+  const searchContainer = document.getElementById('search-box-2');
+  const warehouse = document.getElementById('warehouse');
+
+  warehouse.addEventListener('change', function() {
+    if (warehouse.value !== "") {
+      searchContainer.style.visibility = 'visible';
+      const productsQuantity = Array.from(document.getElementsByClassName('purchase-quantity'));
+      const available = Array.from(document.getElementsByClassName('available-products'));
+      productsQuantity.forEach(function(element) {
+        element.value = 1;
+        let product = myInventory.find(object => object.SKU === element.name);
+        element.setAttribute('max', product.warehouses[warehouse.value]);
+      });
+      available.forEach(function(element) {
+        let product = myInventory.find(object => object.SKU === element.getAttribute('name'));
+        element.innerHTML = product.warehouses[warehouse.value];
+      });
+    } else {
+      searchContainer.style.visibility = 'hidden';
+    }
+  });
 </script>
 {% endblock %}

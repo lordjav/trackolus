@@ -298,7 +298,7 @@ def purchase_order():
                                      SELECT id 
                                      FROM customers_suppliers 
                                      WHERE identification = ?
-                                     """, data[0].id)
+                                     """, data['customer'].id)
             if len(is_customer) != 1:
                 db.execute("""
                            INSERT INTO customers_suppliers (
@@ -310,10 +310,10 @@ def purchase_order():
                             status
                            ) VALUES (?, ?, ?, ?, ?, ?)
                            """, 
-                           data[0].name, 
-                           data[0].id, 
-                           data[0].phone, 
-                           data[0].email, 
+                           data['customer'].name, 
+                           data['customer'].id, 
+                           data['customer'].phone, 
+                           data['customer'].email, 
                            'customer', 
                            'active',
                            )
@@ -323,49 +323,68 @@ def purchase_order():
                                       SELECT order_number 
                                       FROM movements 
                                       ORDER BY order_number DESC 
-                                      LIMIT 1
+                                      LIMIT 1 
                                       """)[0]["order_number"]
             order_number += 1
-            for item in data[1]:
-                warehouse = request.form.get(f'warehouse-{item.SKU}')
+
+            warehouse = request.form.get('warehouse')
+            warehouse_id = db.execute("""
+                                      SELECT id 
+                                      FROM warehouses 
+                                      WHERE name = ?
+                                      """, 
+                                      warehouse)
+            if len(warehouse_id) != 1:
+                raise ValueError("This warehouse does not exists in database.")
+            else:
+                w_id = warehouse_id[0]['id']
+
+            db.execute("""
+                        INSERT INTO movements (
+                        order_number, 
+                        type, 
+                        origin, 
+                        date, 
+                        author, 
+                        counterpart
+                        ) VALUES (?, ?, ?, ?, ?, ?)
+                        """, 
+                        order_number, 
+                        "outbound", 
+                        w_id, 
+                        datetime.now(), 
+                        session["user_id"], 
+                        customer_id
+                        )
+            movement_id = db.execute("SELECT id FROM movements ORDER BY id DESC LIMIT 1")[0]['id']
+
+            for item in data['products']:                
                 if item.warehouses[warehouse] == 0:
                     raise ValueError(f"{item.product_name} is out of stock in this warehouse.")
                 elif item.other_props['items_to_transact'] > item.warehouses[warehouse]:
                     raise ValueError(f"There is only {item.total_stock} items of {item.product_name} in this warehouse")
                 else:
                     db.execute("""
+                               INSERT INTO products_movement (
+                               movement_id, 
+                               product_id, 
+                               quantity, 
+                               price
+                               ) VALUES (?, ?, ?, ?)
+                               """,
+                               movement_id, 
+                               item.id, 
+                               item.other_props['items_to_transact'], 
+                               item.sell_price 
+                               )
+                    db.execute("""
                                UPDATE allocation 
                                SET stock = ? 
-                               WHERE product_id = ? AND warehouse = (
-                               SELECT id
-                               FROM warehouses
-                               WHERE name = ?
-                               )
+                               WHERE product_id = ? AND warehouse = ?                               
                                """, 
                                (item.warehouses[warehouse] - item.other_props['items_to_transact']), 
                                item.id,
-                               warehouse
-                               )
-                    db.execute("""
-                               INSERT INTO movements (
-                                order_number, 
-                                type, 
-                                date, 
-                                SKU, 
-                                quantity, 
-                                price, 
-                                author, 
-                                counterpart
-                               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                               """, 
-                               order_number, 
-                               "outbound", 
-                               datetime.now(), 
-                               item.SKU, 
-                               item.other_props['items_to_transact'], 
-                               item.sell_price, 
-                               session["user_id"], 
-                               customer_id
+                               w_id
                                )
 
             #Saving data for notification
@@ -388,8 +407,8 @@ def purchase_order():
             return redirect("/purchase_order")
         
         except Exception as e:
-            print(f"There was a problem: {e}")
-            return redirect("/purchase_order")
+            problem = f"There was a problem: {e}"
+            return render_template("error.html", message=problem)
 
     else:
         catalogue = create_catalogue()
@@ -800,8 +819,8 @@ def dashboard():
     other_days_df = pandas.DataFrame(other_days, columns=[f'{tr['day']}'])
     other_days_df[f'{tr['day']}'] = other_days_df[f'{tr['day']}'].dt.strftime('%Y-%m-%d')
     merged_df = pandas.merge(other_days_df, out_graph, on=f'{tr['day']}', how='left')
-    merged_df[f'{tr['quantity']}'] = merged_df[f'{tr['quantity']}'].fillna(0)
-    merged_df[f'{tr['total']}'] = merged_df[f'{tr['total']}'].fillna(0)
+    merged_df[f'{tr['quantity']}'] = merged_df[f'{tr['quantity']}'].astype(float).fillna(0)
+    merged_df[f'{tr['total']}'] = merged_df[f'{tr['total']}'].astype(float).fillna(0)
     out_fig = plotly.express.scatter(
         merged_df, 
         x=f'{tr['day']}', 
