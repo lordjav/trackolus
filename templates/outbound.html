@@ -8,10 +8,10 @@
     <article class="movement-container container-fluid" id="{{ movement.order_number }}">
         <section class="movements" aria-expanded="false">
             <div class="mov-info">
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_number, type='Outbound') }}" target="_blank"><b>{{ _('Order number') }}:</b> {{ movement.order_number }} </a></p>
-                <p class="mov-data"><b>{{ _('Date') }}:</b> {{ movement.order_date }}</p>
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_counterpart, type='Customer') }}"><b>{{ _('Customer') }}:</b> {{ movement.order_counterpart }} </a></p>
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>{{ _('Seller') }}:</b> {{ movement.order_author }} </a></p>
+                <p class="mov-data mov-data-order"><a href="{{ url_for('result', search_term=movement.order_number, type='Outbound') }}" target="_blank"><b>{{ _('Order number') }}:</b> {{ movement.order_number }} </a></p>
+                <p class="mov-data mov-data-date"><b>{{ _('Date') }}:</b> {{ movement.order_date }}</p>
+                <p class="mov-data mov-data-customer-supplier"><a href="{{ url_for('result', search_term=movement.order_counterpart, type='Customer') }}"><b>{{ _('Customer') }}:</b> {{ movement.order_counterpart }} </a></p>
+                <p class="mov-data mov-data-author"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>{{ _('Seller') }}:</b> {{ movement.order_author }} </a></p>
             </div>
             <div class="mov-pdf movement-button">
                 <a href="/movement_pdf/{{ movement.order_number }}" target="_blank">
@@ -25,7 +25,7 @@
                     <tr>
                         <th>{{ _('SKU') }}</th>
                         <th>{{ _('Product name') }}</th>
-                        <th>{{ _('Quantity') }}</th>
+                        <th><span class="quantity-large">{{ _('Quantity') }}</span><span class="quantity-short">#</span></th>
                         <th>{{ _('Price (unit)') }}</th>
                         <th>{{ _('Total price') }}</th>
                     </tr>
@@ -59,7 +59,7 @@
         collapsible.style.paddingTop = null;
         } else {
         collapsible.style.maxHeight = "fit-content";
-        collapsible.style.paddingTop = "50px";
+        collapsible.style.paddingTop = "70px";
         collapsible.firstElementChild.classList.toggle("mb-0");
         }
     });

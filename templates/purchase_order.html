@@ -4,13 +4,13 @@
 
 <form id="purchase-form" method="POST">
     <div id="name-id">
-        <input type="text" class="form" id="customer-name" name="customer-name" autofocus autocomplete="new-password" placeholder="{{ _('Customer') }}" required hx-get="{{ url_for('get_customer') }}" hx-trigger="keyup changed delay:500ms" hx-target="#suggestions2" hx-ext="suggestions">
+        <input type="text" class="form customer-info" id="customer-name" name="customer-name" autofocus autocomplete="new-password" placeholder="{{ _('Customer') }}" required hx-get="{{ url_for('get_customer') }}" hx-trigger="keyup changed delay:500ms" hx-target="#suggestions2" hx-ext="suggestions">
         <div id="suggestions2" style="display: block;"></div>
-        <input type="text" class="form" id="customer-id" name="customer-id" autocomplete="new-password" placeholder="{{ _('Identification') }}" required>
+        <input type="text" class="form customer-info" id="customer-id" name="customer-id" autocomplete="new-password" placeholder="{{ _('Identification') }}" required>
     </div>
     <div id="phone-email">
-        <input type="text" class="form" id="customer-phone" name="customer-phone" autocomplete="new-password" placeholder="{{ _('Contact phone') }}" required>
-        <input type="email" class="form" id="customer-email" name="customer-email" autocomplete="new-password" placeholder="{{ _('E-mail') }}" required>
+        <input type="text" class="form customer-info" id="customer-phone" name="customer-phone" autocomplete="new-password" placeholder="{{ _('Contact phone') }}" required>
+        <input type="email" class="form customer-info" id="customer-email" name="customer-email" autocomplete="new-password" placeholder="{{ _('E-mail') }}" required>
     </div>
     <br>
     <div class="search-container" id="search-box-2">

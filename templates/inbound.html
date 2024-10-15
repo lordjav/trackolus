@@ -9,10 +9,10 @@
     <article class="movement-container container-fluid">
         <section class="movements" aria-expanded="false">
             <div class="mov-info">
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_number, type='Inbound') }}" target="_blank"><b>{{ _('Order number') }}:</b> {{ movement.order_number }}</a></p>
-                <p class="mov-data"><b>{{ _('Date') }}:</b> {{ movement.order_date }}</p>
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_counterpart, type='Supplier') }}"><b>{{ _('Supplier') }}:</b> {{ movement.order_counterpart }} </a></p>
-                <p class="mov-data"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>{{ _('Receiver') }}:</b> {{ movement.order_author }}</a></p>
+                <p class="mov-data mov-data-order"><a href="{{ url_for('result', search_term=movement.order_number, type='Inbound') }}" target="_blank"><b>{{ _('Order number') }}:</b> {{ movement.order_number }}</a></p>
+                <p class="mov-data mov-data-date"><b>{{ _('Date') }}:</b> {{ movement.order_date }}</p>
+                <p class="mov-data mov-data-customer-supplier"><a href="{{ url_for('result', search_term=movement.order_counterpart, type='Supplier') }}"><b>{{ _('Supplier') }}:</b> {{ movement.order_counterpart }} </a></p>
+                <p class="mov-data mov-data-author"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>{{ _('Receiver') }}:</b> {{ movement.order_author }}</a></p>
             </div>
             <div class="mov-pdf">
                 <a class="movement-button" href="{{ url_for('movement_pdf', order_number=movement.order_number) }}" target="_blank">
@@ -23,11 +23,11 @@
                         </g>
                     </svg>
                 </a>
-                <div class="movement-button">
+                <!-- <div class="movement-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24">
                         <path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 7V5a2 2 0 0 1 2-2h2m10 0h2a2 2 0 0 1 2 2v2m0 10v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M8 7v10m4-10v10m5-10v10" />
                     </svg>
-                </div>
+                </div> -->
             </div>
         </section>
         <section class="collapsible">
@@ -106,7 +106,7 @@
                     </div>
                 </div>
                 <select id="products-selected" name="products-selected" multiple></select>
-                <button type="submit" onclick="saveOrder()" class="menu-button purchase-button">
+                <button type="submit" onclick="saveOrder()" class="menu-button purchase-button" id="save-inbound-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
                     {{ _('Save order') }}
                 </button>        
@@ -127,7 +127,7 @@
       collapsible.style.paddingTop = null;
       } else {
       collapsible.style.maxHeight = "fit-content";
-      collapsible.style.paddingTop = "50px";
+      collapsible.style.paddingTop = "70px";
       collapsible.firstElementChild.classList.toggle("mb-0");
       }
   });}
