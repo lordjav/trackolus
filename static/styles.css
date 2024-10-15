@@ -817,6 +817,18 @@ cursor: pointer;
     margin: auto;
 }
 
+#error-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 85px);
+    flex-direction: column;
+}
+
+#message {
+    flex-wrap: wrap;
+}
+
 
 /* Extra extra small devices (phones, 420px and down) */
 @media only screen and (min-width: 150px) {
@@ -950,6 +962,10 @@ cursor: pointer;
     #q {
         width: 50vw;
     }
+    #error-face {
+        width: 50%;
+        height: auto;
+    }
 }
 
 /* Extra small devices (phones, 420px and up) */
@@ -986,7 +1002,7 @@ cursor: pointer;
     html {
         font-size: 15px;
     }
-    .menu-button, .menu-button-aux {
+    .menu-button {
         margin: 0.15rem;
         flex-direction: column;
         font-size: 0.8rem;
@@ -1066,10 +1082,11 @@ cursor: pointer;
     html {
         font-size: 15px;
     }
-    .menu-button {
+    .menu-button, .menu-button-aux {
         margin: 0.2rem;
         flex-direction: column;
         font-size: 1rem;
+        padding: 0.2rem;
     }
     .menu-option {
         margin: 0.2rem;
@@ -1158,10 +1175,11 @@ cursor: pointer;
     html {
         font-size: 17px;
     }
-    .menu-button {
+    .menu-button, .menu-button-aux {
         margin: 0.25rem;
         flex-direction: row;
         font-size: 1.4vw;
+        padding: 0.75rem;
     }
     .menu-option {
         margin: 0.25rem;
@@ -1184,6 +1202,10 @@ cursor: pointer;
     .movement-container * {
         font-size: 0.9rem;
     }
+    #error-face {
+        width: 70%;
+        height: auto;
+    }
 }
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
@@ -1195,6 +1217,9 @@ cursor: pointer;
         margin: 0.3rem;
         flex-direction: row;
         font-size: 1.5vw;
+    }
+    .menu-option-aux {
+        margin: 0.2rem;
     }
     .menu-option {
         margin: 0.3rem;

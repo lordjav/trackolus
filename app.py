@@ -736,7 +736,6 @@ def reports():
         return render_template("reports.html", data=data_report)
     
     else:
-        print(session)
         return render_template("reports.html")
 
 
@@ -1517,3 +1516,8 @@ def transfer():
         print(f"There was a problem: {e}")
         return render_template("error.html", message=f"There was a problem: {e}"), 400
 
+
+@server.route('/error')
+@login_required
+def error():
+    return render_template('error.html', message=f'There was a major problem.')
