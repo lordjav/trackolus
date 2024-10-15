@@ -792,7 +792,10 @@ def dashboard():
     inv_fig.update_layout(
         plot_bgcolor='lightgray', 
         paper_bgcolor='white', 
-        barcornerradius=5
+        barcornerradius=5,
+        title="Low stock",
+        width=400,
+        height=600
         )    
     inventory_figure = inv_fig.to_html(
         full_html=False, 
@@ -830,7 +833,13 @@ def dashboard():
         size_max=50
         )
     out_fig.update_traces(marker_color='gray')
-    out_fig.update_layout(plot_bgcolor='lightgray', paper_bgcolor='white')
+    out_fig.update_layout(
+        plot_bgcolor='lightgray', 
+        paper_bgcolor='white',
+        title="Sales per day",
+        width=400,
+        height=600
+        )
     out_figure = out_fig.to_html(
         full_html=False, 
         config={'displayModeBar':False, 'staticPlot':True}
@@ -862,7 +871,10 @@ def dashboard():
     bs_fig.update_layout(
         plot_bgcolor='lightgray', 
         paper_bgcolor='white', 
-        barcornerradius=5
+        barcornerradius=5,
+        title="Best sellers",
+        width=400,
+        height=600
         )
     bs_figure = bs_fig.to_html(
         full_html=False, 
