@@ -150,7 +150,6 @@ main {
     background-position: 5px 3px;
     z-index: 1;
     flex-direction: row;
-    width: 30vw;
 }
 
 #search3 {
@@ -948,6 +947,9 @@ cursor: pointer;
     .modal-inventory-select {
         width: 48%;
     }
+    #q {
+        width: 50vw;
+    }
 }
 
 /* Extra small devices (phones, 420px and up) */
@@ -1145,6 +1147,9 @@ cursor: pointer;
     
     .modal-inventory-select {
         width: 40%;
+    }
+    #q {
+        width: 30vw;
     }
 }
 
