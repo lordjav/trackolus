@@ -3,19 +3,21 @@
 {% block main %}
 
 <div>
-    <div class="image_container" style="text-align:center;">
-        <img class="result_image" src="{{ url_for('static', filename=item[0]['image_route']) }}">
-    </div>
-    
-    <section>
-        <div><span>{{ _('Product name') }}: </span><span>{{ item[0]['Product'] }}</span></div>
-        <div><span>{{ _('SKU') }}: </span><span>{{ item[0]['SKU'] }}</span></div>
-        <div><span>{{ _('Price') }}: </span><span>{{ item[0]['Price'] | cop }}</span></div>
-        <div><span>{{ _('Total stock') }}: </span><span>{{ item[0]['Total stock'] }}</span></div>
-        {% for warehouse in item[0]['warehouses'] %}
-        <div><span>{{ warehouse['name'] | capitalize }}: </span><span>{{ item[0][warehouse['name'] | capitalize] }}</span></div>
-        {% endfor %}
-    </section>
+    <article id="product-info">
+        <section class="image_container" style="text-align:center;">
+            <img class="result_image" src="{{ url_for('static', filename=item[0]['image_route']) }}">
+        </section>
+        
+        <section id="product-data">
+            <div id="product-name"><span>{{ _('Product name') }}: </span><span>{{ item[0]['Product'] }}</span></div>
+            <div><span>{{ _('SKU') }}: </span><span>{{ item[0]['SKU'] }}</span></div>
+            <div><span>{{ _('Price') }}: </span><span>{{ item[0]['Price'] | cop }}</span></div>
+            <div><span>{{ _('Total stock') }}: </span><span>{{ item[0]['Total stock'] }}</span></div>
+            {% for warehouse in item[0]['warehouses'] %}
+            <div><span>{{ warehouse['name'] | capitalize }}: </span><span>{{ item[0][warehouse['name'] | capitalize] }}</span></div>
+            {% endfor %}
+        </section>
+    </article>
     <section>
         <h3 class="data_title">Movements</h3>
         {% if transactions %}

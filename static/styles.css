@@ -541,16 +541,12 @@ cursor: pointer;
     text-align: center;
 }
 
-#get-PDF, #save-order {
-    height: fit-content;
-}
-
-#get-report {
+#get-report, #get-PDF, #save-order {
     width: fit-content;
     height: fit-content;
 }
 
-.delete-button {    
+.delete-button {
     font-weight: 100;
     text-align: center;
 }
@@ -566,7 +562,7 @@ cursor: pointer;
     text-align: center;
 }
 
-.movements {    
+.movements {
     height: fit-content;
     padding: 15px;
     background-color: #ACACAC;
@@ -662,7 +658,7 @@ cursor: pointer;
 }
 
 .button:hover, .fc-button:hover {
-    background-color: #d7d7d7 !important;    
+    background-color: #d7d7d7 !important;
     transform: scale(1.1, 1.1);
     z-index: 2 !important;
 }
@@ -699,7 +695,7 @@ cursor: pointer;
 }
 
 .movement-button:hover {
-    background-color: #d7d7d7;    
+    background-color: #d7d7d7;
     transform: scale(1.05, 1.05);
     cursor: pointer;
 }
@@ -849,6 +845,16 @@ cursor: pointer;
     justify-content: center;
 }
 
+#product-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+#product-data {
+    max-width: 450px;
+    margin: 30px 0 0 20px;
+}
+
 
 /* Extra extra small devices (phones, 420px and down) */
 @media only screen and (min-width: 150px) {
@@ -985,6 +991,9 @@ cursor: pointer;
     #error-message {
         width: 50%;
     }
+    #product-info {
+        flex-direction: column;
+    }
 }
 
 /* Extra small devices (phones, 420px and up) */
@@ -1093,6 +1102,9 @@ cursor: pointer;
     }
     .movement-container * {
         font-size: 1.2rem;
+    }
+    #product-info {
+        flex-direction: row;
     }
 }
 
