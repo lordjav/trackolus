@@ -192,11 +192,13 @@ def separate_movements(type_of_movement):
                            FROM movements m 
                            JOIN products_movement p 
                             ON m.id = p.movement_id 
+                           JOIN inventory i 
+                            ON p.product_id = i.id 
                            WHERE type = ? 
                            ORDER BY date DESC
                            """, type_of_movement)
     movements_objects = []
-
+    
     for element in movements:
         author_name = db.execute("""
                                  SELECT name 
@@ -224,7 +226,7 @@ def separate_movements(type_of_movement):
             if element["order_number"] == object.order_number:
                 order_in_list = True                
                 object.add_products(products_to_movements(element))
-                
+
         if order_in_list == False:
             movement = prototype_order(element["order_number"], 
                                        element["type"], 
@@ -234,7 +236,7 @@ def separate_movements(type_of_movement):
                                        )            
             movement.add_products(products_to_movements(element))
             movements_objects.append(movement)
-
+            
     return movements_objects
 
 

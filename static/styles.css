@@ -535,8 +535,8 @@ cursor: pointer;
 }
 
 .purchase-button {
-    width: fit-content !important;
-    height: fit-content !important;
+    width: fit-content;
+    height: fit-content;
     padding: 5px 10px;
     text-align: center;
 }
@@ -547,6 +547,7 @@ cursor: pointer;
 
 #get-report {
     width: fit-content;
+    height: fit-content;
 }
 
 .delete-button {    

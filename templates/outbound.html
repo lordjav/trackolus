@@ -33,7 +33,7 @@
                     {% for product in movement.order_products %}
                     <tr onclick="window.location='{{ url_for('result', search_term=product['product_name'], type='Product') }}';">
                         <td>{{ product["SKU"] }}</td>
-                        <td>{{ product["name"] }}</td>
+                        <td>{{ product["product_name"] }}</td>
                         <td>{{ product["quantity"] }}</td>
                         <td>{{ product["price"] | cop }}</td>
                         <td>{{ (product["quantity"] * product["price"]) | cop }}</td>

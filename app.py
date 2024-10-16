@@ -1166,12 +1166,17 @@ def generate_doc(doc_type):
     datatype = data_report[-1]['datatype']
     file_name = f'{datatype}_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}'
     data_report_noType = data_report[:-1]
-    
+    additional_data = {
+        'user': session['name'],
+        'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        'datatype': datatype
+        }
     match doc_type:
         case 'pdf':
             rendered = render_template(
                 "generate_report_pdf.html", 
-                data=data_report
+                data=data_report,
+                additional_data=additional_data
                 )
             path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
             config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)    

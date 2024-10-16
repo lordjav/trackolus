@@ -42,7 +42,7 @@
                     {% for product in movement.order_products %}
                     <tr id="{{ product['product_name'] }}">
                         <td><a href="{{ url_for('result', search_term=product['product_name'], type='Product') }}">{{ product["SKU"] }}</a></td>
-                        <td><a href="{{ url_for('result', search_term=product['product_name'], type='Product') }}">{{ product["name"] }}</a></td>
+                        <td><a href="{{ url_for('result', search_term=product['product_name'], type='Product') }}">{{ product["product_name"] }}</a></td>
                         <td><a href="{{ url_for('result', search_term=product['product_name'], type='Product') }}">{{ product["quantity"] }}</a></td>
                     </tr>
                     {% endfor %}
