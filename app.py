@@ -401,7 +401,7 @@ def purchase_order():
                                        """, customer_id
                                        )
             notification_title = 'New sale'
-            notification_message = f"""New outbound order placed.\nOrder: {order_number}\nCustomer: {customer_name[0]['name']}\nSeller: {user[0]['name']}"""
+            notification_message = f"""New outbound order placed.\nOrder: {order_number}\nCustomer: {customer_name[0]['name']}\nVendor: {user[0]['name']}"""
             save_notification(notification_title, notification_message)
 
             return redirect("/purchase_order")
@@ -557,57 +557,68 @@ def outbound():
 def movement_pdf(order_number):
     
     order_raw = db.execute("""
-                            SELECT * 
-                            FROM movements m 
-                            JOIN customers_suppliers c 
+                           SELECT 
+                            m.order_number, 
+                            m.origin, 
+                            m.date, 
+                            m.type, 
+                            u.name AS vendor, 
+                            c.name AS counterpart, 
+                            c.identification_type, 
+                            c.identification, 
+                            c.phone, 
+                            c.email,
+                            i.product_name, 
+                            i.SKU, 
+                            p.price, 
+                            p.quantity
+                           FROM movements m 
+                           JOIN customers_suppliers c 
                             ON m.counterpart = c.id 
-                            JOIN products_movement p
+                           JOIN products_movement p
                             ON m.id = p.movement_id
-                            WHERE order_number = ? 
-                            """, order_number)
-
-    author_name = db.execute(
-        "SELECT name FROM users WHERE id = ?", 
-        order_raw[0]["author"]
-        )[0]["name"]
-    
+                           JOIN inventory i
+                            ON p.product_id = i.id 
+                           JOIN users u 
+                            ON u.id = m.author 
+                           WHERE order_number = ? 
+                           """, order_number)
+    print(order_raw)
     order_object = prototype_order(order_raw[0]["order_number"], 
                                 order_raw[0]["type"], 
                                 order_raw[0]["date"], 
-                                author_name, 
+                                order_raw[0]["vendor"], 
                                 order_raw[0]["counterpart"]
                                 )
     grand_total = 0
     for element in order_raw:
-        product_data = products_to_movements(element)
-        order_object.add_products(product_data)
+        product = products_to_movements(element)
+        order_object.add_products(product)
         grand_total += element["price"] * element["quantity"]
     
     if order_raw[0]['type'] == "outbound":
         additional_data = {
-            "customer_name": order_raw[0]["name"], 
+            "customer_name": order_raw[0]["counterpart"], 
             "customer_id_type": order_raw[0]["identification_type"], 
             "customer_identification": order_raw[0]["identification"], 
             "customer_phone": order_raw[0]["phone"], 
             "customer_email": order_raw[0]["email"], 
             "grand_total": grand_total
             }
-        rendered = render_template(
-            "outbound_movement_pdf.html", 
-            order=order_object, 
-            data=additional_data
-            )
+        template = "outbound_movement_pdf.html"
     else:
         additional_data = {
-            "supplier_name": order_raw[0]["name"], 
+            "supplier_name": order_raw[0]["counterpart"], 
             "supplier_id_type": order_raw[0]["identification_type"], 
             "supplier_identification": order_raw[0]["identification"], 
             "grand_total": grand_total
             }
-        rendered = render_template(
-            "inbound_movement_pdf.html", 
-            order=order_object, 
-            data=additional_data)
+        template = "inbound_movement_pdf.html"
+    
+    rendered = render_template(
+        template, 
+        order=order_object, 
+        data=additional_data)
     
     response = configurate_pdf(rendered)
 
@@ -715,7 +726,7 @@ def reports():
                                             m.order_number AS '{tr['order']}', 
                                             SUM(p.quantity) AS '{tr['p-sold']}', 
                                             SUM(p.price * p.quantity) AS {tr['amount']},
-                                            u.name AS {tr['seller']},
+                                            u.name AS {tr['vendor']},
                                             c.name AS {tr['customer']}
                                          FROM movements m 
                                          JOIN customers_suppliers c 
@@ -1042,7 +1053,7 @@ def result(search_term, type):
                                             m.date AS Date, 
                                             SUM(p.price * p.quantity) AS Amount, 
                                             SUM(p.quantity) AS Quantity,
-                                            u.name AS Seller 
+                                            u.name AS Vendor 
                                            FROM movements m 
                                            JOIN products_movement p
                                             ON m.id = p.movement_id 

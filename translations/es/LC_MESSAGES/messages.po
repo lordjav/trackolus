@@ -137,7 +137,7 @@ msgstr "Venta total"
 
 #: templates/customers_result.html:27 templates/outbound.html:14
 #: templates/outbound_movement_pdf.html:20
-msgid "Seller"
+msgid "Vendor"
 msgstr "Vendedor"
 
 #: templates/generate_report_pdf.html:9 templates/inbound_movement_pdf.html:9

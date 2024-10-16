@@ -90,14 +90,9 @@ def get_timezone():
 #Function: Format products from dictionaries to objects.
 def products_to_movements(element):
     product = {}
-    product_dict = db.execute("""
-                            SELECT product_name, SKU
-                            FROM inventory 
-                            WHERE id = ?
-                            """, element["product_id"]
-                            )[0]
-    product['name'] = product_dict["product_name"]
-    product["SKU"] = product_dict["SKU"]
+    
+    product['product_name'] = element["product_name"]
+    product["SKU"] = element["SKU"]
     product["quantity"] = element["quantity"]
     product["price"] = element["price"]
 
