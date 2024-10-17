@@ -70,7 +70,10 @@ def login():
             request.form.get("password")
             ):
             return redirect("/login")
-
+        # Ensure user is active 
+        if rows[0]['status'] != 'active':
+            return redirect("/login")
+        
         # Remember which user has logged in and personal settings
         session['role'] = rows[0]['role']
         session["user_id"] = rows[0]["id"]
