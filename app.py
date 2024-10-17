@@ -70,6 +70,7 @@ def login():
             request.form.get("password")
             ):
             return redirect("/login")
+        
         # Ensure user is active 
         if rows[0]['status'] != 'active':
             return redirect("/login")
@@ -749,6 +750,11 @@ def reports():
                 data_report.append({'datatype':f'{tr['outbound']}', 'keyword':'Order'})
 
             case 'Users':
+                if session['role'] != 'admin':
+                    return render_template(
+                        "error.html", 
+                        message="Forbbiden: you do not have permission to access this section."
+                        ), 403
                 data_report = db.execute(f"""
                                          SELECT 
                                             identification AS {tr['id']}, 
@@ -1123,6 +1129,12 @@ def result(search_term, type):
             return redirect(f"/movement_pdf/{search_term}")
         
         case 'User':
+            if session['role'] != 'admin':
+                return render_template(
+                    "error.html", 
+                    message="Forbbiden: you do not have permission to access this section."
+                    ), 403
+            
             item = db.execute("""
                               SELECT 
                                 id, 
@@ -1163,7 +1175,7 @@ def result(search_term, type):
                                            ORDER BY m.date DESC
                                            """, search_term)
             template = 'users_result.html'
-        
+
         case _:
             return render_template(
                 "error.html", 
