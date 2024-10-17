@@ -1122,6 +1122,7 @@ def result(search_term, type):
         case 'User':
             item = db.execute("""
                               SELECT 
+                                id, 
                                 identification_type, 
                                 identification, 
                                 name, 
@@ -1466,10 +1467,88 @@ def create_user():
                     datetime.now(),
                     'active'
                    ) 
-        return render_template('create_user.html')
+        return render_template('create_user.html'), 400
     
     else:
         return render_template('create_user.html')
+
+
+@server.route('/edit_user', methods=['POST'])
+@login_required
+@role_required(['admin'])
+def edit_user():
+    id = request.form.get('id')
+    id_type = request.form.get('identification_type')
+    identification = request.form.get('identification')
+    name = request.form.get('name')
+    email = request.form.get('email')
+    phone = request.form.get('phone')
+    status = request.form.get('status')
+    role = request.form.get('role')
+    
+    id_in_DB = db.execute("""
+                          SELECT id 
+                          FROM users 
+                          WHERE id = ?
+                          """, id)
+
+    try:
+        #Ensure user exists in database
+        if not id or len(id_in_DB) != 1:
+            raise Exception("Error with user information. Id not found")
+        #Ensure user's name is submitted
+        elif not name:
+            raise Exception("User's name is empty")
+        #Ensure ID type and identification are submitted
+        elif not id_type or not identification:
+            raise Exception("ID type or identification are empty")
+        #Ensure email is submitted
+        elif not email:
+            raise Exception("E-mail is empty")
+        #Ensure telephone number is submitted
+        elif not phone:
+            raise Exception("Phone number is empty")
+        #Ensure status is selected
+        elif not status:
+            raise Exception("Status not selected")
+        #Ensure status selected is a valid option
+        elif status not in ['active', 'suspended', 'inactive']:
+            raise Exception("Status not valid")
+        #Ensure role is selected
+        elif not role:
+            raise Exception("Role not selected")
+        #Ensure role selected is a valid option
+        elif role not in ['admin', 'user', 'observer']:
+            raise Exception("Role not valid")
+   
+        db.execute("""
+                   UPDATE users 
+                   SET 
+                    identification_type = ?, 
+                    identification = ?, 
+                    name = ?, 
+                    email = ?, 
+                    phone = ?, 
+                    status = ?, 
+                    role = ?
+                   WHERE id = ?
+                   """, 
+                   id_type,
+                   identification,
+                   name,
+                   email,
+                   phone,
+                   status, 
+                   role, 
+                   id
+                   )
+        redirect_page = f'/result/{name}/User'
+        return redirect(redirect_page)
+ 
+    except Exception as e:
+        print(e)
+        return render_template("error.html", message=f"{e}"), 400
+ 
 
 
 @server.route("/transfer", methods=['POST'])
@@ -1588,9 +1667,15 @@ def edit_product():
     sell_price = request.form.get('sell_price')
     comments = request.form.get('comments')
 
+    original_name = db.execute("""
+                            SELECT product_name 
+                            FROM inventory 
+                            WHERE id = ?
+                            """, id)[0]['product_name']
+
     try:
-        #Ensure id is correct
-        if not id:
+        #Ensure product exists in database
+        if not id or not original_name:
             raise ValueError("Error with product information. Id not found")
         #Ensure product name is submitted
         elif not product_name:
@@ -1598,10 +1683,10 @@ def edit_product():
         #Ensure SKU code is submitted
         elif not product_SKU:
             raise ValueError("SKU code is empty")
-        #Ensure status is submitted
+        #Ensure status is selected
         elif not status:
             raise ValueError("Status not selected")
-        #Ensure warehouse selected is a valid option
+        #Ensure status selected is a valid option
         elif status not in ['active', 'discontinued']:
             raise ValueError("Status not valid")
         #Ensure prices are submitted
@@ -1614,15 +1699,7 @@ def edit_product():
         elif int(sell_price) <= 0 or int(buy_price) <= 0:
             raise ValueError("Price must be a positive number")
     except ValueError as e:
-        return f"Error: {e}", 400
-    
-    original_name = db.execute("""
-                            SELECT product_name 
-                            FROM inventory 
-                            WHERE id = ?
-                            """, id)[0]['product_name']
-    if not original_name:
-        raise ValueError("Error with product information. Wrong Id")
+        return render_template("error.html", message=f"{e}"), 400
 
     if request.files["image_reference"]:
         image_upload = upload_image(
@@ -1670,7 +1747,8 @@ def edit_product():
         notification_message = f"A product was updated:\n{original_name}\nModified by: {user[0]['name']}\nDate: {date}"
         save_notification(notification_title, notification_message)
         
-        return redirect(request.referrer)
+        request_page = f'/result/{product_name}/Product'
+        return redirect(request_page)
     except Exception as e:
         return render_template("error.html", message=f"{e}"), 400
 

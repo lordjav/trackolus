@@ -68,8 +68,8 @@
         <div class="modal-body user-modal-body" id="edit-user-modal-body">
             <form action="/edit_user" method="POST" enctype="multipart/form-data" id="edit-user-form">
                 <input name="id" value="{{ item[0]['id'] }}" style="display: none;">
-                <input autocomplete="off" autofocus class="form input create-user-input edit" id="user-name" type="text" name="name"
-                    placeholder="{{ _('Full name') }}" value="{{ item[0]['name'] }}" required><br>
+                <input autofocus class="form input create-user-input edit" id="user-name" type="text" name="name"
+                    placeholder="{{ _('Full name') }}" value="{{ item[0]['name'] }}" required autocomplete="new-password"><br>
                 <div id="identification-container">
                     <select class="form input edit" id="id-type2" type="select" name="identification_type" required>
                         <option value="" disabled style="color: grey">{{ _('ID type') }}</option>
@@ -85,10 +85,10 @@
                         <option value="DL">DL</option>
                         <option value="CURP">CURP</option>
                     </select>
-                    <input autocomplete="off" class="form input edit identifications" id="identification2" type="text" name="identification" placeholder="{{ _('identification') }}" value="{{ item[0]['identification'] }}" required>
+                    <input autocomplete="off" class="form input edit identifications" id="identification2" type="text" name="identification" placeholder="{{ _('identification') }}" value="{{ item[0]['identification'] }}" required autocomplete="new-password">
                 </div>
-                <input type="text" class="form input create-user-input edit" id="user-phone" name="phone" placeholder="{{ _('Contact phone') }}" value="{{ item[0]['phone'] }}" required>
-                <input type="email" class="form input create-user-input edit" id="user-email" name="email" placeholder="{{ _('E-mail') }}" value="{{ item[0]['email'] }}" required>
+                <input type="text" class="form input create-user-input edit" id="user-phone" name="phone" placeholder="{{ _('Contact phone') }}" value="{{ item[0]['phone'] }}" required autocomplete="new-password">
+                <input type="email" class="form input create-user-input edit" id="user-email" name="email" placeholder="{{ _('E-mail') }}" value="{{ item[0]['email'] }}" required autocomplete="new-password">
                 <div id="role-status-container">
                     <select class="form select input create-user-input edit" id="status2" type="select" name="status" required>
                         <option value="" disabled style="color: grey">{{ _('Choose status') }}</option>
