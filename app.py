@@ -1001,20 +1001,28 @@ def result(search_term, type):
 
             item = db.execute(f"""
                               SELECT 
+                                i.id, 
                                 i.SKU, 
-                                i.product_name AS Product,
-                                i.sell_price AS Price,
-                                SUM(a.stock) AS 'Total stock',
+                                i.product_name,
+                                i.sell_price, 
+                                i.buy_price, 
+                                i.status, 
+                                SUM(a.stock) AS 'Total stock', 
+                                i.comments, 
                                 i.image_route,
                                 {wh_columns}
                               FROM inventory i
                               JOIN allocation a 
                                 ON i.id = a.product_id 
                               WHERE i.product_name = ? 
-                              GROUP BY 
+                              GROUP BY
+                                i.id, 
                                 i.SKU, 
                                 i.product_name,
                                 i.sell_price,
+                                i.buy_price,
+                                i.status, 
+                                i.comments, 
                                 'Total stock'
                               """, search_term)
             item[0]['warehouses'] = warehouses
@@ -1564,7 +1572,107 @@ def transfer():
         return render_template("error.html", message=f"There was a problem: {e}"), 400
 
 
+@server.route('/edit_product', methods=['POST'])
+@login_required
+@role_required(['admin', 'user'])
+def edit_product():
+    id = request.form.get('id')
+    product_name = request.form.get('product_name')
+    product_SKU = request.form.get('SKU')
+    status = request.form.get('status')
+    buy_price = request.form.get('buy_price')
+    sell_price = request.form.get('sell_price')
+    comments = request.form.get('comments')
+
+    try:
+        #Ensure id is correct
+        if not id:
+            raise ValueError("Error with product information. Id not found")
+        #Ensure product name is submitted
+        elif not product_name:
+            raise ValueError("Product name is empty")
+        #Ensure SKU code is submitted
+        elif not product_SKU:
+            raise ValueError("SKU code is empty")
+        #Ensure status is submitted
+        elif not status:
+            raise ValueError("Status not selected")
+        #Ensure warehouse selected is a valid option
+        elif status not in ['active', 'discontinued']:
+            raise ValueError("Status not valid")
+        #Ensure prices are submitted
+        elif not sell_price or not buy_price:
+            raise ValueError("One of the prices are empty")
+        #Ensure prices are numbers without special characters
+        elif not sell_price.isdigit() or not buy_price.isdigit():
+            raise ValueError("Price must contain only numbers")
+        #Ensure prices are positive numbers
+        elif int(sell_price) <= 0 or int(buy_price) <= 0:
+            raise ValueError("Price must be a positive number")
+    except ValueError as e:
+        return f"Error: {e}", 400
+    
+    original_name = db.execute("""
+                            SELECT product_name 
+                            FROM inventory 
+                            WHERE id = ?
+                            """, id)
+    if not original_name:
+        raise ValueError("Error with product information. Wrong Id")
+
+    if request.files["image_reference"]:
+        image_upload = upload_image(
+            request.files["image_reference"], 
+            product_SKU, 
+            server.config["UPLOAD_DIRECTORY"], 
+            server.config["ALLOWED_EXTENSIONS"]
+            )
+        image_link = image_upload[7:]
+        image = f'image_route = "{image_link}",'
+    else:
+        image = ''
+
+    try:
+        db.execute(f"""
+                   UPDATE inventory 
+                   SET 
+                    SKU = ?, 
+                    product_name = ?, 
+                    buy_price = ?, 
+                    sell_price = ?, 
+                    status = ?, 
+                    {image} 
+                    comments = ? 
+                   WHERE id = ?
+                   """, 
+                   product_SKU, 
+                   product_name, 
+                   buy_price, 
+                   sell_price,                    
+                   status,
+                   comments,
+                   id
+                   )
+
+        #Saving data for notification
+        user = db.execute("""
+                          SELECT name 
+                          FROM users 
+                          WHERE id = ?""", 
+                          session['user_id']
+                          )
+        notification_title = 'Product updated'
+        notification_message = f"A product was updated:\n{original_name}\nModified by: {user[0]['name']}\nDate: {datetime.now()}"
+        save_notification(notification_title, notification_message)
+        
+        return redirect(request.referrer)
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
+
+
 @server.route('/error')
 @login_required
-def error():
+def error():    
     return render_template('error.html', message=f'There was a major problem.')
+
+

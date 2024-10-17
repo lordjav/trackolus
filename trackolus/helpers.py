@@ -236,7 +236,7 @@ def separate_movements(type_of_movement):
                                        )            
             movement.add_products(products_to_movements(element))
             movements_objects.append(movement)
-            
+
     return movements_objects
 
 
@@ -248,7 +248,11 @@ def upload_image(image, SKU, directory, extensions):
             if extension not in extensions:
                 return ""
             image_name = SKU + extension
-            image_route = os.path.join(directory, image_name)            
+            image_route = os.path.join(directory, image_name)
+            
+            if os.path.exists(image_route):
+                os.remove(image_route)
+            
             image.save(image_route)
             return image_route
         

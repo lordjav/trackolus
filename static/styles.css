@@ -374,7 +374,7 @@ cursor: pointer;
     right: 0;
 }
 
-#add-button, .floating-button {
+#add-button, #edit-button, .floating-button {
     width: 60px;
     height: 60px;
     background-color: #ACACAC;
@@ -390,12 +390,12 @@ cursor: pointer;
     z-index: 3;
 }
 
-#add-button:hover, .floating-button:hover {
+#add-button:hover, #edit-button:hover, .floating-button:hover {
     background-color: #d7d7d7;    
     transform: scale(1.1, 1.1);
 }
 
-#add-button:hover > span {
+#add-button:hover > span, #edit-button:hover > span {
     transform: rotate(90deg);
 }
 
@@ -911,7 +911,7 @@ cursor: pointer;
     .header-tool-aux svg {
         margin: auto;
     }
-    #transfer-products-modal-content, #add-product-modal-content, #inbound-modal-content {
+    #transfer-products-modal-content, #add-product-modal-content, #edit-product-modal-content, #inbound-modal-content {
         width: 90vw;
     }
     #warehouses-container {
@@ -1076,7 +1076,7 @@ cursor: pointer;
     #inventory-arrow-down {
         display: none;
     }
-    #add-product-modal-content {
+    #add-product-modal-content, #edit-product-modal-content {
         width: 500px;
     }
     #purchase-form {
@@ -1233,6 +1233,7 @@ cursor: pointer;
         width: 70%;
         
     }
+    #save-transfer-button, #save-product-button, #get-report, #save-inbound-button, #get-PDF, #save-order { max-height: 40px;}
 }
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
