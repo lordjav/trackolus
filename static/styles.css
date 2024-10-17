@@ -853,12 +853,12 @@ main {
     justify-content: center;
 }
 
-#product-info {
+#product-info, #user-info {
     display: flex;
     flex-direction: row;
     justify-content: center;
 }
-#product-data {
+#product-data, #user-data {
     max-width: 450px;
     margin: 30px 0 0 20px;
 }

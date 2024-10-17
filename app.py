@@ -1619,7 +1619,7 @@ def edit_product():
                             SELECT product_name 
                             FROM inventory 
                             WHERE id = ?
-                            """, id)
+                            """, id)[0]['product_name']
     if not original_name:
         raise ValueError("Error with product information. Wrong Id")
 
@@ -1664,8 +1664,9 @@ def edit_product():
                           WHERE id = ?""", 
                           session['user_id']
                           )
+        date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         notification_title = 'Product updated'
-        notification_message = f"A product was updated:\n{original_name}\nModified by: {user[0]['name']}\nDate: {datetime.now()}"
+        notification_message = f"A product was updated:\n{original_name}\nModified by: {user[0]['name']}\nDate: {date}"
         save_notification(notification_title, notification_message)
         
         return redirect(request.referrer)
