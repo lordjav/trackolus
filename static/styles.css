@@ -464,12 +464,27 @@ main {
     text-align: left;
 }
 
-.modal-body input, #comments {
+.modal-body input, .modal-body select, #comments {
     border-radius: 7px;
     border: none;
     height: 35px;
     margin: 15px 0;
     padding: 5px;
+}
+
+#edit-user-modal-body input {
+    border-radius: 10px;
+    border: 1px solid #d7d7d7;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
+    height: 42px;
+    padding: 12px 20px 12px 45px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: 5px 3px;
+}
+
+#edit-user-modal-body select {
+    height: 42px;
 }
 
 #image_reference {
@@ -507,7 +522,7 @@ main {
     cursor: pointer;
 }
 
-#save-product-button {
+#save-product-button, #save-user-button {
     background-color: #aaaaaa;
     border: none;
     color:#000;    
@@ -515,7 +530,7 @@ main {
     box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
 }
 
-#save-product-button:hover {
+#save-product-button:hover, #save-user-button:hover {
     border-color: #000;
     background-color: #d7d7d7;
 }
@@ -738,10 +753,13 @@ main {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpath fill='grey' d='M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2M7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.5.88 4.93 1.78A7.9 7.9 0 0 1 12 20c-1.86 0-3.57-.64-4.93-1.72m11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33A7.93 7.93 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.5-1.64 4.83M12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6m0 5a1.5 1.5 0 0 1-1.5-1.5A1.5 1.5 0 0 1 12 8a1.5 1.5 0 0 1 1.5 1.5A1.5 1.5 0 0 1 12 11'/%3E%3C/svg%3E");
 }
 
-#identification {
-    border-radius: 0 10px 10px 0;
-    width: calc(100% - 70px) !important;
+.identifications {
+    border-radius: 0 10px 10px 0;    
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Cpath fill='grey' d='M28 6v20H4V6zm0-2H4a2 2 0 0 0-2 2v20a2 2 0 0 0 2 2h24a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2'/%3E%3Cpath fill='grey' d='M6 10h7v2H6zm0 4h4v2H6zm17 4h-6a3 3 0 0 0-3 3v2h2v-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2h2v-2a3 3 0 0 0-3-3m-3-1a4 4 0 1 0-4-4a4 4 0 0 0 4 4m0-6a2 2 0 1 1-2 2a2 2 0 0 1 2-2'/%3E%3C/svg%3E");
+}
+
+#identification {
+    width: calc(100% - 70px);
 }
 
 #user-phone {
@@ -752,14 +770,27 @@ main {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cg fill='none' stroke='grey' stroke-width='2.5'%3E%3Crect width='18.5' height='17' x='2.682' y='3.5' rx='4'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m2.729 7.59l7.205 4.13a3.956 3.956 0 0 0 3.975 0l7.225-4.13'/%3E%3C/g%3E%3C/svg%3E");
 }
 
-#prices-container {
+#prices-container, #identification-container, #role-status-container {
     display: flex;
     justify-content: space-between;
+    flex-direction: row;
+}
+
+#id-type2 {
+    width: 20%;
+}
+
+#identification2 {
+    width: 75%;
 }
 
 .price-input {
     width: 45%;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25) inset;
+}
+
+#role-status-container > * {
+    width: 45%;
 }
 
 #comments {
@@ -826,7 +857,7 @@ main {
     height: auto;
 }
 
-#save-transfer-button, #save-product-button, #get-report, #save-inbound-button {
+#save-transfer-button, #save-product-button, #save-user-button, #get-report, #save-inbound-button {
     margin: auto;
 }
 
@@ -919,7 +950,7 @@ main {
     .header-tool-aux svg {
         margin: auto;
     }
-    #transfer-products-modal-content, #add-product-modal-content, #edit-product-modal-content, #inbound-modal-content {
+    .modal-content {
         width: 90vw;
     }
     #warehouses-container {
@@ -1084,7 +1115,7 @@ main {
     #inventory-arrow-down {
         display: none;
     }
-    #add-product-modal-content, #edit-product-modal-content {
+    #add-product-modal-content, #edit-product-modal-content, #edit-user-modal-content {
         width: 500px;
     }
     #purchase-form {
@@ -1241,7 +1272,7 @@ main {
         width: 70%;
         
     }
-    #save-transfer-button, #save-product-button, #get-report, #save-inbound-button, #get-PDF, #save-order { max-height: 40px;}
+    #save-transfer-button, #save-product-button, #save-user-button, #get-report, #save-inbound-button, #get-PDF, #save-order { max-height: 40px;}
 }
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */

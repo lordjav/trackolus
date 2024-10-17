@@ -10,11 +10,14 @@
         
         <section id="user-data">
             <div><span>{{ _('Full name') }}: </span><span>{{ item[0]['name'] }}</span></div>
-            <div><span>{{ _('Identification') }}: </span><span>{{ item[0]['identification'] }}</span></div>
+            <div><span>{{ _('Identification') }}: </span><span>{{ item[0]['identification_type'] }} {{ item[0]['identification'] }}</span></div>
             <div><span>{{ _('Contact phone') }}: </span><span>{{ item[0]['phone'] }}</span></div>
             <div><span>{{ _('E-mail') }}: </span><span>{{ item[0]['email'] }}</span></div>
+            <div><span>{{ _('Role') }}: </span><span>{{ item[0]['role'] }}</span></div>
             <div><span>{{ _('Active since') }}: </span><span>{{ item[0]['start_date'] }}</span></div>
+            {% if item[0]['end_date'] %}
             <div><span>{{ _('Active until') }}: </span><span>{{ item[0]['end_date'] }}</span></div>
+            {% endif %}
             <div><span>{{ _('Status') }}: </span><span>{{ item[0]['status'] }}</span></div>
         </section>
     </article>
@@ -53,5 +56,80 @@
     <div>
     </div>
 </div>
-
+<button type="button" class="button" id="edit-button" onclick="showModal('edit-user')" data-bs-target="#edit-user">
+    <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><g class="edit-outline"><g fill="black" fill-rule="evenodd" class="Vector" clip-rule="evenodd"><path d="M2 6.857A4.857 4.857 0 0 1 6.857 2H12a1 1 0 1 1 0 2H6.857A2.857 2.857 0 0 0 4 6.857v10.286A2.857 2.857 0 0 0 6.857 20h10.286A2.857 2.857 0 0 0 20 17.143V12a1 1 0 1 1 2 0v5.143A4.857 4.857 0 0 1 17.143 22H6.857A4.857 4.857 0 0 1 2 17.143z"/><path d="m15.137 13.219l-2.205 1.33l-1.033-1.713l2.205-1.33l.003-.002a1.2 1.2 0 0 0 .232-.182l5.01-5.036a3 3 0 0 0 .145-.157c.331-.386.821-1.15.228-1.746c-.501-.504-1.219-.028-1.684.381a6 6 0 0 0-.36.345l-.034.034l-4.94 4.965a1.2 1.2 0 0 0-.27.41l-.824 2.073a.2.2 0 0 0 .29.245l1.032 1.713c-1.805 1.088-3.96-.74-3.18-2.698l.825-2.072a3.2 3.2 0 0 1 .71-1.081l4.939-4.966l.029-.029c.147-.15.641-.656 1.24-1.02c.327-.197.849-.458 1.494-.508c.74-.059 1.53.174 2.15.797a2.9 2.9 0 0 1 .845 1.75a3.15 3.15 0 0 1-.23 1.517c-.29.717-.774 1.244-.987 1.457l-5.01 5.036q-.28.281-.62.487m4.453-7.126s-.004.003-.013.006z"/></g></g></svg>
+</button>
+<div class="modal-window" id="edit-user" tabindex="-1" aria-labelledby="edit-user-title" aria-hidden="true">
+    <div class="modal-content" id="edit-user-modal-content">
+        <div class="modal-header" id="edit-user-modal-header">
+            <h3 id="edit-user-title">{{ _('Edit user information') }}</h3>
+            <button type="button" class="btn-close close-modal-button" id="close-modal-button-1" onclick="closeModal('edit-user')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body user-modal-body" id="edit-user-modal-body">
+            <form action="/edit_user" method="POST" enctype="multipart/form-data" id="edit-user-form">
+                <input name="id" value="{{ item[0]['id'] }}" style="display: none;">
+                <input autocomplete="off" autofocus class="form input create-user-input edit" id="user-name" type="text" name="name"
+                    placeholder="{{ _('Full name') }}" value="{{ item[0]['name'] }}" required><br>
+                <div id="identification-container">
+                    <select class="form input edit" id="id-type2" type="select" name="identification_type" required>
+                        <option value="" disabled style="color: grey">{{ _('ID type') }}</option>
+                        <option selected value="{{ item[0]['identification_type'] }}">{{ item[0]['identification_type'] }}</option>
+                        <option value="CC">CC</option>
+                        <option value="NIT">NIT</option>
+                        <option value="PP">PP</option>
+                        <option value="DNI">DNI</option>
+                        <option value="SS">SS</option>
+                        <option value="EIN">EIN</option>
+                        <option value="IC">IC</option>
+                        <option value="FC">FC</option>
+                        <option value="DL">DL</option>
+                        <option value="CURP">CURP</option>
+                    </select>
+                    <input autocomplete="off" class="form input edit identifications" id="identification2" type="text" name="identification" placeholder="{{ _('identification') }}" value="{{ item[0]['identification'] }}" required>
+                </div>
+                <input type="text" class="form input create-user-input edit" id="user-phone" name="phone" placeholder="{{ _('Contact phone') }}" value="{{ item[0]['phone'] }}" required>
+                <input type="email" class="form input create-user-input edit" id="user-email" name="email" placeholder="{{ _('E-mail') }}" value="{{ item[0]['email'] }}" required>
+                <div id="role-status-container">
+                    <select class="form select input create-user-input edit" id="status2" type="select" name="status" required>
+                        <option value="" disabled style="color: grey">{{ _('Choose status') }}</option>
+                        <option value="active" {% if item[0]['status'] == 'active' %}selected{% endif %}>{{ _('Active') }}</option>
+                        <option value="suspended" {% if item[0]['status'] == 'suspended' %}selected{% endif %}>{{ _('Suspended') }}</option>
+                        <option value="inactive" {% if item[0]['status'] == 'inactive' %}selected{% endif %}>{{ _('Inactive') }}</option>
+                    </select>                
+                    <select class="form select input create-user-input edit" id="role" type="select" name="role" required>
+                        <option value="" disabled>{{ _('Choose role') }}</option>
+                        <option value="admin" {% if item[0]['role'] == 'admin' %}selected{% endif %}>{{ _('Administrator') }}</option>
+                        <option value="user" {% if item[0]['role'] == 'user' %}selected{% endif %}>{{ _('User') }}</option>
+                        <option value="observer" {% if item[0]['role'] == 'observer' %}selected{% endif %}>{{ _('Observer') }}</option>
+                    </select>
+                </div><br>
+                <button type="submit" id="save-user-button" class="menu-button purchase-button" action="/edit_user">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
+                    {{ _('Save changes') }}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    // Verify if user information changed before sending request to update database
+    let propertiesToEdit = document.getElementsByClassName('edit');
+    const user = {{ item[0] | tojson | safe }};
+    const form = document.getElementById('edit-user-form');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        sameData = true;
+        for (i = 0; i < propertiesToEdit.length; i++) {
+            if (propertiesToEdit[i].value != user[propertiesToEdit[i].name]) {
+                sameData = false;
+                break;
+            }
+        }
+        if (sameData == false) {
+            form.submit();
+        } else {
+            closeModal('edit-user');
+        }
+    });
+</script>
 {% endblock %}

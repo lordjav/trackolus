@@ -1122,6 +1122,7 @@ def result(search_term, type):
         case 'User':
             item = db.execute("""
                               SELECT 
+                                identification_type, 
                                 identification, 
                                 name, 
                                 role, 

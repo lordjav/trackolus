@@ -89,7 +89,7 @@
     </div>
 </div>
 <script>
-    // Verify if product information changed, then send request to update database
+    // Verify if product information changed before sending request to update database
     let propertiesToEdit = document.getElementsByClassName('edit');
     const product = {{ item[0] | tojson | safe }};
     const form = document.getElementById('edit-product-form');
