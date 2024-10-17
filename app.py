@@ -1045,7 +1045,10 @@ def result(search_term, type):
                                            WHERE product_name = ?)
                                            AND m.type = 'outbound' 
                                            """, search_term)
-            template = 'products_result.html'
+            if session['role'] == 'observer':
+                template = 'products_result-o.html'
+            else:
+                template = 'products_result.html'
             
         case 'Customer':
             item = db.execute("""
