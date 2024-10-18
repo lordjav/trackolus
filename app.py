@@ -1431,7 +1431,10 @@ def mark_read():
                            UPDATE notified_users 
                            SET seen = 1 
                            WHERE notification_id = ?
-                           """, int(id)
+                           AND user_id = ?
+                           """, 
+                           int(id), 
+                           session['user_id']
                            )
                 
         return render_template_string("Success!")

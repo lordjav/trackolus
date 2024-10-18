@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-10-09 09:44-0500\n"
+"POT-Creation-Date: 2024-10-18 11:51-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-#: templates/create_user.html:6 templates/users_result.html:11
+#: templates/create_user.html:6 templates/users_result.html:12
+#: templates/users_result.html:72
 msgid "Full name"
 msgstr ""
 
@@ -62,37 +63,38 @@ msgid "Individual Registration Number"
 msgstr ""
 
 #: templates/create_user.html:22 templates/customers_result.html:12
-#: templates/login.html:33 templates/order_pdf.html:14
-#: templates/outbound_movement_pdf.html:14 templates/purchase_order.html:9
-#: templates/suppliers_result.html:12 templates/users_result.html:12
+#: templates/inbound_movement_pdf.html:80 templates/login.html:33
+#: templates/order_pdf.html:80 templates/outbound_movement_pdf.html:80
+#: templates/purchase_order.html:9 templates/suppliers_result.html:12
+#: templates/users_result.html:13
 msgid "Identification"
 msgstr ""
 
 #: templates/create_user.html:24 templates/purchase_order.html:12
-#: templates/users_result.html:13
+#: templates/users_result.html:14 templates/users_result.html:90
 msgid "Contact phone"
 msgstr ""
 
 #: templates/create_user.html:25 templates/customers_result.html:14
-#: templates/order_pdf.html:16 templates/outbound_movement_pdf.html:16
+#: templates/order_pdf.html:82 templates/outbound_movement_pdf.html:82
 #: templates/purchase_order.html:13 templates/suppliers_result.html:14
-#: templates/users_result.html:14
+#: templates/users_result.html:15 templates/users_result.html:91
 msgid "E-mail"
 msgstr ""
 
-#: templates/create_user.html:27
+#: templates/create_user.html:27 templates/users_result.html:100
 msgid "Choose role"
 msgstr ""
 
-#: templates/create_user.html:28
+#: templates/create_user.html:28 templates/users_result.html:101
 msgid "Administrator"
 msgstr ""
 
-#: templates/create_user.html:29
+#: templates/create_user.html:29 templates/users_result.html:102
 msgid "User"
 msgstr ""
 
-#: templates/create_user.html:30
+#: templates/create_user.html:30 templates/users_result.html:103
 msgid "Observer"
 msgstr ""
 
@@ -104,135 +106,156 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: templates/customers_result.html:13 templates/order_pdf.html:15
-#: templates/outbound_movement_pdf.html:15 templates/suppliers_result.html:13
+#: templates/customers_result.html:13 templates/order_pdf.html:81
+#: templates/outbound_movement_pdf.html:81 templates/suppliers_result.html:13
 msgid "Phone"
 msgstr ""
 
-#: templates/customers_result.html:18 templates/suppliers_result.html:18
+#: templates/customers_result.html:19 templates/suppliers_result.html:19
 msgid "Records"
 msgstr ""
 
-#: templates/customers_result.html:23 templates/inbound-o.html:13
-#: templates/inbound.html:13 templates/inbound_movement_pdf.html:16
-#: templates/outbound.html:12 templates/outbound_movement_pdf.html:19
-#: templates/products_result.html:26 templates/suppliers_result.html:23
-#: templates/users_result.html:26
+#: templates/customers_result.html:24 templates/inbound-o.html:12
+#: templates/inbound.html:12 templates/inbound_movement_pdf.html:74
+#: templates/outbound.html:11 templates/outbound_movement_pdf.html:74
+#: templates/products_result-o.html:29 templates/products_result.html:29
+#: templates/suppliers_result.html:24 templates/users_result.html:32
 msgid "Date"
 msgstr ""
 
-#: templates/customers_result.html:24 templates/suppliers_result.html:24
-#: templates/users_result.html:27
+#: templates/customers_result.html:25 templates/suppliers_result.html:25
+#: templates/users_result.html:33
 msgid "Order Number"
 msgstr ""
 
-#: templates/customers_result.html:25
+#: templates/customers_result.html:26
 msgid "Products bought"
 msgstr ""
 
-#: templates/customers_result.html:26 templates/users_result.html:30
+#: templates/customers_result.html:27 templates/users_result.html:36
 msgid "Total sale"
 msgstr ""
 
-#: templates/customers_result.html:27 templates/outbound.html:14
-#: templates/outbound_movement_pdf.html:20
+#: templates/customers_result.html:28 templates/outbound.html:13
+#: templates/outbound_movement_pdf.html:76
 msgid "Vendor"
 msgstr ""
 
-#: templates/generate_report_pdf.html:9 templates/inbound_movement_pdf.html:9
-#: templates/order_pdf.html:9 templates/outbound_movement_pdf.html:9
-msgid "Purchase order"
+#: templates/generate_report_pdf.html:40 templates/inbound_movement_pdf.html:69
+#: templates/order_pdf.html:73 templates/outbound_movement_pdf.html:69
+msgid "Your company name here"
 msgstr ""
 
-#: templates/generate_report_pdf.html:10 templates/inbound_movement_pdf.html:10
-#: templates/order_pdf.html:10 templates/outbound_movement_pdf.html:10
-msgid "Trackolus logo here"
+#: templates/generate_report_pdf.html:41 templates/inbound_movement_pdf.html:70
+#: templates/order_pdf.html:74 templates/outbound_movement_pdf.html:70
+msgid "Your company data here"
 msgstr ""
 
-#: templates/generate_report_pdf.html:11 templates/inbound_movement_pdf.html:11
-#: templates/order_pdf.html:11 templates/outbound_movement_pdf.html:11
-msgid "Your logo here"
+#: templates/generate_report_pdf.html:43
+msgid "Report"
 msgstr ""
 
-#: templates/inbound-o.html:12 templates/inbound.html:12
-#: templates/inbound_movement_pdf.html:14 templates/outbound.html:11
-#: templates/outbound_movement_pdf.html:17 templates/products_result.html:27
+#: templates/inbound-o.html:11 templates/inbound.html:11
+#: templates/inbound_movement_pdf.html:75 templates/outbound.html:10
+#: templates/outbound_movement_pdf.html:75 templates/products_result-o.html:30
+#: templates/products_result.html:30
 msgid "Order number"
 msgstr ""
 
-#: templates/inbound-o.html:14 templates/inbound.html:14
-#: templates/inbound_movement_pdf.html:13
+#: templates/inbound-o.html:13 templates/inbound.html:13
+#: templates/inbound_movement_pdf.html:79
 msgid "Supplier"
 msgstr ""
 
-#: templates/inbound-o.html:15 templates/inbound.html:15
-#: templates/inbound_movement_pdf.html:17 templates/suppliers_result.html:27
+#: templates/inbound-o.html:14 templates/inbound.html:14
+#: templates/inbound_movement_pdf.html:76 templates/suppliers_result.html:28
 msgid "Receiver"
 msgstr ""
 
-#: templates/inbound-o.html:38 templates/inbound.html:38
-#: templates/inbound.html:85 templates/inbound_movement_pdf.html:23
-#: templates/inventory.html:53 templates/order_pdf.html:22
-#: templates/outbound.html:27 templates/outbound_movement_pdf.html:26
-#: templates/products_result.html:11 templates/purchase_order.html:31
+#: templates/inbound-o.html:32 templates/inbound.html:37
+#: templates/inbound.html:97 templates/inbound_movement_pdf.html:88
+#: templates/inventory.html:65 templates/inventory.html:128
+#: templates/order_pdf.html:90 templates/outbound.html:26
+#: templates/outbound_movement_pdf.html:90 templates/products_result-o.html:12
+#: templates/products_result.html:12 templates/products_result.html:67
+#: templates/purchase_order.html:37
 msgid "Product name"
 msgstr ""
 
-#: templates/inbound-o.html:39 templates/inbound.html:39
-#: templates/inbound.html:86 templates/inbound_movement_pdf.html:24
-#: templates/order_pdf.html:23 templates/outbound.html:28
-#: templates/outbound_movement_pdf.html:27 templates/products_result.html:28
-#: templates/purchase_order.html:33
+#: templates/inbound-o.html:33 templates/inbound.html:38
+#: templates/inbound.html:98 templates/inbound_movement_pdf.html:89
+#: templates/inventory.html:129 templates/order_pdf.html:91
+#: templates/outbound.html:27 templates/outbound_movement_pdf.html:91
+#: templates/products_result-o.html:31 templates/products_result.html:31
+#: templates/purchase_order.html:38
 msgid "Quantity"
 msgstr ""
 
-#: templates/inbound-o.html:56 templates/inbound.html:56
+#: templates/inbound-o.html:50 templates/inbound.html:55
 msgid "No inbound movements"
 msgstr ""
 
-#: templates/inbound.html:65
+#: templates/inbound.html:63
 msgid "Add new incoming shipment"
 msgstr ""
 
-#: templates/inbound.html:71 templates/purchase_order.html:17
+#: templates/inbound.html:70
+msgid "Choose supplier"
+msgstr ""
+
+#: templates/inbound.html:76
+msgid "Choose warehouse"
+msgstr ""
+
+#: templates/inbound.html:83 templates/inventory.html:114
+#: templates/purchase_order.html:23
 msgid "Search by SKU code or name"
 msgstr ""
 
-#: templates/inbound.html:87 templates/purchase_order.html:36
+#: templates/inbound.html:99 templates/inventory.html:130
+#: templates/purchase_order.html:41
 msgid "Remove"
 msgstr ""
 
-#: templates/inbound.html:98 templates/purchase_order.html:52
+#: templates/inbound.html:110 templates/inventory.html:141
+#: templates/purchase_order.html:57
 msgid "Save order"
 msgstr ""
 
-#: templates/inbound.html:139
+#: templates/inbound.html:156 templates/inventory.html:204
 msgid "Item is already in the cart"
 msgstr ""
 
-#: templates/inbound.html:183
+#: templates/inbound.html:201 templates/inventory.html:263
 msgid "There are no products added"
 msgstr ""
 
-#: templates/inbound_movement_pdf.html:15
-#: templates/outbound_movement_pdf.html:18
-msgid "Type of movement"
+#: templates/inbound_movement_pdf.html:72
+msgid "Receiving report"
 msgstr ""
 
-#: templates/inbound_movement_pdf.html:25 templates/order_pdf.html:24
-#: templates/outbound.html:29 templates/outbound_movement_pdf.html:28
-#: templates/purchase_order.html:34
+#: templates/inbound_movement_pdf.html:87 templates/inventory.html:66
+#: templates/order_pdf.html:89 templates/outbound.html:25
+#: templates/outbound_movement_pdf.html:89 templates/products_result-o.html:13
+#: templates/products_result.html:13 templates/products_result.html:68
+#: templates/purchase_order.html:36
+msgid "SKU"
+msgstr ""
+
+#: templates/inbound_movement_pdf.html:90 templates/order_pdf.html:92
+#: templates/outbound.html:28 templates/outbound_movement_pdf.html:92
+#: templates/purchase_order.html:39
 msgid "Price (unit)"
 msgstr ""
 
-#: templates/inbound_movement_pdf.html:26 templates/order_pdf.html:25
-#: templates/outbound.html:30 templates/outbound_movement_pdf.html:29
-#: templates/purchase_order.html:35
+#: templates/inbound_movement_pdf.html:91 templates/order_pdf.html:93
+#: templates/outbound.html:29 templates/outbound_movement_pdf.html:93
+#: templates/purchase_order.html:40
 msgid "Total price"
 msgstr ""
 
-#: templates/inbound_movement_pdf.html:39 templates/order_pdf.html:38
-#: templates/outbound_movement_pdf.html:42
+#: templates/inbound_movement_pdf.html:106 templates/order_pdf.html:108
+#: templates/outbound_movement_pdf.html:108
 msgid "Grand total"
 msgstr ""
 
@@ -245,7 +268,7 @@ msgid "Stock"
 msgstr ""
 
 #: templates/inventory-o.html:13 templates/inventory.html:13
-#: templates/products_result.html:13
+#: templates/products_result-o.html:14 templates/products_result.html:14
 msgid "Price"
 msgstr ""
 
@@ -257,57 +280,89 @@ msgstr ""
 msgid "There are no products in stock"
 msgstr ""
 
-#: templates/inventory.html:47
+#: templates/inventory.html:59
 msgid "Add new product to stock"
 msgstr ""
 
-#: templates/inventory.html:54 templates/order_pdf.html:21
-#: templates/outbound.html:26 templates/outbound_movement_pdf.html:25
-#: templates/products_result.html:12 templates/purchase_order.html:30
-msgid "SKU"
+#: templates/inventory.html:68 templates/products_result.html:70
+#: templates/users_result.html:94
+msgid "Choose status"
 msgstr ""
 
-#: templates/inventory.html:62
-msgid "Initial quantity"
+#: templates/inventory.html:69 templates/products_result.html:71
+#: templates/users_result.html:95
+msgid "Active"
 msgstr ""
 
-#: templates/inventory.html:64
+#: templates/inventory.html:70 templates/products_result.html:72
+msgid "Discontinued"
+msgstr ""
+
+#: templates/inventory.html:74 templates/products_result.html:76
+msgid "Buy price"
+msgstr ""
+
+#: templates/inventory.html:76 templates/products_result.html:78
 msgid "Sell price"
 msgstr ""
 
-#: templates/inventory.html:65
+#: templates/inventory.html:78 templates/products_result.html:80
+msgid "Comments"
+msgstr ""
+
+#: templates/inventory.html:79 templates/products_result.html:81
 msgid "Select product image"
 msgstr ""
 
-#: templates/inventory.html:67
+#: templates/inventory.html:83
 msgid "Save product"
 msgstr ""
 
-#: templates/layout.html:39
+#: templates/inventory.html:92
+msgid "Transfer to warehouses"
+msgstr ""
+
+#: templates/inventory.html:99 templates/purchase_order.html:17
+msgid "Choose origin"
+msgstr ""
+
+#: templates/inventory.html:107
+msgid "Choose destination"
+msgstr ""
+
+#: templates/inventory.html:117 templates/purchase_order.html:26
+msgid "Available"
+msgstr ""
+
+#: templates/inventory.html:256
+msgid "Cannot transfer less than 1 item"
+msgstr ""
+
+#: templates/layout.html:39 templates/layout.html:96
 msgid "DASHBOARD"
 msgstr ""
 
-#: templates/layout.html:47
+#: templates/layout.html:47 templates/layout.html:104
 msgid "REPORTS"
 msgstr ""
 
-#: templates/layout.html:55
+#: templates/layout.html:55 templates/layout.html:112
 msgid "INVENTORY"
 msgstr ""
 
-#: templates/layout.html:64
+#: templates/layout.html:63 templates/layout.html:120
 msgid "PURCHASE<br>ORDER"
 msgstr ""
 
-#: templates/layout.html:73
+#: templates/layout.html:71 templates/layout.html:128
 msgid "INBOUND"
 msgstr ""
 
-#: templates/layout.html:81
+#: templates/layout.html:79 templates/layout.html:136
 msgid "OUTBOUND"
 msgstr ""
 
-#: templates/layout.html:91
+#: templates/layout.html:148
 msgid "Search"
 msgstr ""
 
@@ -319,29 +374,37 @@ msgstr ""
 msgid "Log In"
 msgstr ""
 
-#: templates/order_pdf.html:13 templates/outbound.html:13
-#: templates/outbound_movement_pdf.html:13 templates/products_result.html:30
-#: templates/purchase_order.html:7
+#: templates/order_pdf.html:76
+msgid "Quote"
+msgstr ""
+
+#: templates/order_pdf.html:79 templates/outbound.html:12
+#: templates/outbound_movement_pdf.html:79 templates/products_result-o.html:33
+#: templates/products_result.html:33 templates/purchase_order.html:7
 msgid "Customer"
 msgstr ""
 
-#: templates/products_result.html:14
+#: templates/outbound_movement_pdf.html:72
+msgid "Purchase order"
+msgstr ""
+
+#: templates/products_result-o.html:15 templates/products_result.html:15
 msgid "Total stock"
 msgstr ""
 
-#: templates/products_result.html:29
+#: templates/products_result-o.html:32 templates/products_result.html:32
 msgid "Sale"
 msgstr ""
 
-#: templates/purchase_order.html:20
-msgid "Available"
+#: templates/products_result.html:60
+msgid "Edit product information"
 msgstr ""
 
-#: templates/purchase_order.html:32
-msgid "Warehouse"
+#: templates/products_result.html:85 templates/users_result.html:108
+msgid "Save changes"
 msgstr ""
 
-#: templates/purchase_order.html:48
+#: templates/purchase_order.html:53
 msgid "View PDF"
 msgstr ""
 
@@ -377,39 +440,67 @@ msgstr ""
 msgid "Activity"
 msgstr ""
 
-#: templates/reports.html:18
+#: templates/reports.html:20
 msgid "Get report"
 msgstr ""
 
-#: templates/suppliers_result.html:25
-msgid "Products received"
+#: templates/settings.html:5
+msgid "Create user"
 msgstr ""
 
 #: templates/suppliers_result.html:26
+msgid "Products received"
+msgstr ""
+
+#: templates/suppliers_result.html:27
 msgid "Total amount"
 msgstr ""
 
-#: templates/users_result.html:15
-msgid "Active since"
-msgstr ""
-
 #: templates/users_result.html:16
-msgid "Active until"
+msgid "Role"
 msgstr ""
 
 #: templates/users_result.html:17
+msgid "Active since"
+msgstr ""
+
+#: templates/users_result.html:19
+msgid "Active until"
+msgstr ""
+
+#: templates/users_result.html:21
 msgid "Status"
 msgstr ""
 
-#: templates/users_result.html:28
+#: templates/users_result.html:34
 msgid "Type of transaction"
 msgstr ""
 
-#: templates/users_result.html:29
+#: templates/users_result.html:35
 msgid "Products moved"
 msgstr ""
 
-#: templates/users_result.html:31
+#: templates/users_result.html:37
 msgid "Customer/Supplier"
+msgstr ""
+
+#: templates/users_result.html:65
+msgid "Edit user information"
+msgstr ""
+
+#: templates/users_result.html:75
+msgid "ID type"
+msgstr ""
+
+#: templates/users_result.html:88
+msgid "identification"
+msgstr ""
+
+#: templates/users_result.html:96
+msgid "Suspended"
+msgstr ""
+
+#: templates/users_result.html:97
+msgid "Inactive"
 msgstr ""
 
