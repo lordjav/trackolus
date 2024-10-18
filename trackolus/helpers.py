@@ -39,6 +39,13 @@ def cop(value):
     return f"${value:,}"
 
 
+#Function: format date to 'YYYY-MM-DD' 
+def formattime(date, format='%Y-%m-%d'):
+    date_object = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+
+    return date_object.strftime(format)
+
+
 #Function: register events in database as notifications
 def save_notification(title, message):
     db.execute("""

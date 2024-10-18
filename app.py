@@ -28,6 +28,7 @@ babel.init_app(
     )
 
 server.jinja_env.filters["cop"] = cop
+server.jinja_env.filters["formattime"] = formattime
 
 #Decorator: Makes the function 'get_locale' available directly in the template
 @server.context_processor
@@ -1302,6 +1303,13 @@ def get_customer_data(name):
 @login_required
 def calendar():
     return render_template("calendar.html")
+    
+
+@server.route('/calendar_date/<date>')
+@login_required
+def calendar_date(date):
+    go_to_date = f"calendar.changeView('timeGridDay', '{date}');"
+    return render_template("calendar.html", day=go_to_date)
 
 
 @server.route("/get_events")
