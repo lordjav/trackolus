@@ -1,6 +1,6 @@
 import sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz, time, json
 from cs50 import SQL
-from flask import Flask, jsonify, redirect, render_template, session, send_file
+from flask import Flask, jsonify, redirect, render_template, session, send_file, flash
 from flask import render_template_string, request, make_response, stream_with_context, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from trackolus.helpers import *
@@ -284,7 +284,7 @@ def add_product():
         notification_title = 'New product'
         notification_message = f"""New product in inventory:\n{request.form.get("product_name_modal")}\nAdded by: {user[0]['name']}"""
         save_notification(notification_title, notification_message)
-        
+        flash('Product added to inventory', 'success')
         return redirect("/inventory")
     except Exception as e:        
         return render_template("error.html", message=f"{e}"), 400
@@ -407,7 +407,7 @@ def purchase_order():
             notification_title = 'New sale'
             notification_message = f"""New outbound order placed.\nOrder: {order_number}\nCustomer: {customer_name[0]['name']}\nVendor: {user[0]['name']}"""
             save_notification(notification_title, notification_message)
-
+            flash('Purchase order successfully placed', 'success')
             return redirect("/purchase_order")
         
         except Exception as e:
@@ -520,7 +520,7 @@ def inbound():
             notification_title = 'New incoming shipment'
             notification_message = f"""New goods received:\nOrder: {order_number}\nSupplier: {request.form.get('supplier')} \nReceiver: {user}"""
             save_notification(notification_title, notification_message)
-
+            flash('Inbound order successfully placed', 'success')
             return redirect("/inbound")
         
         except Exception as e:
@@ -1438,7 +1438,7 @@ def mark_read():
 def set_language():
     language = request.form.get('language', 'en')
     session['language'] = language
-
+    
     return redirect(request.referrer)
 
 
@@ -1481,8 +1481,9 @@ def create_user():
                     phone,
                     datetime.now(),
                     'active'
-                   ) 
-        return render_template('create_user.html'), 400
+                   )
+        flash('New user created!', 'success')
+        return render_template('create_user.html')
     
     else:
         return render_template('create_user.html')
@@ -1557,6 +1558,8 @@ def edit_user():
                    role, 
                    id
                    )
+        
+        flash('Changes on user saved', 'success')
         redirect_page = f'/result/{name}/User'
         return redirect(redirect_page)
  
@@ -1662,7 +1665,8 @@ def transfer():
         notification_title = 'New transference of products'
         notification_message = f"""Order: {order_number}.\nFrom: {origin_warehouse}.\nTo: {destination_warehouse}.\nBy: {user[0]['name']}"""
         save_notification(notification_title, notification_message)
-
+        
+        flash('Transfer order successfully placed', 'success')
         return redirect("/inventory")
         
     except Exception as e:
@@ -1750,7 +1754,7 @@ def edit_product():
                    id
                    )
 
-        #Saving data for notification
+        #Saving data for notification 
         user = db.execute("""
                           SELECT name 
                           FROM users 
@@ -1763,6 +1767,8 @@ def edit_product():
         save_notification(notification_title, notification_message)
         
         request_page = f'/result/{product_name}/Product'
+
+        flash('Changes on product saved', 'success')
         return redirect(request_page)
     except Exception as e:
         return render_template("error.html", message=f"{e}"), 400
@@ -1770,7 +1776,7 @@ def edit_product():
 
 @server.route('/error')
 @login_required
-def error():    
+def error():
     return render_template('error.html', message=f'There was a major problem.')
 
 

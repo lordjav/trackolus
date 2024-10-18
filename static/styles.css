@@ -418,7 +418,7 @@ main {
 }
 
 /* The Modal (background) */
-.modal-window {
+.modal-window, #modal-flash {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 5; /* Sit on top */
@@ -445,9 +445,34 @@ main {
     animation-duration: 400ms;
 }
 
+#modal-flash-content {
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 500px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
+    animation-name: fading;
+    animation-duration: 400ms;    
+}
+
 @keyframes fading {
     from {opacity: 0}
     to {opacity: 1}
+}
+
+#modal-flash-header {
+    text-align: end;
+}
+
+#modal-flash-body {
+    display: flex;
+    flex-direction: column;
+}
+
+#modal-flash-body > svg {
+    margin: auto;
 }
 
 #inbound-modal-content {
