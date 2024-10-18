@@ -71,7 +71,7 @@
             </div>            
             <h1 id="title">{{ _('Receiving report') }}</h1>
             <br>
-            <p>{{ _('Date') }}: {{ order.order_date }}</p>
+            <p>{{ _('Date') }}: {{ order.order_date | objtime | format_datetime }}</p>
             <p>{{ _('Order number') }}: {{ order.order_number }}</p>
             <p>{{ _('Receiver') }}: {{ order.order_author }}</p>
             <br>
@@ -106,7 +106,7 @@
         <div id="grand-total"><span>{{ _('Grand total') }}</span><span id="total">{{ data["grand_total"] | cop }}</span></div>
         <footer>
             <div>Trackolus</div>
-            <div>Developed by: Javier Meza.</div>
+            <div>{{ _('Developed by') }}: Javier Meza.</div>
         </footer>
     </body>
 </html>

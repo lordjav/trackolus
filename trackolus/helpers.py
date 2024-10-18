@@ -46,6 +46,12 @@ def formattime(date, format='%Y-%m-%d'):
     return date_object.strftime(format)
 
 
+#Function: return date as a date object
+def objtime(date):
+    date_object = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+    return date_object
+
+
 #Function: register events in database as notifications
 def save_notification(title, message):
     db.execute("""

@@ -8,6 +8,7 @@ from trackolus.classes import *
 from trackolus.native_translator import *
 from datetime import datetime, timedelta
 from flask_babel import Babel
+from babel.dates import format_date, format_datetime, format_time
 
 server = Flask(__name__)
 server.secret_key = 'EsAlItErAsE'
@@ -29,6 +30,8 @@ babel.init_app(
 
 server.jinja_env.filters["cop"] = cop
 server.jinja_env.filters["formattime"] = formattime
+server.jinja_env.filters["format_datetime"] = format_datetime
+server.jinja_env.filters["objtime"] = objtime
 
 #Decorator: Makes the function 'get_locale' available directly in the template
 @server.context_processor
@@ -36,6 +39,7 @@ def inject_locale():
     return {'get_locale': get_locale}
 
 
+#Decorator: Makes the name saved in session dict available directly in templates
 @server.context_processor
 def inject_user():
     return {'user_name': session.get('name', None)}
@@ -1158,30 +1162,26 @@ def result(search_term, type):
                                             m.date AS Date, 
                                             SUM(p.price * p.quantity) AS 'Amount', 
                                             SUM(p.quantity) AS Quantity, 
-                                            c.name AS Counterpart 
+                                            COALESCE(c.name, '') AS Counterpart 
                                            FROM movements m 
-                                           JOIN products_movement p 
+                                           LEFT JOIN products_movement p 
                                            ON m.id = p.movement_id 
-                                           JOIN customers_suppliers c 
+                                           LEFT JOIN customers_suppliers c 
                                            ON m.counterpart = c.id 
-                                           WHERE m.author = (
-                                           SELECT id 
-                                           FROM users 
-                                           WHERE name = ?
-                                           )
+                                           WHERE m.author = ?
                                            GROUP BY 
                                             m.order_number,
                                             m.type,
-                                            m.date
+                                            m.date 
                                            ORDER BY m.date DESC
-                                           """, search_term)
+                                           """, item[0]['id'])
             template = 'users_result.html'
 
         case _:
             return render_template(
                 "error.html", 
                 message="Error: Element not found"), 404
-    
+
     return render_template(
         template, 
         item=item, 

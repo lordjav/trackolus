@@ -14,9 +14,9 @@
             <div><span>{{ _('Contact phone') }}: </span><span>{{ item[0]['phone'] }}</span></div>
             <div><span>{{ _('E-mail') }}: </span><span>{{ item[0]['email'] }}</span></div>
             <div><span>{{ _('Role') }}: </span><span>{{ item[0]['role'] }}</span></div>
-            <div><span>{{ _('Active since') }}: </span><span>{{ item[0]['start_date'] }}</span></div>
+            <div><span>{{ _('Active since') }}: </span><span>{{ item[0]['start_date'] | objtime | format_datetime }}</span></div>
             {% if item[0]['end_date'] %}
-            <div><span>{{ _('Active until') }}: </span><span>{{ item[0]['end_date'] }}</span></div>
+            <div><span>{{ _('Active until') }}: </span><span>{{ item[0]['end_date'] | objtime | format_datetime }}</span></div>
             {% endif %}
             <div><span>{{ _('Status') }}: </span><span>{{ item[0]['status'] }}</span></div>
         </section>
@@ -40,12 +40,18 @@
                 <tbody>
                     {% for item in transactions %}
                     <tr target="_blank">
-                        <td><a href="{{ url_for('calendar_date', date=item['Date']|formattime) }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['Date'] }}</a></td>
+                        <td><a href="{{ url_for('calendar_date', date=item['Date']|formattime) }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['Date'] | objtime | format_datetime }}</a></td>
                         <td><a href="{{ url_for('result', search_term=item['Order'], type='Outbound') }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['Order'] }}</a></td>
-                        <td>{{ item['Type'] }}</td>
+                        <td>{{ item['Type'] | capitalize }}</td>
                         <td>{{ item['Quantity'] }}</td>
                         <td>{{ item['Amount'] | cop }}</td>
-                        <td>{% if item['Type'] == 'inbound' %}<a href="{{ url_for('result', search_term=item['Counterpart'], type='Supplier') }}">{% else %}<a href="{{ url_for('result', search_term=item['Counterpart'], type='Customer') }}">{% endif %}<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item['Counterpart'] }}</a></td>
+                        <td>
+                            {% if item['Type'] == 'inbound' %}
+                            <a href="{{ url_for('result', search_term=item['Counterpart'], type='Supplier') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg>
+                            {% elif item['Type'] == 'outbound' %}
+                            <a href="{{ url_for('result', search_term=item['Counterpart'], type='Customer') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg>
+                            {% else %}                            
+                            {% endif %} {{ item['Counterpart'] }}</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

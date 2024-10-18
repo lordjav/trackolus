@@ -41,9 +41,9 @@
                 <h4 id="company-data">{{ _('Your company data here') }}</h4>
             </div>
             <h1 id="title">{{ _('Report') }}</h1>
-            <p>Date: {{ additional_data['date'] }}.</p>
-            <p>User: {{ additional_data['user'] }}.</p>
-            <p>Datatype: {{ additional_data['datatype'] }}.</p>
+            <p>{{ _('Date') }}: {{ additional_data['date'] | objtime | format_datetime }}.</p>
+            <p>{{ _('User') }}: {{ additional_data['user'] }}.</p>
+            <p>{{ _('Datatype') }}: {{ additional_data['datatype'] }}.</p>
         </header>
         <table class="table table-striped table-secondary table-borderless table-hover" id="data">
             <thead class="table-light">
@@ -57,9 +57,9 @@
                 {% for item in data %}
                 {% if item | length > 2 %}            
                     {% for key in item %}
-                    {% if key == 'Price' %}
+                    {% if key in ['Price', 'Precio'] %}
                     <td>{{ item[key] | cop }}</td>
-                    {% elif key == 'Amount' %}
+                    {% elif key in ['Amount', 'Monto'] %}
                     <td>{{ item[key] | cop }}</td>
                     {% else %}
                     <td>{{ item[key] }}</td>
@@ -72,7 +72,7 @@
         </table>
         <footer>
             <div>Trackolus</div>
-            <div>Developed by: Javier Meza.</div>
+            <div>{{ _('Developed by') }}: Javier Meza.</div>
         </footer>
     </body>
 </html>

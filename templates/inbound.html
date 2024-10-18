@@ -9,7 +9,7 @@
         <section class="movements" aria-expanded="false">
             <div class="mov-info">
                 <p class="mov-data mov-data-order"><a href="{{ url_for('result', search_term=movement.order_number, type='Inbound') }}" target="_blank"><b>{{ _('Order number') }}:</b> {{ movement.order_number }}</a></p>
-                <p class="mov-data mov-data-date"><a href="{{ url_for('calendar_date', date=movement.order_date|formattime) }}"><b>{{ _('Date') }}:</b> {{ movement.order_date }}</a></p>
+                <p class="mov-data mov-data-date"><a href="{{ url_for('calendar_date', date=movement.order_date|formattime) }}"><b>{{ _('Date') }}:</b> {{ movement.order_date | objtime | format_datetime }}</a></p>
                 <p class="mov-data mov-data-customer-supplier"><a href="{{ url_for('result', search_term=movement.order_counterpart, type='Supplier') }}"><b>{{ _('Supplier') }}:</b> {{ movement.order_counterpart }} </a></p>
                 <p class="mov-data mov-data-author"><a href="{{ url_for('result', search_term=movement.order_author, type='User') }}"><b>{{ _('Receiver') }}:</b> {{ movement.order_author }}</a></p>
             </div>
