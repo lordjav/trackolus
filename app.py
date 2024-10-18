@@ -1410,18 +1410,18 @@ def notifications():
 @server.route("/mark_read", methods=['POST'])
 @login_required
 def mark_read():
-    notifications_read = request.form.getlist('notifications_read')
-    notifications_list = []
-    notifications_saved = db.execute("""
-                                     SELECT id 
-                                     FROM notifications 
-                                     WHERE date >= datetime(
-                                        'now', 
-                                        '-24 hours', 
-                                        'localtime')
-                                     """)
-    
     try:
+        notifications_read = request.form.getlist('notifications_read')
+        notifications_list = []
+        notifications_saved = db.execute("""
+                                        SELECT id 
+                                        FROM notifications 
+                                        WHERE date >= datetime(
+                                            'now', 
+                                            '-24 hours', 
+                                            'localtime')
+                                        """)
+    
         for id in notifications_saved:
             notifications_list.append(id['id'])
             
@@ -1504,22 +1504,22 @@ def create_user():
 @login_required
 @role_required(['admin'])
 def edit_user():
-    id = request.form.get('id')
-    id_type = request.form.get('identification_type')
-    identification = request.form.get('identification')
-    name = request.form.get('name')
-    email = request.form.get('email')
-    phone = request.form.get('phone')
-    status = request.form.get('status')
-    role = request.form.get('role')
-    
-    id_in_DB = db.execute("""
-                          SELECT id 
-                          FROM users 
-                          WHERE id = ?
-                          """, id)
-
     try:
+        id = request.form.get('id')
+        id_type = request.form.get('identification_type')
+        identification = request.form.get('identification')
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        status = request.form.get('status')
+        role = request.form.get('role')
+        
+        id_in_DB = db.execute("""
+                            SELECT id 
+                            FROM users 
+                            WHERE id = ?
+                            """, id)
+
         #Ensure user exists in database
         if not id or len(id_in_DB) != 1:
             raise Exception("Error with user information. Id not found")
@@ -1575,7 +1575,6 @@ def edit_user():
         return redirect(redirect_page)
  
     except Exception as e:
-        print(e)
         return render_template("error.html", message=f"{e}"), 400
  
 
@@ -1584,8 +1583,8 @@ def edit_user():
 @login_required
 @role_required(['admin', 'user'])
 def transfer():
-    data = get_order_data()
     try:
+        data = get_order_data()
         order_number = db.execute("""
                                 SELECT order_number 
                                 FROM movements 
@@ -1689,21 +1688,21 @@ def transfer():
 @login_required
 @role_required(['admin', 'user'])
 def edit_product():
-    id = request.form.get('id')
-    product_name = request.form.get('product_name')
-    product_SKU = request.form.get('SKU')
-    status = request.form.get('status')
-    buy_price = request.form.get('buy_price')
-    sell_price = request.form.get('sell_price')
-    comments = request.form.get('comments')
-
-    original_name = db.execute("""
-                            SELECT product_name 
-                            FROM inventory 
-                            WHERE id = ?
-                            """, id)[0]['product_name']
-
     try:
+        id = request.form.get('id')
+        product_name = request.form.get('product_name')
+        product_SKU = request.form.get('SKU')
+        status = request.form.get('status')
+        buy_price = request.form.get('buy_price')
+        sell_price = request.form.get('sell_price')
+        comments = request.form.get('comments')
+
+        original_name = db.execute("""
+                                SELECT product_name 
+                                FROM inventory 
+                                WHERE id = ?
+                                """, id)[0]['product_name']
+
         #Ensure product exists in database
         if not id or not original_name:
             raise ValueError("Error with product information. Id not found")
@@ -1728,22 +1727,19 @@ def edit_product():
         #Ensure prices are positive numbers
         elif int(sell_price) <= 0 or int(buy_price) <= 0:
             raise ValueError("Price must be a positive number")
-    except ValueError as e:
-        return render_template("error.html", message=f"{e}"), 400
 
-    if request.files["image_reference"]:
-        image_upload = upload_image(
-            request.files["image_reference"], 
-            product_SKU, 
-            server.config["UPLOAD_DIRECTORY"], 
-            server.config["ALLOWED_EXTENSIONS"]
-            )
-        image_link = image_upload[7:]
-        image = f'image_route = "{image_link}",'
-    else:
-        image = ''
+        if request.files["image_reference"]:
+            image_upload = upload_image(
+                request.files["image_reference"], 
+                product_SKU, 
+                server.config["UPLOAD_DIRECTORY"], 
+                server.config["ALLOWED_EXTENSIONS"]
+                )
+            image_link = image_upload[7:]
+            image = f'image_route = "{image_link}",'
+        else:
+            image = ''
 
-    try:
         db.execute(f"""
                    UPDATE inventory 
                    SET 
@@ -1783,6 +1779,47 @@ def edit_product():
         return redirect(request_page)
     except Exception as e:
         return render_template("error.html", message=f"{e}"), 400
+
+
+@server.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if request.method == 'POST':
+        try:
+            old_password_hash = db.execute("SELECT hash FROM users WHERE id = ?", session["user_id"])[0]["hash"]
+            
+            # Ensure old password was submitted
+            if not request.form.get("old-password"):
+                raise Exception("Must provide your current password")
+            # Ensure new password was submitted
+            elif not request.form.get("new-password"):
+                raise Exception("Must provide a new password")
+            # Ensure confirmation was submitted
+            elif not request.form.get("confirmation"):
+                raise Exception("Must confirm your new password")
+            # Ensure passwords match
+            elif request.form.get("new-password") != request.form.get("confirmation"):
+                raise Exception("Passwords does not match")
+            # Ensure old password is correct
+            if not check_password_hash(old_password_hash, request.form.get("old-password")):
+                raise Exception("Current password is incorrect")
+        except Exception as e:
+            flash(str(e), category="danger")
+            return render_template("change_password.html")
+
+        #Try to update password in database and handle exceptions
+        try:
+            password_hash = generate_password_hash(request.form.get("new_password"))
+
+            db.execute("UPDATE users SET hash = ? WHERE id = ?", password_hash, session["user_id"])
+            
+            flash("Password succesfully changed", category="success")
+            return redirect("/settings")
+        except Exception as e:
+            flash(f"Error updating password: {e}", category="danger")
+            return render_template('change_password.html')
+    else:
+        return render_template('change_password.html')
 
 
 @server.route('/error')

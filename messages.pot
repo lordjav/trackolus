@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-10-18 11:51-0500\n"
+"POT-Creation-Date: 2024-10-18 13:14-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Generated-By: Babel 2.16.0\n"
 
 #: templates/create_user.html:6 templates/users_result.html:12
-#: templates/users_result.html:72
+#: templates/users_result.html:78
 msgid "Full name"
 msgstr ""
 
@@ -71,30 +71,31 @@ msgid "Identification"
 msgstr ""
 
 #: templates/create_user.html:24 templates/purchase_order.html:12
-#: templates/users_result.html:14 templates/users_result.html:90
+#: templates/users_result.html:14 templates/users_result.html:96
 msgid "Contact phone"
 msgstr ""
 
 #: templates/create_user.html:25 templates/customers_result.html:14
 #: templates/order_pdf.html:82 templates/outbound_movement_pdf.html:82
 #: templates/purchase_order.html:13 templates/suppliers_result.html:14
-#: templates/users_result.html:15 templates/users_result.html:91
+#: templates/users_result.html:15 templates/users_result.html:97
 msgid "E-mail"
 msgstr ""
 
-#: templates/create_user.html:27 templates/users_result.html:100
+#: templates/create_user.html:27 templates/users_result.html:106
 msgid "Choose role"
 msgstr ""
 
-#: templates/create_user.html:28 templates/users_result.html:101
+#: templates/create_user.html:28 templates/users_result.html:107
 msgid "Administrator"
 msgstr ""
 
-#: templates/create_user.html:29 templates/users_result.html:102
+#: templates/create_user.html:29 templates/generate_report_pdf.html:45
+#: templates/users_result.html:108
 msgid "User"
 msgstr ""
 
-#: templates/create_user.html:30 templates/users_result.html:103
+#: templates/create_user.html:30 templates/users_result.html:109
 msgid "Observer"
 msgstr ""
 
@@ -115,11 +116,12 @@ msgstr ""
 msgid "Records"
 msgstr ""
 
-#: templates/customers_result.html:24 templates/inbound-o.html:12
-#: templates/inbound.html:12 templates/inbound_movement_pdf.html:74
-#: templates/outbound.html:11 templates/outbound_movement_pdf.html:74
-#: templates/products_result-o.html:29 templates/products_result.html:29
-#: templates/suppliers_result.html:24 templates/users_result.html:32
+#: templates/customers_result.html:24 templates/generate_report_pdf.html:44
+#: templates/inbound-o.html:12 templates/inbound.html:12
+#: templates/inbound_movement_pdf.html:74 templates/outbound.html:11
+#: templates/outbound_movement_pdf.html:74 templates/products_result-o.html:29
+#: templates/products_result.html:29 templates/suppliers_result.html:24
+#: templates/users_result.html:32
 msgid "Date"
 msgstr ""
 
@@ -153,6 +155,16 @@ msgstr ""
 
 #: templates/generate_report_pdf.html:43
 msgid "Report"
+msgstr ""
+
+#: templates/generate_report_pdf.html:46
+msgid "Datatype"
+msgstr ""
+
+#: templates/generate_report_pdf.html:75
+#: templates/inbound_movement_pdf.html:109 templates/order_pdf.html:111
+#: templates/outbound_movement_pdf.html:111
+msgid "Developed by"
 msgstr ""
 
 #: templates/inbound-o.html:11 templates/inbound.html:11
@@ -285,12 +297,12 @@ msgid "Add new product to stock"
 msgstr ""
 
 #: templates/inventory.html:68 templates/products_result.html:70
-#: templates/users_result.html:94
+#: templates/users_result.html:100
 msgid "Choose status"
 msgstr ""
 
 #: templates/inventory.html:69 templates/products_result.html:71
-#: templates/users_result.html:95
+#: templates/users_result.html:101
 msgid "Active"
 msgstr ""
 
@@ -400,7 +412,7 @@ msgstr ""
 msgid "Edit product information"
 msgstr ""
 
-#: templates/products_result.html:85 templates/users_result.html:108
+#: templates/products_result.html:85 templates/users_result.html:114
 msgid "Save changes"
 msgstr ""
 
@@ -484,23 +496,23 @@ msgstr ""
 msgid "Customer/Supplier"
 msgstr ""
 
-#: templates/users_result.html:65
+#: templates/users_result.html:71
 msgid "Edit user information"
 msgstr ""
 
-#: templates/users_result.html:75
+#: templates/users_result.html:81
 msgid "ID type"
 msgstr ""
 
-#: templates/users_result.html:88
+#: templates/users_result.html:94
 msgid "identification"
 msgstr ""
 
-#: templates/users_result.html:96
+#: templates/users_result.html:102
 msgid "Suspended"
 msgstr ""
 
-#: templates/users_result.html:97
+#: templates/users_result.html:103
 msgid "Inactive"
 msgstr ""
 

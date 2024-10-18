@@ -919,6 +919,60 @@ main {
     margin: 30px 0 0 20px;
 }
 
+#settings-options-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 85px);
+}
+
+.settings-button {
+    font-size: 1.2rem !important;
+    display: flex;
+    line-height: normal !important;
+    width: 250px !important;
+    height: 80px !important;
+    margin: 50px !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+}
+
+.settings-button-svg {
+    flex: 20;
+}
+
+.settings-button-text {
+    flex: 80;
+    text-align: center;
+}
+
+#change-password-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 85px);
+}
+
+.password-input {
+    margin: 20px auto;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cpath fill='none' stroke='grey' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2zm3-2V7a4 4 0 1 1 8 0v4m-1 5h.01m-3 0h.01m-3 0h.01'/%3E%3C/svg%3E");
+    background-position: 5px 3px;
+    background-size: contain;
+}
+
+#save-password-button {
+    margin: 30px auto;
+    line-height: normal !important;
+}
+
+#error-message2 {
+    height: 30px;
+    text-align: center;
+}
+
+
 
 /* Extra extra small devices (phones, 420px and down) */
 @media only screen and (min-width: 150px) {
@@ -1056,6 +1110,9 @@ main {
         width: 50%;
     }
     #product-info {
+        flex-direction: column;
+    }
+    #settings-options-container {
         flex-direction: column;
     }
 }
@@ -1298,6 +1355,10 @@ main {
         
     }
     #save-transfer-button, #save-product-button, #save-user-button, #get-report, #save-inbound-button, #get-PDF, #save-order { max-height: 40px;}
+
+    #settings-options-container {
+        flex-direction: row;
+    }
 }
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
