@@ -210,8 +210,9 @@ main {
 }
 
 #notifications {
-    position: absolute;
+    position: fixed;
     top: 45px;
+    right: 0;
     background-color: white;
     border: 1px solid #d7d7d7;
     translate: -68px 0px;

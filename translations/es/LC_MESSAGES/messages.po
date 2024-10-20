@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-10-18 13:14-0500\n"
+"POT-Creation-Date: 2024-10-18 17:27-0500\n"
 "PO-Revision-Date: 2024-10-01 11:03-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -17,6 +17,22 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
+
+#: templates/change_password.html:6
+msgid "Old password"
+msgstr "Contraseña actual"
+
+#: templates/change_password.html:7
+msgid "New password"
+msgstr "Nueva contraseña"
+
+#: templates/change_password.html:8
+msgid "Confirm new password"
+msgstr "Confirma la nueva contraseña"
+
+#: templates/change_password.html:12
+msgid "Save password"
+msgstr "Guardar contraseña"
 
 #: templates/create_user.html:6 templates/users_result.html:12
 #: templates/users_result.html:78
@@ -457,9 +473,13 @@ msgstr "Actividad"
 msgid "Get report"
 msgstr "Obtener reporte"
 
-#: templates/settings.html:5
+#: templates/settings.html:6
 msgid "Create user"
 msgstr "Crear usuario"
+
+#: templates/settings.html:7
+msgid "Change password"
+msgstr "Cambiar contraseña"
 
 #: templates/suppliers_result.html:26
 msgid "Products received"

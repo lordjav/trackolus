@@ -8,7 +8,7 @@ from trackolus.classes import *
 from trackolus.native_translator import *
 from datetime import datetime, timedelta
 from flask_babel import Babel
-from babel.dates import format_date, format_datetime, format_time
+from babel.dates import format_datetime
 
 server = Flask(__name__)
 server.secret_key = 'EsAlItErAsE'
@@ -568,10 +568,11 @@ def movement_pdf(order_number):
     order_raw = db.execute("""
                            SELECT 
                             m.order_number, 
-                            m.origin, 
+                            w_origin.name AS origin, 
+                            w_destination.name as destination, 
                             m.date, 
                             m.type, 
-                            u.name AS vendor, 
+                            u.name AS author, 
                             c.name AS counterpart, 
                             c.identification_type, 
                             c.identification, 
@@ -582,8 +583,12 @@ def movement_pdf(order_number):
                             p.price, 
                             p.quantity
                            FROM movements m 
-                           JOIN customers_suppliers c 
+                           LEFT JOIN customers_suppliers c 
                             ON m.counterpart = c.id 
+                           LEFT JOIN warehouses w_origin
+                            ON m.origin = w_origin.id 
+                           LEFT JOIN warehouses w_destination
+                            ON m.origin = w_destination.id 
                            JOIN products_movement p
                             ON m.id = p.movement_id
                            JOIN inventory i
@@ -592,11 +597,11 @@ def movement_pdf(order_number):
                             ON u.id = m.author 
                            WHERE order_number = ? 
                            """, order_number)
-    print(order_raw)
+
     order_object = prototype_order(order_raw[0]["order_number"], 
                                 order_raw[0]["type"], 
                                 order_raw[0]["date"], 
-                                order_raw[0]["vendor"], 
+                                order_raw[0]["author"], 
                                 order_raw[0]["counterpart"]
                                 )
     grand_total = 0
@@ -615,7 +620,7 @@ def movement_pdf(order_number):
             "grand_total": grand_total
             }
         template = "outbound_movement_pdf.html"
-    else:
+    elif order_raw[0]['type'] == "inbound":
         additional_data = {
             "supplier_name": order_raw[0]["counterpart"], 
             "supplier_id_type": order_raw[0]["identification_type"], 
@@ -623,6 +628,9 @@ def movement_pdf(order_number):
             "grand_total": grand_total
             }
         template = "inbound_movement_pdf.html"
+    else:
+        order_object.add_prop('origin', order_raw[0]['origin'])
+        order_object.add_prop('destination', order_raw[0]['destination'])
     
     rendered = render_template(
         template, 
@@ -754,6 +762,35 @@ def reports():
                                   """)                
                 data_report.append({'datatype':f'{tr['outbound']}', 'keyword':'Order'})
 
+            case 'Transfers':
+                data_report = db.execute(f"""
+                                         SELECT 
+                                            m.date AS {tr['date']},
+                                            m.order_number AS '{tr['order']}', 
+                                            SUM(p.quantity) AS '{tr['p-transferred']}', 
+                                            w_origin.name AS {tr['origin']}, 
+                                            w_destination.name AS {tr['destination']}, 
+                                            u.name AS {tr['responsible']} 
+                                         FROM movements m 
+                                         JOIN warehouses w_origin 
+                                            ON m.origin = w_origin.id 
+                                         JOIN warehouses w_destination 
+                                            ON m.destination = w_destination.id 
+                                         JOIN users u 
+                                            ON m.author = u.id
+                                         JOIN products_movement p
+                                            ON m.id = p.movement_id 
+                                         WHERE type = 'transfer' 
+                                         GROUP BY 
+                                         m.date, 
+                                         m.order_number, 
+                                         u.name, 
+                                         w_origin.name, 
+                                         w_destination.name 
+                                  ORDER BY date DESC
+                                  """)                
+                data_report.append({'datatype':f'{tr['transfer']}', 'keyword':'Order'})
+                print(pandas.DataFrame(data_report))
             case 'Users':
                 if session['role'] != 'admin':
                     return render_template(
@@ -1130,7 +1167,7 @@ def result(search_term, type):
                                            """, search_term)
             template = 'suppliers_result.html'
 
-        case 'Inbound' | 'Outbound' | 'Order':
+        case 'Inbound' | 'Outbound' | 'Transfer' | 'Order':
             return redirect(f"/movement_pdf/{search_term}")
         
         case 'User':

@@ -86,6 +86,10 @@ class prototype_order:
         self.order_products = []
         self.order_author = order_author
         self.order_counterpart = order_counterpart
+        self.order_props = {}
 
     def add_products(self, product_object):
         self.order_products.append(product_object)
+
+    def add_prop(self, key, value):
+        self.order_props[key] = value
