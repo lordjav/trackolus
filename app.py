@@ -588,7 +588,7 @@ def movement_pdf(order_number):
                            LEFT JOIN warehouses w_origin
                             ON m.origin = w_origin.id 
                            LEFT JOIN warehouses w_destination
-                            ON m.origin = w_destination.id 
+                            ON m.destination = w_destination.id 
                            JOIN products_movement p
                             ON m.id = p.movement_id
                            JOIN inventory i
@@ -631,6 +631,8 @@ def movement_pdf(order_number):
     else:
         order_object.add_prop('origin', order_raw[0]['origin'])
         order_object.add_prop('destination', order_raw[0]['destination'])
+        additional_data = {}
+        template = "transfer_movement_pdf.html"
     
     rendered = render_template(
         template, 
