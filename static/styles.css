@@ -225,14 +225,6 @@ main {
     overflow-y: scroll;
 }
 
-.notifications-small {
-    font-size: 1.2rem !important;
-    position: fixed !important;
-    top: 190px !important;
-    right: 24vw !important;
-    z-index: 11 !important;
-}
-
 .notification {
     border: 1px solid #ddd;
     padding: 10px;
@@ -1081,7 +1073,6 @@ main {
         height: 35px;
         z-index: 0;
     }
-    #warehouse
     #name-id, #phone-email {
         flex-wrap: wrap;
         justify-content: center;
@@ -1133,6 +1124,13 @@ main {
     #settings-options-container {
         flex-direction: column;
     }
+    .notifications-small {
+        font-size: 1.2rem !important;
+        position: fixed !important;
+        top: 170px !important;
+        z-index: 11 !important;
+        width: 60vw !important;
+    }
 }
 
 /* Extra small devices (phones, 420px and up) */
@@ -1161,6 +1159,14 @@ main {
     #logout-icon-aux-container {
         position: absolute;
         bottom: 10px;
+    }
+    .notifications-small {
+        font-size: 1.2rem !important;
+        position: fixed !important;
+        top: 180px !important;
+        right: 22vw !important;
+        z-index: 11 !important;
+        width: 60vw !important;
     }
 }
 
@@ -1245,6 +1251,13 @@ main {
     #product-info {
         flex-direction: row;
     }
+    .notifications-small {
+        font-size: 1.2rem !important;
+        position: fixed !important;
+        top: 190px !important;
+        right: 24vw !important;
+        z-index: 11 !important;
+    }    
 }
 
 /* Medium devices (landscape tablets, 768px and up) */
