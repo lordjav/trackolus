@@ -23,6 +23,17 @@
     </form>
 </div>
 {% if data %}
+{% if data[-1]['datatype'] in ['Activity', 'Actividad'] %}
+<div id="user-container">
+        <select class="form select" id="user-select" name="user-select" required hx-get="{{ url_for('user_filter') }}" hx-trigger="change from:select" hx-target="tbody">
+            <option selected disabled value="" id="choose_user">{{ _('Choose user') }}</option>
+            {% for user in data[-1]['users'] %}
+            <option value="{{ user }}">{{ user }}</option>
+            {% endfor %}
+        </select>
+        <br>
+</div>
+{% endif %}
 <div>
     <h3 class="data_title">{{ data[-1]['datatype'] }}</h3>
 </div>
@@ -49,7 +60,8 @@
         </thead>
         <tbody>
             {% for item in data %}
-            {% if item | length > 2 %}
+            {% if item | length > 3 %}
+            <tr>
                 {% for key in item %}
                 {% if key in ['Price', 'Precio'] %}
                 <td>{{ item[key] | cop }}</td>

@@ -1,4 +1,4 @@
-import sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz, time, json
+import sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz, time, json, copy
 from cs50 import SQL
 from flask import Flask, jsonify, redirect, render_template, session, send_file, flash
 from flask import render_template_string, request, make_response, stream_with_context, Response
@@ -854,12 +854,15 @@ def reports():
                                        JOIN users u 
                                         ON m.author = u.id 
                                        """)
+                users = set()
                 data_report = []
                 for category in [users_log, inventory, movements]:
-                    for element in category:
-                        data_report.append(element)
+                    for item in category:
+                        data_report.append(item)
+                        users.add(item[f"{tr['user']}"])
+
                 data_report.sort(key=lambda event: event[f"{tr['date']}"], reverse=True)
-                data_report.append({f'datatype':f'{tr['activity']}', 'keyword':'activity'})
+                data_report.append({'datatype':f'{tr['activity']}', 'keyword':'activity', 'users':users})
 
         return render_template("reports.html", data=data_report)
     
@@ -1911,3 +1914,41 @@ def change_password():
 def error():
     return render_template('error.html', message=f'There was a major problem.')
 
+
+@server.route('/user_filter')
+@login_required
+@role_required(['admin'])
+def user_filter():
+    tr = translations(session['language'])
+    data_report.pop()
+    data_report_copy = copy.deepcopy(data_report)
+
+    for item in data_report_copy[:]:
+        if item[f"{tr['user']}"] != request.args.get('user-select'):
+            data_report_copy.remove(item)
+
+    return render_template_string("""
+    {% for item in data %}
+    {% if item | length > 3 %}
+    <tr>
+        {% for key in item %}
+        {% if key in ['Price', 'Precio'] %}
+        <td>{{ item[key] | cop }}</td>
+        {% elif key in ['Amount', 'Monto'] %}
+        <td>{{ item[key] | cop }}</td>
+        {% elif key in ['Order', 'Orden'] %}
+        <td><a href="{{ url_for('result', search_term=item[key], type=data[-1]['datatype']) }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+        {% elif key in ['Product', 'Producto', 'Customer', 'Cliente', 'User', 'Usuario', 'Supplier', 'Proveedor'] %}
+        <td><a href="{{ url_for('result', search_term=item[key], type=key) }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+        {% elif key in ['Receiver', 'Recibió', 'Vendor', 'Vendedor'] %}
+        <td><a href="{{ url_for('result', search_term=item[key], type='User') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
+        {% elif key in ['Date', 'Fecha'] %}
+        <td><a href="{{ url_for('calendar_date', date=item[key]|formattime) }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] | objtime | format_datetime }}</a></td>
+        {% else %}
+        <td>{{ item[key] }}</td>
+        {% endif %}
+        {% endfor %}
+    </tr>
+    {% endif %}
+    {% endfor %}
+    """, data=data_report_copy)

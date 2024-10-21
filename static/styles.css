@@ -671,7 +671,7 @@ main {
     position: relative;
 }
 
-#datatype-container {
+#datatype-container, #user-container {
     text-align: center;
     padding: 6vh 0;
 }
