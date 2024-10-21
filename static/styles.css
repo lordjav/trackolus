@@ -225,6 +225,14 @@ main {
     overflow-y: scroll;
 }
 
+.notifications-small {
+    font-size: 1.2rem !important;
+    position: fixed !important;
+    top: 190px !important;
+    right: 24vw !important;
+    z-index: 11 !important;
+}
+
 .notification {
     border: 1px solid #ddd;
     padding: 10px;
@@ -242,15 +250,24 @@ main {
 }
 
 #language-select-container {
-    position: absolute;
+    position: fixed;
     padding: 10px;
     top: 45px;
+    right: 80px;
     background-color: white;
     border: 1px solid #d7d7d7;
     z-index: 3;
     border-radius: 10px;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
     height: fit-content;
+}
+
+.language-small {
+    font-size: 1.5rem !important;
+    position: fixed !important;
+    top: 130px !important;
+    right: 35vw !important;
+    z-index: 11 !important;
 }
 
 .language-option {

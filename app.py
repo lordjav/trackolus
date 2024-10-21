@@ -792,7 +792,7 @@ def reports():
                                   ORDER BY date DESC
                                   """)                
                 data_report.append({'datatype':f'{tr['transfer']}', 'keyword':'Order'})
-                print(pandas.DataFrame(data_report))
+
             case 'Users':
                 if session['role'] != 'admin':
                     return render_template(

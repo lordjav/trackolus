@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-10-18 17:27-0500\n"
+"POT-Creation-Date: 2024-10-20 22:56-0500\n"
 "PO-Revision-Date: 2024-10-01 11:03-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -138,7 +138,7 @@ msgstr "Registros"
 #: templates/inbound_movement_pdf.html:74 templates/outbound.html:11
 #: templates/outbound_movement_pdf.html:74 templates/products_result-o.html:29
 #: templates/products_result.html:29 templates/suppliers_result.html:24
-#: templates/users_result.html:32
+#: templates/transfer_movement_pdf.html:71 templates/users_result.html:32
 msgid "Date"
 msgstr "Fecha"
 
@@ -162,11 +162,13 @@ msgstr "Vendedor"
 
 #: templates/generate_report_pdf.html:40 templates/inbound_movement_pdf.html:69
 #: templates/order_pdf.html:73 templates/outbound_movement_pdf.html:69
+#: templates/transfer_movement_pdf.html:66
 msgid "Your company name here"
 msgstr "Logo de su compañía aquí"
 
 #: templates/generate_report_pdf.html:41 templates/inbound_movement_pdf.html:70
 #: templates/order_pdf.html:74 templates/outbound_movement_pdf.html:70
+#: templates/transfer_movement_pdf.html:67
 msgid "Your company data here"
 msgstr "Info de su compañía aquí"
 
@@ -181,13 +183,14 @@ msgstr "Tipo de datos"
 #: templates/generate_report_pdf.html:75
 #: templates/inbound_movement_pdf.html:109 templates/order_pdf.html:111
 #: templates/outbound_movement_pdf.html:111
+#: templates/transfer_movement_pdf.html:101
 msgid "Developed by"
 msgstr "Desarrollado por"
 
 #: templates/inbound-o.html:11 templates/inbound.html:11
 #: templates/inbound_movement_pdf.html:75 templates/outbound.html:10
 #: templates/outbound_movement_pdf.html:75 templates/products_result-o.html:30
-#: templates/products_result.html:30
+#: templates/products_result.html:30 templates/transfer_movement_pdf.html:72
 msgid "Order number"
 msgstr "Número de orden"
 
@@ -207,7 +210,7 @@ msgstr "Recibió"
 #: templates/order_pdf.html:90 templates/outbound.html:26
 #: templates/outbound_movement_pdf.html:90 templates/products_result-o.html:12
 #: templates/products_result.html:12 templates/products_result.html:67
-#: templates/purchase_order.html:37
+#: templates/purchase_order.html:37 templates/transfer_movement_pdf.html:85
 msgid "Product name"
 msgstr "Nombre del producto"
 
@@ -216,7 +219,7 @@ msgstr "Nombre del producto"
 #: templates/inventory.html:129 templates/order_pdf.html:91
 #: templates/outbound.html:27 templates/outbound_movement_pdf.html:91
 #: templates/products_result-o.html:31 templates/products_result.html:31
-#: templates/purchase_order.html:38
+#: templates/purchase_order.html:38 templates/transfer_movement_pdf.html:86
 msgid "Quantity"
 msgstr "Cantidad"
 
@@ -267,7 +270,7 @@ msgstr "Informe de recepción"
 #: templates/order_pdf.html:89 templates/outbound.html:25
 #: templates/outbound_movement_pdf.html:89 templates/products_result-o.html:13
 #: templates/products_result.html:13 templates/products_result.html:68
-#: templates/purchase_order.html:36
+#: templates/purchase_order.html:36 templates/transfer_movement_pdf.html:84
 msgid "SKU"
 msgstr "SKU"
 
@@ -395,6 +398,30 @@ msgstr "SALIDAS"
 msgid "Search"
 msgstr "Buscar"
 
+#: templates/layout.html:185
+msgid "Settings"
+msgstr "Ajustes"
+
+#: templates/layout.html:186
+msgid "Language"
+msgstr "Lenguaje"
+
+#: templates/layout.html:187
+msgid "Notifications"
+msgstr "Notificaciones"
+
+#: templates/layout.html:188
+msgid "Calendar"
+msgstr "Calendario"
+
+#: templates/layout.html:189
+msgid "Help"
+msgstr "Ayuda"
+
+#: templates/layout.html:191
+msgid "Logout"
+msgstr "Cerrar sesión"
+
 #: templates/login.html:37
 msgid "Password"
 msgstr "Contraseña"
@@ -462,14 +489,18 @@ msgid "Outbound"
 msgstr "Salidas"
 
 #: templates/reports.html:14
+msgid "Transfers"
+msgstr "Transferencias"
+
+#: templates/reports.html:15
 msgid "Users"
 msgstr "Usuarios"
 
-#: templates/reports.html:15
+#: templates/reports.html:16
 msgid "Activity"
 msgstr "Actividad"
 
-#: templates/reports.html:20
+#: templates/reports.html:21
 msgid "Get report"
 msgstr "Obtener reporte"
 
@@ -488,6 +519,22 @@ msgstr "Productos recibidos"
 #: templates/suppliers_result.html:27
 msgid "Total amount"
 msgstr "Monto total"
+
+#: templates/transfer_movement_pdf.html:69
+msgid "Transfer report"
+msgstr "Reporte de transferencia"
+
+#: templates/transfer_movement_pdf.html:73
+msgid "Responsible"
+msgstr "Responsable"
+
+#: templates/transfer_movement_pdf.html:76
+msgid "Origin"
+msgstr "Origen"
+
+#: templates/transfer_movement_pdf.html:77
+msgid "Destination"
+msgstr "Destino"
 
 #: templates/users_result.html:16
 msgid "Role"

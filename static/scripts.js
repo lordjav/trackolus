@@ -76,12 +76,14 @@ function markRead(container) {
 //Show/hide notifications, modals and language selection
 const notifications = document.getElementById('notifications');
 const notificationContainer = document.getElementById("notification-icon-container");
+const notificationContainerAux = document.getElementById("notification-icon-container-aux");
 
 const languageSelect = document.getElementById("language-select-container");
 const languageContainer = document.getElementById("language-container");
+const languageContainerAux = document.getElementById("language-container-aux");
 
 function showNotifications() {    
-    if (notifications.style.display === 'none') {
+    if (notifications.style.display === 'none') {        
         notifications.style.display = 'block';
         notifications.querySelectorAll('.notification').forEach(function(element) {
             notificationsRead.push(parseInt(element.id));
@@ -95,12 +97,36 @@ function showNotifications() {
 document.addEventListener("DOMContentLoaded", function() {
     notificationContainer.addEventListener("click", function(event) {
         if (notificationContainer.contains(event.target)) {
+            notificationContainer.appendChild(notifications);
+            notifications.classList.toggle('notifications-small', false);
+            showNotifications();
+        }
+    });
+
+    notificationContainerAux.addEventListener('click', function(event) {
+        if (notificationContainerAux.contains(event.target)) {
+            toolsModal.appendChild(notifications);
+            notifications.classList.toggle('notifications-small', true);
             showNotifications();
         }
     });
 
     languageContainer.addEventListener("click", function(event) {
         if (languageContainer.contains(event.target)) {
+            languageContainer.appendChild(languageSelect);
+            languageSelect.classList.toggle('language-small', false);
+            if (languageSelect.style.display === 'none') {
+                languageSelect.style.display = 'block';
+            } else {
+                languageSelect.style.display = 'none';
+            }
+        }
+    });
+
+    languageContainerAux.addEventListener("click", function(event) {
+        if (languageContainerAux.contains(event.target)) {
+            toolsModal.appendChild(languageSelect);
+            languageSelect.classList.toggle('language-small', true);
             if (languageSelect.style.display === 'none') {
                 languageSelect.style.display = 'block';
             } else {
@@ -110,10 +136,10 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     window.onclick = function(event) {
-        if (!languageContainer.contains(event.target)) {
+        if (!languageContainer.contains(event.target) && !languageContainerAux.contains(event.target)) {
             languageSelect.style.display = 'none';
         }
-        if (!notificationContainer.contains(event.target)) {
+        if (!notificationContainer.contains(event.target) && !notificationContainerAux.contains(event.target)) {
             notifications.style.display = 'none';
         }
         if (event.target.classList.contains('modal-window')) {
@@ -142,12 +168,14 @@ function closeSidebar() {
 // Tools modal in small screens
 const toolsModal = document.getElementById('tools-modal');
 const toolsBar = document.getElementById('tools-modal-content');
+const notifAux = document.getElementById('notifications-aux');
 
 function showToolsbar() {
     toolsModal.style.display = "block";
     toolsModal.style.zIndex = 10;
     toolsBar.style.display = "flex";
     toolsBar.style.zIndex = 11;
+
 }
 function closeSidebar() {
     toolsModal.style.display = "none";
