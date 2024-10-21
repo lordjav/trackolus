@@ -61,6 +61,7 @@
         </div>
         <div class="modal-body inventory-modal-body" id="add-product-modal-body">
             <form action="/add_product" method="POST" enctype="multipart/form-data">
+                <label for="product_name_modal">Product name</label>
                 <input autocomplete="off" autofocus class="input" id="product_name_modal" type="text" name="product_name_modal"
                     placeholder="{{ _('Product name') }}"><br>
                 <input autocomplete="off" class="input" id="SKU-modal" type="text" name="SKU-modal" placeholder="{{ _('SKU') }}"><br>

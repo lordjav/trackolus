@@ -4,7 +4,7 @@
 
 <div id="datatype-container">
     <form action="/reports" method="POST" id="data-form">
-        <select class="form select" id="datatype" name="datatype" required>
+        <select class="form select" id="datatype" name="datatype" required hx-get="{{ url_for('user_filter') }}" hx-trigger="change[target.value=='Activity']" hx-target="#user-container">
             <option value="" id="choose_data_type">{{ _('Choose data type') }}</option>
             <option value="Customers">{{ _('Customers') }}</option>
             <option value="Suppliers">{{ _('Suppliers') }}</option>
@@ -15,7 +15,8 @@
             <option value="Users">{{ _('Users') }}</option>
             <option value="Activity">{{ _('Activity') }}</option>
         </select>
-        <br>
+        <div id="user-container">
+        </div>    
         <button class="menu-button purchase-button" id="get-report" type="submit">
             <svg class="button-icon icons" xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2"/></svg>
             {{ _('Get report') }}
@@ -23,17 +24,8 @@
     </form>
 </div>
 {% if data %}
-{% if data[-1]['datatype'] in ['Activity', 'Actividad'] %}
-<div id="user-container">
-        <select class="form select" id="user-select" name="user-select" required hx-get="{{ url_for('user_filter') }}" hx-trigger="change from:select" hx-target="tbody">
-            <option selected disabled value="" id="choose_user">{{ _('Choose user') }}</option>
-            {% for user in data[-1]['users'] %}
-            <option value="{{ user }}">{{ user }}</option>
-            {% endfor %}
-        </select>
-        <br>
-</div>
-{% endif %}
+<!-- {% if data[-1]['datatype'] in ['Activity', 'Actividad'] %}
+{% endif %} -->
 <div>
     <h3 class="data_title">{{ data[-1]['datatype'] }}</h3>
 </div>
@@ -60,7 +52,7 @@
         </thead>
         <tbody>
             {% for item in data %}
-            {% if item | length > 3 %}
+            {% if item | length > 2 %}
             <tr>
                 {% for key in item %}
                 {% if key in ['Price', 'Precio'] %}

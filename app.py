@@ -818,6 +818,8 @@ def reports():
                         "error.html", 
                         message="Forbbiden: you do not have permission to access this section."
                         ), 403
+                user = request.form.get('user-select')
+                print(user)
                 users_log = db.execute(f"""
                            SELECT 
                             l.date as {tr['date']}, 
@@ -833,7 +835,8 @@ def reports():
                             ON l.type = t.id 
                            JOIN users u 
                             ON l.user_id = u.id 
-                           """)
+                           WHERE {tr['user']} = ?
+                           """, user)
                 inventory = db.execute(f"""
                                        SELECT                                         
                                         i.addition_Date AS {tr['date']}, 
@@ -843,7 +846,8 @@ def reports():
                                        FROM inventory i 
                                        JOIN users u 
                                         ON i.author = u.id 
-                                       """)
+                                       WHERE {tr['user']} = ?
+                                       """, user)
                 movements = db.execute(f"""
                                        SELECT 
                                         m.date AS {tr['date']}, 
@@ -853,7 +857,8 @@ def reports():
                                        FROM movements m 
                                        JOIN users u 
                                         ON m.author = u.id 
-                                       """)
+                                       WHERE {tr['user']} = ?
+                                       """, user)
                 users = set()
                 data_report = []
                 for category in [users_log, inventory, movements]:
@@ -862,7 +867,7 @@ def reports():
                         users.add(item[f"{tr['user']}"])
 
                 data_report.sort(key=lambda event: event[f"{tr['date']}"], reverse=True)
-                data_report.append({'datatype':f'{tr['activity']}', 'keyword':'activity', 'users':users})
+                data_report.append({'datatype':f'{tr['activity']}', 'keyword':'activity'})
 
         return render_template("reports.html", data=data_report)
     
@@ -1920,35 +1925,15 @@ def error():
 @role_required(['admin'])
 def user_filter():
     tr = translations(session['language'])
-    data_report.pop()
-    data_report_copy = copy.deepcopy(data_report)
-
-    for item in data_report_copy[:]:
-        if item[f"{tr['user']}"] != request.args.get('user-select'):
-            data_report_copy.remove(item)
-
+    users = db.execute("""
+                       SELECT name 
+                       FROM users
+                       """)
     return render_template_string("""
-    {% for item in data %}
-    {% if item | length > 3 %}
-    <tr>
-        {% for key in item %}
-        {% if key in ['Price', 'Precio'] %}
-        <td>{{ item[key] | cop }}</td>
-        {% elif key in ['Amount', 'Monto'] %}
-        <td>{{ item[key] | cop }}</td>
-        {% elif key in ['Order', 'Orden'] %}
-        <td><a href="{{ url_for('result', search_term=item[key], type=data[-1]['datatype']) }}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
-        {% elif key in ['Product', 'Producto', 'Customer', 'Cliente', 'User', 'Usuario', 'Supplier', 'Proveedor'] %}
-        <td><a href="{{ url_for('result', search_term=item[key], type=key) }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
-        {% elif key in ['Receiver', 'Recibió', 'Vendor', 'Vendedor'] %}
-        <td><a href="{{ url_for('result', search_term=item[key], type='User') }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] }}</a></td>
-        {% elif key in ['Date', 'Fecha'] %}
-        <td><a href="{{ url_for('calendar_date', date=item[key]|formattime) }}"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 14v4.833A1.166 1.166 0 0 1 16.833 20H5.167A1.167 1.167 0 0 1 4 18.833V7.167A1.166 1.166 0 0 1 5.167 6h4.618m4.447-2H20v5.768m-7.889 2.121l7.778-7.778"/></svg> {{ item[key] | objtime | format_datetime }}</a></td>
-        {% else %}
-        <td>{{ item[key] }}</td>
-        {% endif %}
-        {% endfor %}
-    </tr>
-    {% endif %}
-    {% endfor %}
-    """, data=data_report_copy)
+                                  <select class="form select" id="user-select" name="user-select" required>
+                                    <option selected disabled value="" id="choose_user">{{ _('Choose user') }}</option>
+                                    {% for user in users %}
+                                    <option value="{{ user['name'] }}">{{ user['name'] }}</option>
+                                    {% endfor %}
+                                  </select>
+                                  """, users=users)

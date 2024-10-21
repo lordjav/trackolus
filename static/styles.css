@@ -584,6 +584,13 @@ main {
     text-align: center;
 }
 
+.labels {
+    position: absolute;
+    text-align: left;
+    font-size: 14px;
+    translate: 6px -3px;
+}
+
 #buttons-purchase-container {
     display: flex;
     justify-content: space-evenly;
@@ -671,10 +678,16 @@ main {
     position: relative;
 }
 
-#datatype-container, #user-container {
+#datatype-container {
     text-align: center;
     padding: 6vh 0;
 }
+
+ #user-container {
+    text-align: center;
+    margin: 2vh 0;
+    min-height: 65px;
+ }
 
 .select {
     padding: 0 5px;
