@@ -53,29 +53,34 @@
     </button>
 </div>
 <!-- Modal -->
-<div class="modal-window" id="add-product" tabindex="-1" aria-labelledby="add-product-title" aria-hidden="true">
+<div class="modal-window" id="add-product" tabindex="-1">
     <div class="modal-content" id="add-product-modal-content">
         <div class="modal-header" id="add-product-modal-header">
             <h3 id="add-product-title">{{ _('Add new product to stock') }}</h3>
-            <button type="button" class="btn-close close-modal-button" id="close-modal-button-1" onclick="closeModal('add-product')" aria-label="Close"></button>
+            <button type="button" class="btn-close close-modal-button" id="close-modal-button-1" onclick="closeModal('add-product')"></button>
         </div>
         <div class="modal-body inventory-modal-body" id="add-product-modal-body">
             <form action="/add_product" method="POST" enctype="multipart/form-data">
-                <label for="product_name_modal">Product name</label>
+                <label class="labels" for="product_name_modal">{{ _('Product name') }}</label>
                 <input autocomplete="off" autofocus class="input" id="product_name_modal" type="text" name="product_name_modal"
                     placeholder="{{ _('Product name') }}"><br>
+                <label class="labels" for="SKU-modal">{{ _('SKU code') }}</label>
                 <input autocomplete="off" class="input" id="SKU-modal" type="text" name="SKU-modal" placeholder="{{ _('SKU') }}"><br>
+                <label class="labels" for="status">{{ _('Status') }}</label>
                 <select class="input form" id="status" type="select" name="status">
                     <option value="" selected disabled style="color: grey">{{ _('Choose status') }}</option>
                     <option value="active">{{ _('Active') }}</option>
                     <option value="discontinued">{{ _('Discontinued') }}</option>
                 </select>
                 <div id="prices-container">
+                    <label class="labels" for="buy_price">{{ _('Buy price') }}</label>
                     <input autocomplete="off" class="price-input input" id="buy_price" type="number" name="buy_price"
                     placeholder="{{ _('Buy price') }}">
-                <input autocomplete="off" class="price-input input" id="sell_price" type="number" name="sell_price"
+                    <label class="labels" id="sell-price-label" for="sell_price">{{ _('Sell price') }}</label>
+                    <input autocomplete="off" class="price-input input" id="sell_price" type="number" name="sell_price"
                     placeholder="{{ _('Sell price') }}">
                 </div>
+                <label class="labels" for="comments">{{ _('Comments') }}</label>
                 <textarea class="input" id="comments" name="comments" placeholder="{{ _('Comments') }}"></textarea>
                 <label for="image_reference">{{ _('Select product image') }}</label>
                 <input class="input" id="image_reference" type="file" name="image_reference"><br>
@@ -87,29 +92,35 @@
         </div>
     </div>
 </div>
-<div class="modal-window" id="transfer-products" tabindex="-1" aria-labelledby="transfer-products-title" aria-hidden="true">        
+<div class="modal-window" id="transfer-products" tabindex="-1">        
     <div class="modal-content" id="transfer-products-modal-content">
         <div class="modal-header" id="transfer-products-modal-header">
             <h3 id="transfer-products-title">{{ _('Transfer to warehouses') }}</h3>
-            <button type="button" class="btn-close close-modal-button" id="close-modal-button-2" onclick="closeModal('transfer-products')" aria-label="Close"></button>
+            <button type="button" class="btn-close close-modal-button" id="close-modal-button-2" onclick="closeModal('transfer-products')"></button>
         </div>
         <div class="modal-body inventory-modal-body" id="transfer-products-modal-body">
             <form action="/transfer" id="add-transfer" method="POST" enctype="multipart/form-data">
                 <div id="warehouses-container">
-                    <select class="warehouses modal-inventory-warehouses input form" id="origin-warehouse" type="select" name="origin-warehouse" required>
-                        <option value="" style="color: grey">{{ _('Choose origin') }}</option>
-                        {% for key in catalogue[1].warehouses %}
-                        <option  class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
-                        {% endfor %}
-                    </select>
+                    <div class="transfer-warehouse-container" id="origin-warehouse-container">
+                        <label class="labels" id="origin-warehouse-label" for="origin-warehouse">{{ _('Origin warehouse') }}</label>                    
+                        <select class="warehouses modal-inventory-warehouses input form" id="origin-warehouse" type="select" name="origin-warehouse" required>
+                            <option value="" style="color: grey">{{ _('Choose origin') }}</option>
+                            {% for key in catalogue[1].warehouses %}
+                            <option  class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <svg xmlns="http://www.w3.org/2000/svg" id="inventory-arrow-right" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0l-4 4m4-4l-4-4"/></svg>
                     <svg xmlns="http://www.w3.org/2000/svg" id="inventory-arrow-down" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 14l-4-4m4 4l4-4"/></svg>
-                    <select class="warehouses modal-inventory-warehouses input form" id="destination-warehouse" type="select" name="destination-warehouse" required>
-                        <option id="choose-destination-warehouse" value="" style="color: grey">{{ _('Choose destination') }}</option>
-                        {% for key in catalogue[1].warehouses %}
-                        <option class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
-                        {% endfor %}
-                    </select>
+                    <div class="transfer-warehouse-container" id="destination-warehouse-container">
+                        <label class="labels" id="destination-warehouse-label" for="destination-warehouse">{{ _('Destination warehouse') }}</label>
+                        <select class="warehouses modal-inventory-warehouses input form" id="destination-warehouse" type="select" name="destination-warehouse" required>
+                            <option id="choose-destination-warehouse" value="" style="color: grey">{{ _('Choose destination') }}</option>
+                            {% for key in catalogue[1].warehouses %}
+                            <option class="warehouse-option" value="{{ key }}">{{ key | capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
                 <div class="search-container" id="search-box-3" style="visibility: hidden;">
                     <input list="products" class="form" id="search4" name="search4" placeholder="{{ _('Search by SKU code or name') }}" autocomplete="off">

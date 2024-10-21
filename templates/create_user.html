@@ -3,10 +3,12 @@
 {% block main %}
 <div class="container" id="create-user-container">
     <form action="/create_user" id="create-user-form" method="POST">
+        <label class="labels" for="user-name">{{ _('Full name') }}</label>
         <input type="text" class="form create-user-input" id="user-name" name="user-name" autofocus autocomplete="new-password" placeholder="{{ _('Full name') }}" required><br>
         <div class="input-group">
             <button class="btn btn-outline-secondary dropdown-toggle form select create-user-input" id="id-type" name="id-type" type="button" data-bs-toggle="dropdown" aria-expanded="false">ID</button>
             <input type="text" id="id-type-hidden" name="id-type-hidden" style="display:none">
+            <label class="labels" for="id-type-hidden">{{ _('ID type') }}</label>
             <ul class="dropdown-menu">
                 <li class="dropdown-item" onclick="selectId('IC')">IC {{ _('Identity card') }}</li>
                 <li class="dropdown-item" onclick="selectId('FC')">FC {{ _('Foreigner card') }}</li>
@@ -19,17 +21,21 @@
                 <li class="dropdown-item" onclick="selectId('NIT')">NIT {{ _('Tax Identification Number') }}</li>
                 <li class="dropdown-item" onclick="selectId('CURP')">CURP {{ _('Individual Registration Number') }}</li>
             </ul>
+        <label class="labels" id="identification-label" for="identification">{{ _('Identification') }}</label>
         <input type="text" class="form create-user-input form-control identifications" id="identification" name="identification" autocomplete="new-password" placeholder="{{ _('Identification') }}" required aria-label="Text input with dropdown button"><br>
         </div>
+        <label class="labels" for="user-phone">{{ _('Telephone number') }}</label>
         <input type="text" class="form create-user-input" id="user-phone" name="user-phone" autocomplete="new-password" placeholder="{{ _('Contact phone') }}" required><br>
+        <label class="labels" for="user-email">{{ _('E-mail') }}</label>
         <input type="email" class="form create-user-input" id="user-email" name="user-email" autocomplete="new-password" placeholder="{{ _('E-mail') }}" required><br>
+        <label class="labels" for="role">{{ _('Role') }}</label>
         <select class="form select create-user-input" id="role" name="role" required>
             <option value="" selected disabled>{{ _('Choose role') }}</option>
             <option value="admin">{{ _('Administrator') }}</option>
             <option value="user">{{ _('User') }}</option>
             <option value="observer">{{ _('Observer') }}</option>
         </select><br>
-        <button class="menu-button purchase-button" type="submit">
+        <button class="menu-button purchase-button" id="create-user-button" type="submit">
             <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
             {{ _('Save user') }}
         </button><br>

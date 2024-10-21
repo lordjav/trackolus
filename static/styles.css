@@ -591,6 +591,28 @@ main {
     translate: 6px -3px;
 }
 
+.transfer-warehouse-container, .inbound-supplier-warehouse-container {
+    width: 45%;
+}
+
+#warehouse-labels-container {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+}
+
+#identification2-label {
+    translate: 10px -3px;
+}
+
+#identification-label {
+    translate: 78px -3px;
+}
+
+#sell-price-label {
+    translate: 259px -3px;
+}
+
 #buttons-purchase-container {
     display: flex;
     justify-content: space-evenly;
@@ -778,7 +800,6 @@ main {
 
 #create-user-container {
     text-align: center;
-    width: 40vw;
 }
 
 #create-user-form {    
@@ -788,6 +809,10 @@ main {
 .create-user-input {
     margin: 20px 0;
     width: 100%;
+}
+
+#create-user-button {
+    margin: auto;
 }
 
 #id-type {
@@ -821,12 +846,16 @@ main {
     flex-direction: row;
 }
 
-#id-type2 {
+#id-type2-container {
     width: 20%;
 }
 
-#identification2 {
+#identification2-container {
     width: 75%;
+}
+
+#identification2 {
+    width: 100%;
 }
 
 .price-input {
@@ -1141,6 +1170,20 @@ main {
         z-index: 11 !important;
         width: 60vw !important;
     }
+    .modal-inventory-warehouses, .modal-inventory-select {
+        width: 100%;
+        margin: 15px 0;
+        height: 42px;
+    }
+    #inbound-modal-content {
+        width: 90vw;
+    }
+    #create-user-container {
+        width: 90vw;
+    }
+    .password-input {
+        width: 75vw;
+    }
 }
 
 /* Extra small devices (phones, 420px and up) */
@@ -1177,6 +1220,9 @@ main {
         right: 22vw !important;
         z-index: 11 !important;
         width: 60vw !important;
+    }
+    .password-input {
+        width: 55vw;
     }
 }
 
@@ -1220,7 +1266,7 @@ main {
         justify-content: center;
         align-items: center;
     }
-    .modal-inventory-warehouses, .modal-inventory-select, #search3, #search4 {
+    #search3, #search4 {
         width: 40%;
         margin: 15px 0;
         height: 42px;
@@ -1267,7 +1313,13 @@ main {
         top: 190px !important;
         right: 24vw !important;
         z-index: 11 !important;
-    }    
+    }
+    #create-user-container {
+        width: 70vw;
+    }
+    .password-input {
+        width: 45vw;
+    }
 }
 
 /* Medium devices (landscape tablets, 768px and up) */
@@ -1352,10 +1404,19 @@ main {
     .quantity-short { display: none; }
     
     .modal-inventory-select {
-        width: 40%;
+        width: 100%;
     }
     #q {
         width: 30vw;
+    }
+    #inbound-modal-content {
+        width: 700px;
+    }
+    #create-user-container {
+        width: 60vw;
+    }
+    .password-input {
+        width: 40vw;
     }
 }
 
@@ -1400,6 +1461,12 @@ main {
     #settings-options-container {
         flex-direction: row;
     }
+    #create-user-container {
+        width: 50vw;
+    }
+    .password-input {
+        width: 30vw;
+    }
 }
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
@@ -1420,6 +1487,12 @@ main {
     }
     #purchase-order-text {
         line-height: 1.4vw;
+    }
+    #create-user-container {
+        width: 40vw;
+    }
+    .password-input {
+        width: 25vw;
     }
 }
 

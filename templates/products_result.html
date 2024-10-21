@@ -63,20 +63,26 @@
         <div class="modal-body product-modal-body" id="edit-product-modal-body">
             <form action="/edit_product" method="POST" enctype="multipart/form-data" id="edit-product-form">
                 <input name="id" value="{{ item[0]['id'] }}" style="display: none;">
+                <label class="labels" for="product_name_modal">{{ _('Product name') }}</label>
                 <input autocomplete="off" autofocus class="input edit" id="product_name_modal" type="text" name="product_name"
                     placeholder="{{ _('Product name') }}" value="{{ item[0]['product_name'] }}" required><br>
+                <label class="labels" for="SKU-modal">{{ _('SKU code') }}</label>
                 <input autocomplete="off" class="input edit" id="SKU-modal" type="text" name="SKU" placeholder="{{ _('SKU') }}" value="{{ item[0]['SKU'] }}" required><br>
+                <label class="labels" for="status">{{ _('Status') }}</label>
                 <select class="input form edit" id="status" type="select" name="status" required>
                     <option value="" disabled style="color: grey">{{ _('Choose status') }}</option>
                     <option selected value="active">{{ _('Active') }}</option>
                     <option value="discontinued">{{ _('Discontinued') }}</option>
                 </select>
                 <div id="prices-container">
+                    <label class="labels" for="buy_price">{{ _('Buy price') }}</label>
                     <input autocomplete="off" class="price-input input edit" id="buy_price" type="number" name="buy_price"
                     placeholder="{{ _('Buy price') }}" value="{{ item[0]['buy_price'] }}" required>
+                    <label class="labels" id="sell-price-label" for="sell_price">{{ _('Sell price') }}</label>
                     <input autocomplete="off" class="price-input input edit" id="sell_price" type="number" name="sell_price"
                     placeholder="{{ _('Sell price') }}" value="{{ item[0]['sell_price'] }}" required>
                 </div>
+                <label class="labels" for="comments">{{ _('Comments') }}</label>
                 <textarea class="input" id="comments" name="comments" placeholder="{{ _('Comments') }}">{{ item[0]['comments'] }}</textarea>
                 <label for="image_reference">{{ _('Select product image') }}</label>
                 <input class="input" id="image_reference" type="file" name="image_reference"><br>

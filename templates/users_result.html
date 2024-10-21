@@ -74,9 +74,12 @@
         <div class="modal-body user-modal-body" id="edit-user-modal-body">
             <form action="/edit_user" method="POST" enctype="multipart/form-data" id="edit-user-form">
                 <input name="id" value="{{ item[0]['id'] }}" style="display: none;">
+                <label class="labels" for="user-name">{{ _('Full name') }}</label>
                 <input autofocus class="form input create-user-input edit" id="user-name" type="text" name="name"
                     placeholder="{{ _('Full name') }}" value="{{ item[0]['name'] }}" required autocomplete="new-password"><br>
                 <div id="identification-container">
+                    <div id="id-type2-container">
+                    <label class="labels" for="id-type2">{{ _('ID type') }}</label>
                     <select class="form input edit" id="id-type2" type="select" name="identification_type" required>
                         <option value="" disabled style="color: grey">{{ _('ID type') }}</option>
                         <option selected value="{{ item[0]['identification_type'] }}">{{ item[0]['identification_type'] }}</option>
@@ -91,23 +94,35 @@
                         <option value="DL">DL</option>
                         <option value="CURP">CURP</option>
                     </select>
+                    </div>
+                    <div id="identification2-container">
+                    <label class="labels" id="identification2-label" for="identification2">{{ _('Identification') }}</label>
                     <input autocomplete="off" class="form input edit identifications" id="identification2" type="text" name="identification" placeholder="{{ _('identification') }}" value="{{ item[0]['identification'] }}" required autocomplete="new-password">
+                    </div>
                 </div>
+                <label class="labels" for="user-phone">{{ _('Telephone number') }}</label>
                 <input type="text" class="form input create-user-input edit" id="user-phone" name="phone" placeholder="{{ _('Contact phone') }}" value="{{ item[0]['phone'] }}" required autocomplete="new-password">
+                <label class="labels" for="user-email">{{ _('E-mail') }}</label>
                 <input type="email" class="form input create-user-input edit" id="user-email" name="email" placeholder="{{ _('E-mail') }}" value="{{ item[0]['email'] }}" required autocomplete="new-password">
                 <div id="role-status-container">
-                    <select class="form select input create-user-input edit" id="status2" type="select" name="status" required>
-                        <option value="" disabled style="color: grey">{{ _('Choose status') }}</option>
-                        <option value="active" {% if item[0]['status'] == 'active' %}selected{% endif %}>{{ _('Active') }}</option>
-                        <option value="suspended" {% if item[0]['status'] == 'suspended' %}selected{% endif %}>{{ _('Suspended') }}</option>
-                        <option value="inactive" {% if item[0]['status'] == 'inactive' %}selected{% endif %}>{{ _('Inactive') }}</option>
-                    </select>                
-                    <select class="form select input create-user-input edit" id="role" type="select" name="role" required>
-                        <option value="" disabled>{{ _('Choose role') }}</option>
-                        <option value="admin" {% if item[0]['role'] == 'admin' %}selected{% endif %}>{{ _('Administrator') }}</option>
-                        <option value="user" {% if item[0]['role'] == 'user' %}selected{% endif %}>{{ _('User') }}</option>
-                        <option value="observer" {% if item[0]['role'] == 'observer' %}selected{% endif %}>{{ _('Observer') }}</option>
-                    </select>
+                    <div id="status-container">
+                        <label class="labels" for="status2">{{ _('Status') }}</label>
+                        <select class="form select input create-user-input edit" id="status2" type="select" name="status" required>
+                            <option value="" disabled style="color: grey">{{ _('Choose status') }}</option>
+                            <option value="active" {% if item[0]['status'] == 'active' %}selected{% endif %}>{{ _('Active') }}</option>
+                            <option value="suspended" {% if item[0]['status'] == 'suspended' %}selected{% endif %}>{{ _('Suspended') }}</option>
+                            <option value="inactive" {% if item[0]['status'] == 'inactive' %}selected{% endif %}>{{ _('Inactive') }}</option>
+                        </select>
+                    </div>
+                    <div id="role-container">
+                        <label class="labels" for="role">{{ _('Role') }}</label>
+                        <select class="form select input create-user-input edit" id="role" type="select" name="role" required>
+                            <option value="" disabled>{{ _('Choose role') }}</option>
+                            <option value="admin" {% if item[0]['role'] == 'admin' %}selected{% endif %}>{{ _('Administrator') }}</option>
+                            <option value="user" {% if item[0]['role'] == 'user' %}selected{% endif %}>{{ _('User') }}</option>
+                            <option value="observer" {% if item[0]['role'] == 'observer' %}selected{% endif %}>{{ _('Observer') }}</option>
+                        </select>
+                    </div>
                 </div><br>
                 <button type="submit" id="save-user-button" class="menu-button purchase-button" action="/edit_user">
                     <svg xmlns="http://www.w3.org/2000/svg" width="33" height="33" viewBox="0 0 24 24"><path fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-1.828-1.828A2 2 0 0 0 16.172 4H15M8 4v4a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4M8 4h7M7 17v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3"/></svg>
