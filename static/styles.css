@@ -32,16 +32,13 @@ tr:hover {
 
 #sidebar, #sidebar-aux {
     background-color:#d9d9d9;
-    min-height: 100vh;    
+    min-height: 100vh;
     z-index: 1;
     box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.25);
     position: fixed;
     top: 0;
     left: 1px;
 }
-
-/*#sidebar-space {
-}*/
 
 #logo-frame, #logo-frame-aux {
     text-align: center;

@@ -39,6 +39,11 @@ def translations(language):
             keywords['origin'] = 'Origin'
             keywords['destination'] = 'Destination'
             keywords['transfer'] = 'Transfer'
+            keywords['category'] = 'Category'
+            keywords['log in'] = 'Log in'
+            keywords['log out'] = 'Log out'
+            keywords['other'] = 'Other'
+            keywords['add product'] = 'Add product'
 
         case 'es':
             keywords['id-type'] = 'Tipo de ID'
@@ -77,6 +82,11 @@ def translations(language):
             keywords['origin'] = 'Origen'
             keywords['destination'] = 'Destino'
             keywords['transfer'] = 'Transferencia'
+            keywords['category'] = 'Categoría'
+            keywords['log in'] = 'Iniciar sesión'
+            keywords['log out'] = 'Cerrar sesión'
+            keywords['other'] = 'Otros'
+            keywords['add product'] = 'Agregar producto'
 
     return keywords
 

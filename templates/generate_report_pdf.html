@@ -49,7 +49,7 @@
             <thead class="table-light">
                 <tr>
                 {% for key in data[0] %}
-                    <th>{{ key }}</th>
+                    <th>{{ key | capitalize }}</th>
                 {% endfor %}
                 </tr>
             </thead>

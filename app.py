@@ -813,8 +813,53 @@ def reports():
                 data_report.append({f'datatype':f'{tr['users']}', 'keyword':'User'})
 
             case 'Activity':
-                data_report = db.execute("SELECT * FROM sqlite_sequence")
-                data_report.append({f'datatype':f'{tr['activity']}', 'keyword':'seq'})
+                if session['role'] != 'admin':
+                    return render_template(
+                        "error.html", 
+                        message="Forbbiden: you do not have permission to access this section."
+                        ), 403
+                users_log = db.execute(f"""
+                           SELECT 
+                            l.date as {tr['date']}, 
+                            u.name AS {tr['user']}, 
+                            'login/logout' AS {tr['category']}, 
+                            CASE
+                                WHEN t.name = 'log_in' THEN '{tr['log in']}' 
+                                WHEN t.name = 'log_out' THEN '{tr['log out']}' 
+                                ELSE '{tr['other']}' 
+                            END AS {tr['activity']} 
+                           FROM users_log l
+                           JOIN activity_type t 
+                            ON l.type = t.id 
+                           JOIN users u 
+                            ON l.user_id = u.id 
+                           """)
+                inventory = db.execute(f"""
+                                       SELECT                                         
+                                        i.addition_Date AS {tr['date']}, 
+                                        u.name AS {tr['user']}, 
+                                        '{tr['add product']}' AS {tr['category']}, 
+                                        i.product_name AS {tr['activity']}
+                                       FROM inventory i 
+                                       JOIN users u 
+                                        ON i.author = u.id 
+                                       """)
+                movements = db.execute(f"""
+                                       SELECT 
+                                        m.date AS {tr['date']}, 
+                                        u.name AS {tr['user']}, 
+                                        m.type as {tr['category']}, 
+                                        m.order_number AS {tr['activity']} 
+                                       FROM movements m 
+                                       JOIN users u 
+                                        ON m.author = u.id 
+                                       """)
+                data_report = []
+                for category in [users_log, inventory, movements]:
+                    for element in category:
+                        data_report.append(element)
+                data_report.sort(key=lambda event: event[f"{tr['date']}"], reverse=True)
+                data_report.append({f'datatype':f'{tr['activity']}', 'keyword':'activity'})
 
         return render_template("reports.html", data=data_report)
     
@@ -1865,5 +1910,4 @@ def change_password():
 @login_required
 def error():
     return render_template('error.html', message=f'There was a major problem.')
-
 
