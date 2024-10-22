@@ -1,4 +1,4 @@
-import sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz, time, json, copy
+import sqlalchemy, pandas, plotly.express, textwrap, csv, io, pytz, time, json, logging, traceback
 from cs50 import SQL
 from flask import Flask, jsonify, redirect, render_template, session, send_file, flash
 from flask import render_template_string, request, make_response, stream_with_context, Response
@@ -8,151 +8,215 @@ from trackolus.classes import *
 from trackolus.native_translator import *
 from datetime import datetime, timedelta
 from flask_babel import Babel
+from flask_sqlalchemy import SQLAlchemy
 from babel.dates import format_datetime
 
-server = Flask(__name__)
-server.secret_key = 'EsAlItErAsE'
-server.config["UPLOAD_DIRECTORY"] = "static/product_images/"
-server.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
-server.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
-server.config["BABEL_TRANSLATION_DIRECTORIES"] = "./translations"
-server.config["BABEL_DEFAULT_LOCALE"] = 'en'
+app = Flask(__name__)
+app.secret_key = 'EsAlItErAsE'
+app.config["UPLOAD_DIRECTORY"] = "static/product_images/"
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+app.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
+app.config["BABEL_TRANSLATION_DIRECTORIES"] = "./translations"
+app.config["BABEL_DEFAULT_LOCALE"] = 'en'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///error_log.db'
 
+errdb = SQLAlchemy(app)
 db = SQL("sqlite:///general_data.db")
 engine = sqlalchemy.create_engine("sqlite:///general_data.db")
 
-babel = Babel(server)
+babel = Babel(app)
 babel.init_app(
-    server, 
+    app, 
     locale_selector=get_locale, 
     timezone_selector=get_timezone
     )
 
-server.jinja_env.filters["cop"] = cop
-server.jinja_env.filters["formattime"] = formattime
-server.jinja_env.filters["format_datetime"] = format_datetime
-server.jinja_env.filters["objtime"] = objtime
+app.jinja_env.filters["cop"] = cop
+app.jinja_env.filters["formattime"] = formattime
+app.jinja_env.filters["format_datetime"] = format_datetime
+app.jinja_env.filters["objtime"] = objtime
+
+#For register errors
+class ErrorLog(errdb.Model):
+    id = errdb.Column(errdb.Integer, primary_key=True)
+    timestamp = errdb.Column(errdb.DateTime, default=datetime.now())
+    error_message = errdb.Column(errdb.String(500))
+    endpoint = errdb.Column(errdb.String(100))
+    error_type = errdb.Column(errdb.String(50))
+    ip_address = errdb.Column(errdb.String(50))
+    error_trace = errdb.Column(errdb.String(200))
+    user = errdb.Column(errdb.String(100))
+
+with app.app_context():
+    errdb.create_all()
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.ERROR)
+
+class DatabaseErrorHandler(logging.Handler):
+    def emit(self, record):
+        with app.app_context():
+            current_path = request.path if request else "Unknown"
+            ip_address = request.remote_addr if request else "Unknown"
+            user = db.execute('SELECT name FROM users WHERE id = ?', session['user_id'])[0]['name']
+            if record.exc_info:
+                tb = traceback.format_exception(*record.exc_info)
+                error_trace = ''.join(tb)
+            else:
+                error_trace = "No traceback available"
+
+            error_log = ErrorLog(
+                error_message=record.msg,
+                endpoint=current_path,
+                error_type=record.levelname,
+                ip_address=ip_address,
+                error_trace=error_trace,
+                user=user
+            )
+            errdb.session.add(error_log)
+            errdb.session.commit()
+
+db_handler = DatabaseErrorHandler()
+logger.addHandler(db_handler)
+
+#Decorator: register errors in logger
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.error(f"Error: {str(e)}", exc_info=True)
+    return render_template("error.html", message=f"{e}"), 500
+
 
 #Decorator: Makes the function 'get_locale' available directly in the template
-@server.context_processor
+@app.context_processor
 def inject_locale():
     return {'get_locale': get_locale}
 
 
 #Decorator: Makes the name saved in session dict available directly in templates
-@server.context_processor
+@app.context_processor
 def inject_user():
     return {'user_name': session.get('name', None)}
 
 
-@server.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    try:
+        # Forget any user_id
+        session.clear()
+
+        # User reached route via POST
+        if request.method == "POST":
+            # Ensure identification was submitted
+            if not request.form.get("identification"):
+                return redirect("/login")
+
+            # Ensure password was submitted
+            elif not request.form.get("password"):
+                return redirect("/login")
+
+            # Query database for identification
+            rows = db.execute("""
+                            SELECT * 
+                            FROM users 
+                            WHERE identification = ?
+                            """, request.form.get("identification")
+                            )
+
+            # Ensure identification exists and password is correct
+            if len(rows) != 1 or not check_password_hash(
+                rows[0]["hash"], 
+                request.form.get("password")
+                ):
+                return redirect("/login")
+            
+            # Ensure user is active 
+            if rows[0]['status'] != 'active':
+                return redirect("/login")
+            
+            # Remember which user has logged in and personal settings
+            session['role'] = rows[0]['role']
+            session["user_id"] = rows[0]["id"]
+            session["name"] = rows[0]["name"]
+            session["inventory_order"] = False
+            session['language'] = get_locale()
+
+            # Save Log in in users_log
+            db.execute("""
+                    INSERT INTO users_log (
+                        user_id, 
+                        date, 
+                        type, 
+                        ip
+                    ) VALUES (?, ?, ?, ?)
+                    """, 
+                    rows[0]['id'],
+                    datetime.now(),
+                    1,
+                    request.remote_addr
+                    )
+
+            # Redirect user to home page
+            return redirect('/dashboard')
+
+        # User reached route via GET (as by clicking a link or via redirect)
+        else:
+            return render_template("login.html")
     
-    # Forget any user_id
-    session.clear()
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
 
-    # User reached route via POST
-    if request.method == "POST":
-        # Ensure identification was submitted
-        if not request.form.get("identification"):
-            return redirect("/login")
 
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            return redirect("/login")
-
-        # Query database for identification
-        rows = db.execute("""
-                          SELECT * 
-                          FROM users 
-                          WHERE identification = ?
-                          """, request.form.get("identification")
-                          )
-
-        # Ensure identification exists and password is correct
-        if len(rows) != 1 or not check_password_hash(
-            rows[0]["hash"], 
-            request.form.get("password")
-            ):
-            return redirect("/login")
-        
-        # Ensure user is active 
-        if rows[0]['status'] != 'active':
-            return redirect("/login")
-        
-        # Remember which user has logged in and personal settings
-        session['role'] = rows[0]['role']
-        session["user_id"] = rows[0]["id"]
-        session["name"] = rows[0]["name"]
-        session["inventory_order"] = False
-        session['language'] = get_locale()
-
-        # Save Log in in users_log
+@app.route("/logout")
+def logout():
+    try:
+        # Save Log out in users_log
         db.execute("""
-                   INSERT INTO users_log (
+                    INSERT INTO users_log (
                     user_id, 
                     date, 
                     type, 
                     ip
-                   ) VALUES (?, ?, ?, ?)
-                   """, 
-                   rows[0]['id'],
-                   datetime.now(),
-                   1,
-                   request.remote_addr
-                   )
+                    ) VALUES (?, ?, ?, ?)
+                    """, 
+                    session['user_id'],
+                    datetime.now(),
+                    2,
+                    request.remote_addr
+                    ) 
+        
+        #Forget any user id
+        session.clear()
 
-        # Redirect user to home page
-        return redirect('/dashboard')
+        #Redirect to login form
+        return redirect("/login")
+    
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
+    
 
-    # User reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("login.html")
-
-
-@server.route("/logout")
-def logout():
-    # Save Log out in users_log
-    db.execute("""
-                INSERT INTO users_log (
-                user_id, 
-                date, 
-                type, 
-                ip
-                ) VALUES (?, ?, ?, ?)
-                """, 
-                session['user_id'],
-                datetime.now(),
-                2,
-                request.remote_addr
-                ) 
-       
-    #Forget any user id
-    session.clear()
-
-    #Redirect to login form
-    return redirect("/login")
-
-
-@server.route("/inventory")
+@app.route("/inventory")
 @login_required
 @role_required(['admin', 'user', 'observer'])
 def inventory():
-    catalogue = create_catalogue()
-    catalogue_dict = []
-    for product in catalogue:
-        product.other_props['total_stock'] = product.total_stock
-        catalogue_dict.append(product.to_dict())
+    try:
+        catalogue = create_catalogue()
+        catalogue_dict = []
+        for product in catalogue:
+            product.other_props['total_stock'] = product.total_stock
+            catalogue_dict.append(product.to_dict())
 
-    if session['role'] == 'observer':
-        template = 'inventory-o.html'
-    else:
-        template = 'inventory.html'
+        if session['role'] == 'observer':
+            template = 'inventory-o.html'
+        else:
+            template = 'inventory.html'
 
-    return render_template(template, catalogue=catalogue_dict)
+        return render_template(template, catalogue=catalogue_dict)
+    
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
+    
 
-
-@server.route("/ordered_inventory/<parameter>")
+@app.route("/ordered_inventory/<parameter>")
 @login_required
 def ordered_inventory(parameter):
     allowed_parameters = ['SKU', 
@@ -202,7 +266,7 @@ def ordered_inventory(parameter):
                                   """, catalogue=sorted_catalogue)
 
 
-@server.route("/add_product", methods=["POST"])
+@app.route("/add_product", methods=["POST"])
 @login_required
 @role_required(['admin', 'user'])
 def add_product():    
@@ -228,26 +292,23 @@ def add_product():
         #Ensure prices are positive numbers
         elif int(request.form.get("sell_price")) <= 0 or int(request.form.get("buy_price")) <= 0:
             raise ValueError("Price must be a positive number")
-    except ValueError as e:
-        return f"Error: {e}", 400
         
-    if request.files["image_reference"]:
-        image_upload = upload_image(
-            request.files["image_reference"], 
-            request.form.get("SKU-modal"), 
-            server.config["UPLOAD_DIRECTORY"], 
-            server.config["ALLOWED_EXTENSIONS"]
-            )
-        image_link = image_upload[7:]
+        if request.files["image_reference"]:
+            image_upload = upload_image(
+                request.files["image_reference"], 
+                request.form.get("SKU-modal"), 
+                app.config["UPLOAD_DIRECTORY"], 
+                app.config["ALLOWED_EXTENSIONS"]
+                )
+            image_link = image_upload[7:]
 
-    date = datetime.now()
-    warehouses = []
-    for id in db.execute("SELECT id FROM warehouses"):
-        warehouses.append(id['id'])
-
-    try:
+        date = datetime.now()
+        warehouses = []
+        for id in db.execute("SELECT id FROM warehouses"):
+            warehouses.append(id['id'])
+        
         db.execute("""
-                   INSERT INTO inventory (
+                INSERT INTO inventory (
                     product_name, 
                     SKU, 
                     status,
@@ -257,45 +318,46 @@ def add_product():
                     addition_date, 
                     image_route,
                     comments
-                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                   request.form.get("product_name_modal"), 
-                   request.form.get("SKU-modal"), 
-                   request.form.get("status"),
-                   request.form.get("buy_price"), 
-                   request.form.get("sell_price"), 
-                   session["user_id"], 
-                   date, 
-                   image_link,
-                   request.form.get("comments")
-                   )
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                request.form.get("product_name_modal"), 
+                request.form.get("SKU-modal"), 
+                request.form.get("status"),
+                request.form.get("buy_price"), 
+                request.form.get("sell_price"), 
+                session["user_id"], 
+                date, 
+                image_link,
+                request.form.get("comments")
+                )
         product_id = db.execute("SELECT last_insert_rowid() AS id")[0]['id']
         for w in warehouses:
             db.execute("""
-                       INSERT INTO allocation (
-                       product_id,
-                       warehouse,
-                       stock
-                       ) VALUES (?, ?, ?)
-                       """, product_id, w, 0)
+                    INSERT INTO allocation (
+                    product_id,
+                    warehouse,
+                    stock
+                    ) VALUES (?, ?, ?)
+                    """, product_id, w, 0)
 
 
         #Saving data for notification
         user = db.execute("""
-                          SELECT name 
-                          FROM users 
-                          WHERE id = ?""", 
-                          session['user_id']
-                          )
+                        SELECT name 
+                        FROM users 
+                        WHERE id = ?""", 
+                        session['user_id']
+                        )
         notification_title = 'New product'
         notification_message = f"""New product in inventory:\n{request.form.get("product_name_modal")}\nAdded by: {user[0]['name']}"""
         save_notification(notification_title, notification_message)
         flash('Product added to inventory', 'success')
         return redirect("/inventory")
+    
     except Exception as e:        
         return render_template("error.html", message=f"{e}"), 400
 
 
-@server.route("/purchase_order", methods=["GET", "POST"])
+@app.route("/purchase_order", methods=["GET", "POST"])
 @login_required
 @role_required(['admin', 'user'])
 def purchase_order():
@@ -420,25 +482,29 @@ def purchase_order():
             return render_template("error.html", message=problem)
 
     else:
-        catalogue = create_catalogue()
-        catalogue_dict = []
-        for product in catalogue:
-            catalogue_dict.append(product.to_dict())
+        try:
+            catalogue = create_catalogue()
+            catalogue_dict = []
+            for product in catalogue:
+                catalogue_dict.append(product.to_dict())
+            return render_template("purchase_order.html", catalogue=catalogue_dict)
+        except Exception as e:
+            return render_template("error.html", message=f"{e}"), 400
 
-        return render_template("purchase_order.html", catalogue=catalogue_dict)
-
-
-@server.route("/view_pdf", methods=["POST"])
+@app.route("/view_pdf", methods=["POST"])
 @login_required
 def view_pdf():
-    data = get_order_data()
-    rendered = render_template("order_pdf.html", data=data)
-    response = configurate_pdf(rendered)
+    try:
+        data = get_order_data()
+        rendered = render_template("order_pdf.html", data=data)
+        response = configurate_pdf(rendered)
+        return response
     
-    return response
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
 
 
-@server.route("/inbound", methods=["GET", "POST"])
+@app.route("/inbound", methods=["GET", "POST"])
 @login_required
 def inbound():
     if request.method == "POST":
@@ -533,154 +599,585 @@ def inbound():
             return render_template("error.html", message=f"There was a problem: {e}"), 400
 
     else:
-        movements_objects = separate_movements('inbound')
-        catalogue = create_catalogue()
-        catalogue_dict = []
-        for product in catalogue:
-            catalogue_dict.append(product.to_dict())
-        suppliers = db.execute("SELECT name AS 'supplier' FROM customers_suppliers WHERE relation = 'supplier'")
+        try:
+            movements_objects = separate_movements('inbound')
+            catalogue = create_catalogue()
+            catalogue_dict = []
+            for product in catalogue:
+                catalogue_dict.append(product.to_dict())
+            suppliers = db.execute("SELECT name AS 'supplier' FROM customers_suppliers WHERE relation = 'supplier'")
 
-        if session['role'] == 'observer':
-            template = 'inbound-o.html'
-        else:
-            template = 'inbound.html'
+            if session['role'] == 'observer':
+                template = 'inbound-o.html'
+            else:
+                template = 'inbound.html'
 
-        #print(catalogue[0].warehouses)
-        return render_template(
-            template, 
-            catalogue=movements_objects, 
-            inventory=catalogue_dict,
-            suppliers=suppliers
-            )
+            return render_template(
+                template, 
+                catalogue=movements_objects, 
+                inventory=catalogue_dict,
+                suppliers=suppliers
+                )
 
+        except Exception as e:
+            return render_template("error.html", message=f"{e}"), 400
 
-@server.route("/outbound")
+@app.route("/outbound")
 @login_required
 def outbound():
-    movements_objects = separate_movements('outbound')
-    return render_template("outbound.html", catalogue=movements_objects)
+    try:
+        movements_objects = separate_movements('outbound')
+        return render_template("outbound.html", catalogue=movements_objects)
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
 
-
-@server.route("/movement_pdf/<order_number>")
+@app.route("/movement_pdf/<order_number>")
 @login_required
 def movement_pdf(order_number):
-    
-    order_raw = db.execute("""
-                           SELECT 
-                            m.order_number, 
-                            w_origin.name AS origin, 
-                            w_destination.name as destination, 
-                            m.date, 
-                            m.type, 
-                            u.name AS author, 
-                            c.name AS counterpart, 
-                            c.identification_type, 
-                            c.identification, 
-                            c.phone, 
-                            c.email,
-                            i.product_name, 
-                            i.SKU, 
-                            p.price, 
-                            p.quantity
-                           FROM movements m 
-                           LEFT JOIN customers_suppliers c 
-                            ON m.counterpart = c.id 
-                           LEFT JOIN warehouses w_origin
-                            ON m.origin = w_origin.id 
-                           LEFT JOIN warehouses w_destination
-                            ON m.destination = w_destination.id 
-                           JOIN products_movement p
-                            ON m.id = p.movement_id
-                           JOIN inventory i
-                            ON p.product_id = i.id 
-                           JOIN users u 
-                            ON u.id = m.author 
-                           WHERE order_number = ? 
-                           """, order_number)
+    try:
+        order_raw = db.execute("""
+                            SELECT 
+                                m.order_number, 
+                                w_origin.name AS origin, 
+                                w_destination.name as destination, 
+                                m.date, 
+                                m.type, 
+                                u.name AS author, 
+                                c.name AS counterpart, 
+                                c.identification_type, 
+                                c.identification, 
+                                c.phone, 
+                                c.email,
+                                i.product_name, 
+                                i.SKU, 
+                                p.price, 
+                                p.quantity
+                            FROM movements m 
+                            LEFT JOIN customers_suppliers c 
+                                ON m.counterpart = c.id 
+                            LEFT JOIN warehouses w_origin
+                                ON m.origin = w_origin.id 
+                            LEFT JOIN warehouses w_destination
+                                ON m.destination = w_destination.id 
+                            JOIN products_movement p
+                                ON m.id = p.movement_id
+                            JOIN inventory i
+                                ON p.product_id = i.id 
+                            JOIN users u 
+                                ON u.id = m.author 
+                            WHERE order_number = ? 
+                            """, order_number)
 
-    order_object = prototype_order(order_raw[0]["order_number"], 
-                                order_raw[0]["type"], 
-                                order_raw[0]["date"], 
-                                order_raw[0]["author"], 
-                                order_raw[0]["counterpart"]
-                                )
-    grand_total = 0
-    for element in order_raw:
-        product = products_to_movements(element)
-        order_object.add_products(product)
-        grand_total += element["price"] * element["quantity"]
-    
-    if order_raw[0]['type'] == "outbound":
-        additional_data = {
-            "customer_name": order_raw[0]["counterpart"], 
-            "customer_id_type": order_raw[0]["identification_type"], 
-            "customer_identification": order_raw[0]["identification"], 
-            "customer_phone": order_raw[0]["phone"], 
-            "customer_email": order_raw[0]["email"], 
-            "grand_total": grand_total
-            }
-        template = "outbound_movement_pdf.html"
-    elif order_raw[0]['type'] == "inbound":
-        additional_data = {
-            "supplier_name": order_raw[0]["counterpart"], 
-            "supplier_id_type": order_raw[0]["identification_type"], 
-            "supplier_identification": order_raw[0]["identification"], 
-            "grand_total": grand_total
-            }
-        template = "inbound_movement_pdf.html"
-    else:
-        order_object.add_prop('origin', order_raw[0]['origin'])
-        order_object.add_prop('destination', order_raw[0]['destination'])
-        additional_data = {}
-        template = "transfer_movement_pdf.html"
-    
-    rendered = render_template(
-        template, 
-        order=order_object, 
-        data=additional_data)
-    
-    response = configurate_pdf(rendered)
+        order_object = prototype_order(order_raw[0]["order_number"], 
+                                    order_raw[0]["type"], 
+                                    order_raw[0]["date"], 
+                                    order_raw[0]["author"], 
+                                    order_raw[0]["counterpart"]
+                                    )
+        grand_total = 0
+        for element in order_raw:
+            product = products_to_movements(element)
+            order_object.add_products(product)
+            grand_total += element["price"] * element["quantity"]
+        
+        if order_raw[0]['type'] == "outbound":
+            additional_data = {
+                "customer_name": order_raw[0]["counterpart"], 
+                "customer_id_type": order_raw[0]["identification_type"], 
+                "customer_identification": order_raw[0]["identification"], 
+                "customer_phone": order_raw[0]["phone"], 
+                "customer_email": order_raw[0]["email"], 
+                "grand_total": grand_total
+                }
+            template = "outbound_movement_pdf.html"
+        elif order_raw[0]['type'] == "inbound":
+            additional_data = {
+                "supplier_name": order_raw[0]["counterpart"], 
+                "supplier_id_type": order_raw[0]["identification_type"], 
+                "supplier_identification": order_raw[0]["identification"], 
+                "grand_total": grand_total
+                }
+            template = "inbound_movement_pdf.html"
+        else:
+            order_object.add_prop('origin', order_raw[0]['origin'])
+            order_object.add_prop('destination', order_raw[0]['destination'])
+            additional_data = {}
+            template = "transfer_movement_pdf.html"
+        
+        rendered = render_template(
+            template, 
+            order=order_object, 
+            data=additional_data)
+        
+        response = configurate_pdf(rendered)
 
-    return response
+        return response
+    
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
 
 
-@server.route("/reports", methods=["GET", "POST"])
+@app.route("/reports", methods=["GET", "POST"])
 @login_required
 def reports():
     if request.method == "POST":
-        datatype = request.form.get("datatype")
-        global data_report
+        try:
+            datatype = request.form.get("datatype")
+            global data_report
+            tr = translations(session['language'])
+            match datatype:
+                case "Customers":
+                    data_report = db.execute(f"""
+                                            SELECT 
+                                                identification_type AS '{tr['id-type']}', 
+                                                identification AS '{tr['id']}',
+                                                name AS '{tr['customer']}', 
+                                                phone AS '{tr['phone']}', 
+                                                email AS '{tr['email']}', 
+                                                status AS '{tr['status']}'
+                                            FROM customers_suppliers 
+                                            WHERE relation = 'customer' 
+                                            """)
+                    data_report.append({'datatype':f'{tr['customers']}', 'keyword':'Customer'})
+
+                case "Suppliers":
+                    data_report = db.execute(f"""
+                                            SELECT 
+                                                identification_type AS '{tr['id-type']}', 
+                                                identification AS '{tr['id']}',
+                                                name AS '{tr['supplier']}', 
+                                                phone AS '{tr['phone']}', 
+                                                email AS '{tr['email']}', 
+                                                status AS {tr['status']}
+                                            FROM customers_suppliers 
+                                            WHERE relation = 'supplier' 
+                                            """)
+                    data_report.append({'datatype':f'{tr['suppliers']}', 'keyword':'Supplier'})
+
+                case 'Products':
+                    warehouses = db.execute("SELECT * FROM warehouses")
+
+                    wh_columns = ", ".join([f"""
+                                            SUM(
+                                            CASE WHEN a.warehouse = {wh['id']}
+                                            THEN a.stock ELSE 0 END
+                                            ) AS {wh['name'].capitalize()}
+                                            """ for wh in warehouses])
+
+                    data_report = db.execute(f"""
+                                            SELECT 
+                                                SKU, 
+                                                product_name AS {tr['product']},
+                                                sell_price AS {tr['price']},
+                                                SUM(stock) AS '{tr['stock']}',
+                                                {wh_columns}
+                                            FROM inventory i
+                                            JOIN allocation a 
+                                                ON i.id = a.product_id
+                                            GROUP BY 
+                                                SKU, 
+                                                product_name,
+                                                sell_price,
+                                                'Total stock'
+                                            """)
+                    data_report.append({'datatype':f'{tr['products']}', 'keyword':'Product'})
+
+                case 'Inbound':
+                    data_report = db.execute(f"""
+                                            SELECT 
+                                                m.date AS {tr['date']},
+                                                m.order_number AS '{tr['order']}', 
+                                                SUM(p.quantity) AS '{tr['p-received']}', 
+                                                UPPER(SUBSTR(w.name, 1, 1)) || LOWER(SUBSTR(w.name, 2)) 
+                                                    AS {tr['warehouse']},
+                                                c.name AS {tr['supplier']}, 
+                                                u.name AS {tr['receiver']} 
+                                            FROM movements m 
+                                            JOIN users u 
+                                                ON m.author = u.id 
+                                            JOIN products_movement p 
+                                                ON m.id = p.movement_id 
+                                            JOIN warehouses w
+                                                ON m.destination = w.id 
+                                            JOIN customers_suppliers c 
+                                                ON m.counterpart = c.id 
+                                            WHERE type = 'inbound' 
+                                            GROUP BY 
+                                                m.date, 
+                                                m.order_number, 
+                                                w.name,
+                                                c.name, 
+                                                u.name
+                                            ORDER BY date DESC
+                                            """)
+                    data_report.append({'datatype':f'{tr['inbound']}', 'keyword':'Order'})
+
+                case 'Outbound':
+                    data_report = db.execute(f"""
+                                            SELECT 
+                                                m.date AS {tr['date']},
+                                                m.order_number AS '{tr['order']}', 
+                                                SUM(p.quantity) AS '{tr['p-sold']}', 
+                                                SUM(p.price * p.quantity) AS {tr['amount']},
+                                                u.name AS {tr['vendor']},
+                                                c.name AS {tr['customer']}
+                                            FROM movements m 
+                                            JOIN customers_suppliers c 
+                                                ON m.counterpart = c.id 
+                                            JOIN users u 
+                                                ON m.author = u.id
+                                            JOIN products_movement p
+                                                ON m.id = p.movement_id 
+                                            WHERE type = 'outbound' 
+                                            GROUP BY 
+                                            m.date, 
+                                            m.order_number, 
+                                            u.name, 
+                                            c.name
+                                    ORDER BY date DESC
+                                    """)                
+                    data_report.append({'datatype':f'{tr['outbound']}', 'keyword':'Order'})
+
+                case 'Transfers':
+                    data_report = db.execute(f"""
+                                            SELECT 
+                                                m.date AS {tr['date']},
+                                                m.order_number AS '{tr['order']}', 
+                                                SUM(p.quantity) AS '{tr['p-transferred']}', 
+                                                w_origin.name AS {tr['origin']}, 
+                                                w_destination.name AS {tr['destination']}, 
+                                                u.name AS {tr['responsible']} 
+                                            FROM movements m 
+                                            JOIN warehouses w_origin 
+                                                ON m.origin = w_origin.id 
+                                            JOIN warehouses w_destination 
+                                                ON m.destination = w_destination.id 
+                                            JOIN users u 
+                                                ON m.author = u.id
+                                            JOIN products_movement p
+                                                ON m.id = p.movement_id 
+                                            WHERE type = 'transfer' 
+                                            GROUP BY 
+                                            m.date, 
+                                            m.order_number, 
+                                            u.name, 
+                                            w_origin.name, 
+                                            w_destination.name 
+                                    ORDER BY date DESC
+                                    """)                
+                    data_report.append({'datatype':f'{tr['transfer']}', 'keyword':'Order'})
+
+                case 'Users':
+                    if session['role'] != 'admin':
+                        return render_template(
+                            "error.html", 
+                            message="Forbbiden: you do not have permission to access this section."
+                            ), 403
+                    data_report = db.execute(f"""
+                                            SELECT 
+                                                identification AS {tr['id']}, 
+                                                name as '{tr['user']}', 
+                                                email AS '{tr['email']}', 
+                                                phone AS '{tr['phone']}', 
+                                                start_date AS '{tr['start']}', 
+                                                end_date AS '{tr['end']}', 
+                                                status AS {tr['status']} 
+                                            FROM users
+                                            """)
+                    data_report.append({f'datatype':f'{tr['users']}', 'keyword':'User'})
+
+                case 'Activity':
+                    if session['role'] != 'admin':
+                        return render_template(
+                            "error.html", 
+                            message="Forbbiden: you do not have permission to access this section."
+                            ), 403
+                    user = request.form.get('user-select')
+                    print(user)
+                    users_log = db.execute(f"""
+                            SELECT 
+                                l.date as {tr['date']}, 
+                                u.name AS {tr['user']}, 
+                                'login/logout' AS {tr['category']}, 
+                                CASE
+                                    WHEN t.name = 'log_in' THEN '{tr['log in']}' 
+                                    WHEN t.name = 'log_out' THEN '{tr['log out']}' 
+                                    ELSE '{tr['other']}' 
+                                END AS {tr['activity']} 
+                            FROM users_log l
+                            JOIN activity_type t 
+                                ON l.type = t.id 
+                            JOIN users u 
+                                ON l.user_id = u.id 
+                            WHERE {tr['user']} = ?
+                            """, user)
+                    inventory = db.execute(f"""
+                                        SELECT                                         
+                                            i.addition_Date AS {tr['date']}, 
+                                            u.name AS {tr['user']}, 
+                                            '{tr['add product']}' AS {tr['category']}, 
+                                            i.product_name AS {tr['activity']}
+                                        FROM inventory i 
+                                        JOIN users u 
+                                            ON i.author = u.id 
+                                        WHERE {tr['user']} = ?
+                                        """, user)
+                    movements = db.execute(f"""
+                                        SELECT 
+                                            m.date AS {tr['date']}, 
+                                            u.name AS {tr['user']}, 
+                                            m.type as {tr['category']}, 
+                                            m.order_number AS {tr['activity']} 
+                                        FROM movements m 
+                                        JOIN users u 
+                                            ON m.author = u.id 
+                                        WHERE {tr['user']} = ?
+                                        """, user)
+                    users = set()
+                    data_report = []
+                    for category in [users_log, inventory, movements]:
+                        for item in category:
+                            data_report.append(item)
+                            users.add(item[f"{tr['user']}"])
+
+                    data_report.sort(key=lambda event: event[f"{tr['date']}"], reverse=True)
+                    data_report.append({'datatype':f'{tr['activity']}', 'keyword':'activity'})
+
+            return render_template("reports.html", data=data_report)
+        
+        except Exception as e:
+            return render_template("error.html", message=f"{e}"), 400
+        
+    else:
+        return render_template("reports.html")
+
+
+@app.route("/")
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    try:
         tr = translations(session['language'])
-        match datatype:
-            case "Customers":
-                data_report = db.execute(f"""
-                                        SELECT 
-                                            identification_type AS '{tr['id-type']}', 
-                                            identification AS '{tr['id']}',
-                                            name AS '{tr['customer']}', 
-                                            phone AS '{tr['phone']}', 
-                                            email AS '{tr['email']}', 
-                                            status AS '{tr['status']}'
-                                        FROM customers_suppliers 
-                                        WHERE relation = 'customer' 
-                                        """)
-                data_report.append({'datatype':f'{tr['customers']}', 'keyword':'Customer'})
 
-            case "Suppliers":
-                data_report = db.execute(f"""
-                                        SELECT 
-                                            identification_type AS '{tr['id-type']}', 
-                                            identification AS '{tr['id']}',
-                                            name AS '{tr['supplier']}', 
-                                            phone AS '{tr['phone']}', 
-                                            email AS '{tr['email']}', 
-                                            status AS {tr['status']}
-                                        FROM customers_suppliers 
-                                        WHERE relation = 'supplier' 
-                                        """)
-                data_report.append({'datatype':f'{tr['suppliers']}', 'keyword':'Supplier'})
+        def wrap_labels(str, width=20):
+            return '<br>'.join(textwrap.wrap(str, width=width))
 
-            case 'Products':
+        engine = sqlalchemy.create_engine("sqlite:///general_data.db")
+        #Inventory graph
+        inv_graph = pandas.read_sql_query(f"""
+                                        SELECT 
+                                            SUM(a.stock) AS {tr['quantity']}, 
+                                            i.product_name AS {tr['product']} 
+                                        FROM inventory i
+                                        JOIN allocation a
+                                            ON i.id = a.product_id
+                                        GROUP BY i.product_name
+                                        ORDER BY SUM(a.stock) 
+                                        LIMIT 10
+                                        """, engine)
+        inv_graph[f'{tr['product']}'] = inv_graph[f'{tr['product']}'].apply(wrap_labels)
+        inv_fig = plotly.express.bar(
+            inv_graph, 
+            x=f'{tr['quantity']}', 
+            y=f'{tr['product']}', 
+            orientation='h', 
+            text_auto=True
+            )
+        inv_fig.update_traces(marker_color='gray')
+        inv_fig.update_layout(
+            plot_bgcolor='lightgray', 
+            paper_bgcolor='white', 
+            barcornerradius=5,
+            title="Low stock",
+            width=400,
+            height=600
+            )    
+        inventory_figure = inv_fig.to_html(
+            full_html=False, 
+            config={'displayModeBar':False, 'staticPlot':True}
+            )
+        
+        #Outbound graph
+        out_graph = pandas.read_sql_query(f"""
+                                        SELECT 
+                                            date(m.date) AS {tr['day']},
+                                            SUM(p.quantity) AS {tr['quantity']},
+                                            SUM(p.quantity * p.price) AS {tr['total']}
+                                        FROM movements m 
+                                        JOIN products_movement p 
+                                            ON m.id = p.movement_id 
+                                        WHERE type = "outbound" 
+                                        AND date >= DATE("now", "-7 days")
+                                        GROUP BY date(m.date)
+                                        """, engine)
+        other_days = pandas.date_range(
+            start=(datetime.now()-timedelta(days=6)), 
+            end=datetime.now()
+            )
+        other_days_df = pandas.DataFrame(other_days, columns=[f'{tr['day']}'])
+        other_days_df[f'{tr['day']}'] = other_days_df[f'{tr['day']}'].dt.strftime('%Y-%m-%d')
+        merged_df = pandas.merge(other_days_df, out_graph, on=f'{tr['day']}', how='left')
+        merged_df[f'{tr['quantity']}'] = merged_df[f'{tr['quantity']}'].astype(float).fillna(0)
+        merged_df[f'{tr['total']}'] = merged_df[f'{tr['total']}'].astype(float).fillna(0)
+        out_fig = plotly.express.scatter(
+            merged_df, 
+            x=f'{tr['day']}', 
+            y=f'{tr['total']}', 
+            size=f'{tr['quantity']}', 
+            text=f'{tr['quantity']}', 
+            size_max=50
+            )
+        out_fig.update_traces(marker_color='gray')
+        out_fig.update_layout(
+            plot_bgcolor='lightgray', 
+            paper_bgcolor='white',
+            title="Sales per day",
+            width=400,
+            height=600
+            )
+        out_figure = out_fig.to_html(
+            full_html=False, 
+            config={'displayModeBar':False, 'staticPlot':True}
+            )
+        
+        #Best_sellers graph 
+        bs_graph = pandas.read_sql_query(f"""
+                                        SELECT 
+                                            i.product_name AS {tr['products']}, 
+                                            SUM(p.quantity) AS {tr['quantity']} 
+                                        FROM movements m 
+                                        JOIN products_movement p 
+                                            ON m.id = p.movement_id 
+                                        JOIN inventory i 
+                                            ON p.product_id = i.id 
+                                        WHERE m.type = 'outbound' 
+                                        GROUP BY p.product_id 
+                                        ORDER BY SUM(p.quantity) DESC 
+                                        LIMIT 5 
+                                        """, engine)
+        bs_graph[f'{tr['products']}'] = bs_graph[f'{tr['products']}'].apply(wrap_labels)
+        bs_fig = plotly.express.bar(
+            bs_graph, 
+            x=f'{tr['products']}', 
+            y=f'{tr['quantity']}', 
+            text_auto=True
+            )
+        bs_fig.update_traces(marker_color='gray')
+        bs_fig.update_layout(
+            plot_bgcolor='lightgray', 
+            paper_bgcolor='white', 
+            barcornerradius=5,
+            title="Best sellers",
+            width=400,
+            height=600
+            )
+        bs_figure = bs_fig.to_html(
+            full_html=False, 
+            config={'displayModeBar':False, 'staticPlot':True})
+
+        return render_template(
+            "dashboard.html", 
+            inventory=inventory_figure, 
+            outbound=out_figure, 
+            best_sellers=bs_figure)
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
+
+@app.route("/search")
+@login_required
+def search():
+    try:
+        q = request.args.get('q')
+        if q:
+            term = "%" + q + "%"
+            products = db.execute("""
+                SELECT product_name AS 'Product'
+                FROM inventory
+                WHERE product_name LIKE ? 
+                OR SKU LIKE ?
+                OR sell_price LIKE ? 
+                LIMIT 10""",
+                term, term, term
+                )
+            
+            customers = db.execute("""
+                SELECT name AS 'Customer'
+                FROM customers_suppliers
+                WHERE relation = 'customer' 
+                AND (name LIKE ? 
+                OR phone LIKE ? 
+                OR identification LIKE ? 
+                OR email LIKE ?)
+                LIMIT 10""", 
+                term, term, term, term
+                )
+
+            suppliers = db.execute("""
+                SELECT name AS 'Supplier'
+                FROM customers_suppliers
+                WHERE relation = 'supplier' 
+                AND (name LIKE ? 
+                OR phone LIKE ? 
+                OR identification LIKE ? 
+                OR email LIKE ?) 
+                LIMIT 10""", 
+                term, term, term, term
+                )
+
+            movements = db.execute("""
+                SELECT m.order_number AS 'Order'
+                FROM movements m
+                JOIN products_movement p
+                    ON m.id = p.movement_id 
+                JOIN inventory i 
+                    ON p.product_id = i.id 
+                WHERE m.order_number LIKE ? 
+                OR i.SKU LIKE ? 
+                OR m.date LIKE ? 
+                GROUP BY m.order_number
+                LIMIT 10""", 
+                term, term, term
+                )
+            
+            users = db.execute("""
+                SELECT name AS 'User'
+                FROM users
+                WHERE name LIKE ? 
+                OR identification LIKE ? 
+                LIMIT 10""", 
+                term, term
+                )
+            search_results = [products, customers, movements, suppliers, users]
+            
+        else:
+            search_results = []
+
+        return render_template_string("""
+            {% for dicts in search_results %}
+            {% for element in dicts %}
+            {% for key, value in element.items() %}
+            <a href="/result/{{ value }}/{{ key }}" 
+                                    {% if key == 'Order' %}
+                                    target='_blank'
+                                    {% endif %}>
+                <div class="suggestion">
+                <span class="item_name">{{ value }}</span>
+                <span class="item_type">{{ key }}</span>
+                </div>
+            </a>
+            {% endfor %}
+            {% endfor %}
+            {% endfor %}
+            """, search_results=search_results)
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
+
+@app.route('/result/<search_term>/<type>')
+@login_required
+def result(search_term, type):
+    try:
+        match type:
+            case 'Product':
                 warehouses = db.execute("SELECT * FROM warehouses")
 
                 wh_columns = ", ".join([f"""
@@ -690,598 +1187,185 @@ def reports():
                                         ) AS {wh['name'].capitalize()}
                                         """ for wh in warehouses])
 
-                data_report = db.execute(f"""
-                                        SELECT 
-                                            SKU, 
-                                            product_name AS {tr['product']},
-                                            sell_price AS {tr['price']},
-                                            SUM(stock) AS '{tr['stock']}',
-                                            {wh_columns}
-                                        FROM inventory i
-                                        JOIN allocation a 
-                                            ON i.id = a.product_id
-                                        GROUP BY 
-                                            SKU, 
-                                            product_name,
-                                            sell_price,
-                                            'Total stock'
-                                        """)
-                data_report.append({'datatype':f'{tr['products']}', 'keyword':'Product'})
+                item = db.execute(f"""
+                                SELECT 
+                                    i.id, 
+                                    i.SKU, 
+                                    i.product_name,
+                                    i.sell_price, 
+                                    i.buy_price, 
+                                    i.status, 
+                                    SUM(a.stock) AS 'Total stock', 
+                                    i.comments, 
+                                    i.image_route,
+                                    {wh_columns}
+                                FROM inventory i
+                                JOIN allocation a 
+                                    ON i.id = a.product_id 
+                                WHERE i.product_name = ? 
+                                GROUP BY
+                                    i.id, 
+                                    i.SKU, 
+                                    i.product_name,
+                                    i.sell_price,
+                                    i.buy_price,
+                                    i.status, 
+                                    i.comments, 
+                                    'Total stock'
+                                """, search_term)
+                item[0]['warehouses'] = warehouses
 
-            case 'Inbound':
-                data_report = db.execute(f"""
-                                         SELECT 
-                                            m.date AS {tr['date']},
-                                            m.order_number AS '{tr['order']}', 
-                                            SUM(p.quantity) AS '{tr['p-received']}', 
-                                            UPPER(SUBSTR(w.name, 1, 1)) || LOWER(SUBSTR(w.name, 2)) 
-                                                AS {tr['warehouse']},
-                                            c.name AS {tr['supplier']}, 
-                                            u.name AS {tr['receiver']} 
-                                         FROM movements m 
-                                         JOIN users u 
-                                            ON m.author = u.id 
-                                         JOIN products_movement p 
-                                            ON m.id = p.movement_id 
-                                         JOIN warehouses w
-                                            ON m.destination = w.id 
-                                         JOIN customers_suppliers c 
-                                            ON m.counterpart = c.id 
-                                         WHERE type = 'inbound' 
-                                         GROUP BY 
-                                            m.date, 
-                                            m.order_number, 
-                                            w.name,
-                                            c.name, 
-                                            u.name
-                                         ORDER BY date DESC
-                                         """)
-                data_report.append({'datatype':f'{tr['inbound']}', 'keyword':'Order'})
+                item_transactions = db.execute("""
+                                            SELECT 
+                                                m.order_number AS 'Order', 
+                                                m.date AS Date, 
+                                                (p.price * p.quantity) AS Amount, 
+                                                c.name AS Customer, 
+                                                p.quantity AS Quantity
+                                            FROM movements m 
+                                            JOIN customers_suppliers c 
+                                                ON m.counterpart = c.id 
+                                            JOIN products_movement p
+                                                ON m.id = p.movement_id 
+                                            WHERE p.product_id = (
+                                            SELECT id 
+                                            FROM inventory 
+                                            WHERE product_name = ?)
+                                            AND m.type = 'outbound' 
+                                            """, search_term)
+                if session['role'] == 'observer':
+                    template = 'products_result-o.html'
+                else:
+                    template = 'products_result.html'
+                
+            case 'Customer':
+                item = db.execute("""
+                                SELECT * 
+                                FROM customers_suppliers 
+                                WHERE name = ?
+                                AND relation = 'customer'
+                                """, search_term
+                                )
+                item_transactions = db.execute("""
+                                            SELECT 
+                                                m.order_number AS 'Order', 
+                                                m.date AS Date, 
+                                                SUM(p.price * p.quantity) AS Amount, 
+                                                SUM(p.quantity) AS Quantity,
+                                                u.name AS Vendor 
+                                            FROM movements m 
+                                            JOIN products_movement p
+                                                ON m.id = p.movement_id 
+                                            JOIN inventory i 
+                                                ON p.product_id = i.id
+                                            JOIN users u 
+                                                ON m.author = u.id 
+                                            WHERE counterpart = (
+                                            SELECT id 
+                                            FROM customers_suppliers 
+                                            WHERE name = ?
+                                            ) 
+                                            AND type = 'outbound'
+                                            GROUP BY m.order_number 
+                                            ORDER BY date DESC 
+                                            """, search_term)
+                template = 'customers_result.html'
 
-            case 'Outbound':
-                data_report = db.execute(f"""
-                                         SELECT 
-                                            m.date AS {tr['date']},
-                                            m.order_number AS '{tr['order']}', 
-                                            SUM(p.quantity) AS '{tr['p-sold']}', 
-                                            SUM(p.price * p.quantity) AS {tr['amount']},
-                                            u.name AS {tr['vendor']},
-                                            c.name AS {tr['customer']}
-                                         FROM movements m 
-                                         JOIN customers_suppliers c 
-                                            ON m.counterpart = c.id 
-                                         JOIN users u 
-                                            ON m.author = u.id
-                                         JOIN products_movement p
-                                            ON m.id = p.movement_id 
-                                         WHERE type = 'outbound' 
-                                         GROUP BY 
-                                         m.date, 
-                                         m.order_number, 
-                                         u.name, 
-                                         c.name
-                                  ORDER BY date DESC
-                                  """)                
-                data_report.append({'datatype':f'{tr['outbound']}', 'keyword':'Order'})
+            case 'Supplier':
+                item = db.execute("""
+                                SELECT * 
+                                FROM customers_suppliers 
+                                WHERE name = ?
+                                AND relation = 'supplier'
+                                """, search_term
+                                )
+                item_transactions = db.execute("""
+                                            SELECT 
+                                                m.order_number AS 'Order', 
+                                                m.date AS Date, 
+                                                SUM(p.price * p.quantity) AS Amount, 
+                                                SUM(p.quantity) AS Quantity,
+                                                u.name AS Receiver 
+                                            FROM movements m 
+                                            JOIN products_movement p
+                                                ON m.id = p.movement_id 
+                                            JOIN inventory i 
+                                                ON p.product_id = i.id
+                                            JOIN users u 
+                                                ON m.author = u.id 
+                                            WHERE counterpart = (
+                                            SELECT id 
+                                            FROM customers_suppliers 
+                                            WHERE name = ?
+                                            ) 
+                                            AND type = 'inbound'
+                                            GROUP BY m.order_number 
+                                            ORDER BY date DESC 
+                                            """, search_term)
+                template = 'suppliers_result.html'
 
-            case 'Transfers':
-                data_report = db.execute(f"""
-                                         SELECT 
-                                            m.date AS {tr['date']},
-                                            m.order_number AS '{tr['order']}', 
-                                            SUM(p.quantity) AS '{tr['p-transferred']}', 
-                                            w_origin.name AS {tr['origin']}, 
-                                            w_destination.name AS {tr['destination']}, 
-                                            u.name AS {tr['responsible']} 
-                                         FROM movements m 
-                                         JOIN warehouses w_origin 
-                                            ON m.origin = w_origin.id 
-                                         JOIN warehouses w_destination 
-                                            ON m.destination = w_destination.id 
-                                         JOIN users u 
-                                            ON m.author = u.id
-                                         JOIN products_movement p
-                                            ON m.id = p.movement_id 
-                                         WHERE type = 'transfer' 
-                                         GROUP BY 
-                                         m.date, 
-                                         m.order_number, 
-                                         u.name, 
-                                         w_origin.name, 
-                                         w_destination.name 
-                                  ORDER BY date DESC
-                                  """)                
-                data_report.append({'datatype':f'{tr['transfer']}', 'keyword':'Order'})
-
-            case 'Users':
-                if session['role'] != 'admin':
-                    return render_template(
-                        "error.html", 
-                        message="Forbbiden: you do not have permission to access this section."
-                        ), 403
-                data_report = db.execute(f"""
-                                         SELECT 
-                                            identification AS {tr['id']}, 
-                                            name as '{tr['user']}', 
-                                            email AS '{tr['email']}', 
-                                            phone AS '{tr['phone']}', 
-                                            start_date AS '{tr['start']}', 
-                                            end_date AS '{tr['end']}', 
-                                            status AS {tr['status']} 
-                                         FROM users
-                                         """)
-                data_report.append({f'datatype':f'{tr['users']}', 'keyword':'User'})
-
-            case 'Activity':
-                if session['role'] != 'admin':
-                    return render_template(
-                        "error.html", 
-                        message="Forbbiden: you do not have permission to access this section."
-                        ), 403
-                user = request.form.get('user-select')
-                print(user)
-                users_log = db.execute(f"""
-                           SELECT 
-                            l.date as {tr['date']}, 
-                            u.name AS {tr['user']}, 
-                            'login/logout' AS {tr['category']}, 
-                            CASE
-                                WHEN t.name = 'log_in' THEN '{tr['log in']}' 
-                                WHEN t.name = 'log_out' THEN '{tr['log out']}' 
-                                ELSE '{tr['other']}' 
-                            END AS {tr['activity']} 
-                           FROM users_log l
-                           JOIN activity_type t 
-                            ON l.type = t.id 
-                           JOIN users u 
-                            ON l.user_id = u.id 
-                           WHERE {tr['user']} = ?
-                           """, user)
-                inventory = db.execute(f"""
-                                       SELECT                                         
-                                        i.addition_Date AS {tr['date']}, 
-                                        u.name AS {tr['user']}, 
-                                        '{tr['add product']}' AS {tr['category']}, 
-                                        i.product_name AS {tr['activity']}
-                                       FROM inventory i 
-                                       JOIN users u 
-                                        ON i.author = u.id 
-                                       WHERE {tr['user']} = ?
-                                       """, user)
-                movements = db.execute(f"""
-                                       SELECT 
-                                        m.date AS {tr['date']}, 
-                                        u.name AS {tr['user']}, 
-                                        m.type as {tr['category']}, 
-                                        m.order_number AS {tr['activity']} 
-                                       FROM movements m 
-                                       JOIN users u 
-                                        ON m.author = u.id 
-                                       WHERE {tr['user']} = ?
-                                       """, user)
-                users = set()
-                data_report = []
-                for category in [users_log, inventory, movements]:
-                    for item in category:
-                        data_report.append(item)
-                        users.add(item[f"{tr['user']}"])
-
-                data_report.sort(key=lambda event: event[f"{tr['date']}"], reverse=True)
-                data_report.append({'datatype':f'{tr['activity']}', 'keyword':'activity'})
-
-        return render_template("reports.html", data=data_report)
-    
-    else:
-        return render_template("reports.html")
-
-
-@server.route("/")
-@server.route("/dashboard")
-@login_required
-def dashboard():
-    tr = translations(session['language'])
-
-    def wrap_labels(str, width=20):
-        return '<br>'.join(textwrap.wrap(str, width=width))
-
-    engine = sqlalchemy.create_engine("sqlite:///general_data.db")
-    #Inventory graph
-    inv_graph = pandas.read_sql_query(f"""
-                                      SELECT 
-                                        SUM(a.stock) AS {tr['quantity']}, 
-                                        i.product_name AS {tr['product']} 
-                                      FROM inventory i
-                                      JOIN allocation a
-                                        ON i.id = a.product_id
-                                      GROUP BY i.product_name
-                                      ORDER BY SUM(a.stock) 
-                                      LIMIT 10
-                                      """, engine)
-    inv_graph[f'{tr['product']}'] = inv_graph[f'{tr['product']}'].apply(wrap_labels)
-    inv_fig = plotly.express.bar(
-        inv_graph, 
-        x=f'{tr['quantity']}', 
-        y=f'{tr['product']}', 
-        orientation='h', 
-        text_auto=True
-        )
-    inv_fig.update_traces(marker_color='gray')
-    inv_fig.update_layout(
-        plot_bgcolor='lightgray', 
-        paper_bgcolor='white', 
-        barcornerradius=5,
-        title="Low stock",
-        width=400,
-        height=600
-        )    
-    inventory_figure = inv_fig.to_html(
-        full_html=False, 
-        config={'displayModeBar':False, 'staticPlot':True}
-        )
-    
-    #Outbound graph
-    out_graph = pandas.read_sql_query(f"""
-                                      SELECT 
-                                        date(m.date) AS {tr['day']},
-                                        SUM(p.quantity) AS {tr['quantity']},
-                                        SUM(p.quantity * p.price) AS {tr['total']}
-                                      FROM movements m 
-                                      JOIN products_movement p 
-                                        ON m.id = p.movement_id 
-                                      WHERE type = "outbound" 
-                                      AND date >= DATE("now", "-7 days")
-                                      GROUP BY date(m.date)
-                                      """, engine)
-    other_days = pandas.date_range(
-        start=(datetime.now()-timedelta(days=6)), 
-        end=datetime.now()
-        )
-    other_days_df = pandas.DataFrame(other_days, columns=[f'{tr['day']}'])
-    other_days_df[f'{tr['day']}'] = other_days_df[f'{tr['day']}'].dt.strftime('%Y-%m-%d')
-    merged_df = pandas.merge(other_days_df, out_graph, on=f'{tr['day']}', how='left')
-    merged_df[f'{tr['quantity']}'] = merged_df[f'{tr['quantity']}'].astype(float).fillna(0)
-    merged_df[f'{tr['total']}'] = merged_df[f'{tr['total']}'].astype(float).fillna(0)
-    out_fig = plotly.express.scatter(
-        merged_df, 
-        x=f'{tr['day']}', 
-        y=f'{tr['total']}', 
-        size=f'{tr['quantity']}', 
-        text=f'{tr['quantity']}', 
-        size_max=50
-        )
-    out_fig.update_traces(marker_color='gray')
-    out_fig.update_layout(
-        plot_bgcolor='lightgray', 
-        paper_bgcolor='white',
-        title="Sales per day",
-        width=400,
-        height=600
-        )
-    out_figure = out_fig.to_html(
-        full_html=False, 
-        config={'displayModeBar':False, 'staticPlot':True}
-        )
-    
-    #Best_sellers graph 
-    bs_graph = pandas.read_sql_query(f"""
-                                     SELECT 
-                                        i.product_name AS {tr['products']}, 
-                                        SUM(p.quantity) AS {tr['quantity']} 
-                                     FROM movements m 
-                                     JOIN products_movement p 
-                                        ON m.id = p.movement_id 
-                                     JOIN inventory i 
-                                        ON p.product_id = i.id 
-                                     WHERE m.type = 'outbound' 
-                                     GROUP BY p.product_id 
-                                     ORDER BY SUM(p.quantity) DESC 
-                                     LIMIT 5 
-                                     """, engine)
-    bs_graph[f'{tr['products']}'] = bs_graph[f'{tr['products']}'].apply(wrap_labels)
-    bs_fig = plotly.express.bar(
-        bs_graph, 
-        x=f'{tr['products']}', 
-        y=f'{tr['quantity']}', 
-        text_auto=True
-        )
-    bs_fig.update_traces(marker_color='gray')
-    bs_fig.update_layout(
-        plot_bgcolor='lightgray', 
-        paper_bgcolor='white', 
-        barcornerradius=5,
-        title="Best sellers",
-        width=400,
-        height=600
-        )
-    bs_figure = bs_fig.to_html(
-        full_html=False, 
-        config={'displayModeBar':False, 'staticPlot':True})
-
-    return render_template(
-        "dashboard.html", 
-        inventory=inventory_figure, 
-        outbound=out_figure, 
-        best_sellers=bs_figure)
-
-
-@server.route("/search")
-@login_required
-def search():
-    q = request.args.get('q')
-    if q:
-        term = "%" + q + "%"
-        products = db.execute("""
-            SELECT product_name AS 'Product'
-            FROM inventory
-            WHERE product_name LIKE ? 
-            OR SKU LIKE ?
-            OR sell_price LIKE ? 
-            LIMIT 10""",
-            term, term, term
-            )
-        
-        customers = db.execute("""
-            SELECT name AS 'Customer'
-            FROM customers_suppliers
-            WHERE relation = 'customer' 
-            AND (name LIKE ? 
-            OR phone LIKE ? 
-            OR identification LIKE ? 
-            OR email LIKE ?)
-            LIMIT 10""", 
-            term, term, term, term
-            )
-
-        suppliers = db.execute("""
-            SELECT name AS 'Supplier'
-            FROM customers_suppliers
-            WHERE relation = 'supplier' 
-            AND (name LIKE ? 
-            OR phone LIKE ? 
-            OR identification LIKE ? 
-            OR email LIKE ?) 
-            LIMIT 10""", 
-            term, term, term, term
-            )
-
-        movements = db.execute("""
-            SELECT m.order_number AS 'Order'
-            FROM movements m
-            JOIN products_movement p
-                ON m.id = p.movement_id 
-            JOIN inventory i 
-                ON p.product_id = i.id 
-            WHERE m.order_number LIKE ? 
-            OR i.SKU LIKE ? 
-            OR m.date LIKE ? 
-            GROUP BY m.order_number
-            LIMIT 10""", 
-            term, term, term
-            )
-        
-        users = db.execute("""
-            SELECT name AS 'User'
-            FROM users
-            WHERE name LIKE ? 
-            OR identification LIKE ? 
-            LIMIT 10""", 
-            term, term
-            )
-        search_results = [products, customers, movements, suppliers, users]
-        
-    else:
-        search_results = []
-
-    return render_template_string("""
-        {% for dicts in search_results %}
-        {% for element in dicts %}
-        {% for key, value in element.items() %}
-        <a href="/result/{{ value }}/{{ key }}" 
-                                  {% if key == 'Order' %}
-                                  target='_blank'
-                                  {% endif %}>
-                                  <div class="suggestion">
-                                  <span class="item_name">{{ value }}</span>
-                                  <span class="item_type">{{ key }}</span>
-                                  </div>
-        </a>
-        {% endfor %}
-        {% endfor %}
-        {% endfor %}
-        """, search_results=search_results)
-
-
-@server.route('/result/<search_term>/<type>')
-@login_required
-def result(search_term, type):
-    match type:
-        case 'Product':
-            warehouses = db.execute("SELECT * FROM warehouses")
-
-            wh_columns = ", ".join([f"""
-                                    SUM(
-                                    CASE WHEN a.warehouse = {wh['id']}
-                                    THEN a.stock ELSE 0 END
-                                    ) AS {wh['name'].capitalize()}
-                                    """ for wh in warehouses])
-
-            item = db.execute(f"""
-                              SELECT 
-                                i.id, 
-                                i.SKU, 
-                                i.product_name,
-                                i.sell_price, 
-                                i.buy_price, 
-                                i.status, 
-                                SUM(a.stock) AS 'Total stock', 
-                                i.comments, 
-                                i.image_route,
-                                {wh_columns}
-                              FROM inventory i
-                              JOIN allocation a 
-                                ON i.id = a.product_id 
-                              WHERE i.product_name = ? 
-                              GROUP BY
-                                i.id, 
-                                i.SKU, 
-                                i.product_name,
-                                i.sell_price,
-                                i.buy_price,
-                                i.status, 
-                                i.comments, 
-                                'Total stock'
-                              """, search_term)
-            item[0]['warehouses'] = warehouses
-
-            item_transactions = db.execute("""
-                                           SELECT 
-                                            m.order_number AS 'Order', 
-                                            m.date AS Date, 
-                                            (p.price * p.quantity) AS Amount, 
-                                            c.name AS Customer, 
-                                            p.quantity AS Quantity
-                                           FROM movements m 
-                                           JOIN customers_suppliers c 
-                                            ON m.counterpart = c.id 
-                                           JOIN products_movement p
-                                            ON m.id = p.movement_id 
-                                           WHERE p.product_id = (
-                                           SELECT id 
-                                           FROM inventory 
-                                           WHERE product_name = ?)
-                                           AND m.type = 'outbound' 
-                                           """, search_term)
-            if session['role'] == 'observer':
-                template = 'products_result-o.html'
-            else:
-                template = 'products_result.html'
+            case 'Inbound' | 'Outbound' | 'Transfer' | 'Order':
+                return redirect(f"/movement_pdf/{search_term}")
             
-        case 'Customer':
-            item = db.execute("""
-                              SELECT * 
-                              FROM customers_suppliers 
-                              WHERE name = ?
-                              AND relation = 'customer'
-                              """, search_term
-                              )
-            item_transactions = db.execute("""
-                                           SELECT 
-                                            m.order_number AS 'Order', 
-                                            m.date AS Date, 
-                                            SUM(p.price * p.quantity) AS Amount, 
-                                            SUM(p.quantity) AS Quantity,
-                                            u.name AS Vendor 
-                                           FROM movements m 
-                                           JOIN products_movement p
+            case 'User':
+                if session['role'] != 'admin':
+                    return render_template(
+                        "error.html", 
+                        message="Forbbiden: you do not have permission to access this section."
+                        ), 403
+                
+                item = db.execute("""
+                                SELECT 
+                                    id, 
+                                    identification_type, 
+                                    identification, 
+                                    name, 
+                                    role, 
+                                    email, 
+                                    phone, 
+                                    start_date, 
+                                    end_date, 
+                                    status 
+                                FROM users 
+                                WHERE name = ?"""
+                                , search_term)
+                item_transactions = db.execute("""
+                                            SELECT 
+                                                m.order_number AS 'Order', 
+                                                m.type AS 'Type', 
+                                                m.date AS Date, 
+                                                SUM(p.price * p.quantity) AS 'Amount', 
+                                                SUM(p.quantity) AS Quantity, 
+                                                COALESCE(c.name, '') AS Counterpart 
+                                            FROM movements m 
+                                            LEFT JOIN products_movement p 
                                             ON m.id = p.movement_id 
-                                           JOIN inventory i 
-                                            ON p.product_id = i.id
-                                           JOIN users u 
-                                            ON m.author = u.id 
-                                           WHERE counterpart = (
-                                           SELECT id 
-                                           FROM customers_suppliers 
-                                           WHERE name = ?
-                                           ) 
-                                           AND type = 'outbound'
-                                           GROUP BY m.order_number 
-                                           ORDER BY date DESC 
-                                           """, search_term)
-            template = 'customers_result.html'
+                                            LEFT JOIN customers_suppliers c 
+                                            ON m.counterpart = c.id 
+                                            WHERE m.author = ?
+                                            GROUP BY 
+                                                m.order_number,
+                                                m.type,
+                                                m.date 
+                                            ORDER BY m.date DESC
+                                            """, item[0]['id'])
+                template = 'users_result.html'
 
-        case 'Supplier':
-            item = db.execute("""
-                              SELECT * 
-                              FROM customers_suppliers 
-                              WHERE name = ?
-                              AND relation = 'supplier'
-                              """, search_term
-                              )
-            item_transactions = db.execute("""
-                                           SELECT 
-                                            m.order_number AS 'Order', 
-                                            m.date AS Date, 
-                                            SUM(p.price * p.quantity) AS Amount, 
-                                            SUM(p.quantity) AS Quantity,
-                                            u.name AS Receiver 
-                                           FROM movements m 
-                                           JOIN products_movement p
-                                            ON m.id = p.movement_id 
-                                           JOIN inventory i 
-                                            ON p.product_id = i.id
-                                           JOIN users u 
-                                            ON m.author = u.id 
-                                           WHERE counterpart = (
-                                           SELECT id 
-                                           FROM customers_suppliers 
-                                           WHERE name = ?
-                                           ) 
-                                           AND type = 'inbound'
-                                           GROUP BY m.order_number 
-                                           ORDER BY date DESC 
-                                           """, search_term)
-            template = 'suppliers_result.html'
-
-        case 'Inbound' | 'Outbound' | 'Transfer' | 'Order':
-            return redirect(f"/movement_pdf/{search_term}")
-        
-        case 'User':
-            if session['role'] != 'admin':
+            case _:
                 return render_template(
                     "error.html", 
-                    message="Forbbiden: you do not have permission to access this section."
-                    ), 403
-            
-            item = db.execute("""
-                              SELECT 
-                                id, 
-                                identification_type, 
-                                identification, 
-                                name, 
-                                role, 
-                                email, 
-                                phone, 
-                                start_date, 
-                                end_date, 
-                                status 
-                              FROM users 
-                              WHERE name = ?"""
-                              , search_term)
-            item_transactions = db.execute("""
-                                           SELECT 
-                                            m.order_number AS 'Order', 
-                                            m.type AS 'Type', 
-                                            m.date AS Date, 
-                                            SUM(p.price * p.quantity) AS 'Amount', 
-                                            SUM(p.quantity) AS Quantity, 
-                                            COALESCE(c.name, '') AS Counterpart 
-                                           FROM movements m 
-                                           LEFT JOIN products_movement p 
-                                           ON m.id = p.movement_id 
-                                           LEFT JOIN customers_suppliers c 
-                                           ON m.counterpart = c.id 
-                                           WHERE m.author = ?
-                                           GROUP BY 
-                                            m.order_number,
-                                            m.type,
-                                            m.date 
-                                           ORDER BY m.date DESC
-                                           """, item[0]['id'])
-            template = 'users_result.html'
+                    message="Error: Element not found"), 404
 
-        case _:
-            return render_template(
-                "error.html", 
-                message="Error: Element not found"), 404
-
-    return render_template(
-        template, 
-        item=item, 
-        transactions=item_transactions
-        )
+        return render_template(
+            template, 
+            item=item, 
+            transactions=item_transactions
+            )
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
 
 
-@server.route('/generate_report/<doc_type>')
+@app.route('/generate_report/<doc_type>')
 @login_required
 def generate_doc(doc_type):
     datatype = data_report[-1]['datatype']
@@ -1342,7 +1426,7 @@ def generate_doc(doc_type):
     return response
 
 
-@server.route("/get_customer")
+@app.route("/get_customer")
 @login_required
 def get_customer():
     name = request.args.get('customer-name')
@@ -1375,7 +1459,7 @@ def get_customer():
                                   """, customers=customers)
 
 
-@server.route("/get_customer_data/<name>")
+@app.route("/get_customer_data/<name>")
 @login_required
 def get_customer_data(name):
     customer_data = db.execute("""
@@ -1391,83 +1475,87 @@ def get_customer_data(name):
     return jsonify(customer_data)
 
 
-@server.route('/calendar')
+@app.route('/calendar')
 @login_required
 def calendar():
     return render_template("calendar.html")
     
 
-@server.route('/calendar_date/<date>')
+@app.route('/calendar_date/<date>')
 @login_required
 def calendar_date(date):
     go_to_date = f"calendar.changeView('timeGridDay', '{date}');"
     return render_template("calendar.html", day=go_to_date)
 
 
-@server.route("/get_events")
+@app.route("/get_events")
 @login_required
 def get_events():
-    start = request.args.get('start')
-    end = request.args.get('end')
+    try:
+        start = request.args.get('start')
+        end = request.args.get('end')
 
-    start_date = datetime.fromisoformat(start.replace(
-        'Z', 
-        '+00:00'
-        )).astimezone(pytz.UTC)
-    start_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
-
-    if end:
-        end_date = datetime.fromisoformat(end.replace(
-            'Z', '+00:00'
+        start_date = datetime.fromisoformat(start.replace(
+            'Z', 
+            '+00:00'
             )).astimezone(pytz.UTC)
-        end_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
-    else:
-        end_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        start_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
 
-    movements = db.execute("""
-                           SELECT date AS start,
-                            order_number AS title,                     
-                            SUM(p.quantity) AS 'quantity',
-                            SUM(p.price * p.quantity) AS amount,
-                            UPPER(SUBSTR(m.type, 1, 1)) || LOWER(SUBSTR(m.type, 2)) 
-                                AS event_type 
-                           FROM movements m 
-                           JOIN users u 
-                            ON m.author = u.id 
-                           JOIN products_movement p 
-                            ON m.id = p.movement_id 
-                           WHERE date BETWEEN ? AND ? 
-                           GROUP BY 
-                            order_number, 
-                            date, 
-                            type 
-                           ORDER BY date DESC 
-                           """, start_str, end_str)
-    events = []
-    for movement in movements:
-        start_datetime = datetime.strptime(
-            movement['start'], 
-            '%Y-%m-%d %H:%M:%S'
-            )
+        if end:
+            end_date = datetime.fromisoformat(end.replace(
+                'Z', '+00:00'
+                )).astimezone(pytz.UTC)
+            end_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            end_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        event = {
-            'start': start_datetime.isoformat(),
-            'title': f"{movement['title']} ({movement['event_type']})",
-            'extendedProps': {
-                'quantity': movement['quantity'],
-                'amount': movement['amount'],
-                'event_type': movement['event_type']
-            },
-            'allDay': False,
-            'url': f'result/{movement['title']}/{movement['event_type']}',
-            'color': '#878787'
-        }
-        events.append(event)
- 
-    return jsonify(events)
+        movements = db.execute("""
+                            SELECT date AS start,
+                                order_number AS title,                     
+                                SUM(p.quantity) AS 'quantity',
+                                SUM(p.price * p.quantity) AS amount,
+                                UPPER(SUBSTR(m.type, 1, 1)) || LOWER(SUBSTR(m.type, 2)) 
+                                    AS event_type 
+                            FROM movements m 
+                            JOIN users u 
+                                ON m.author = u.id 
+                            JOIN products_movement p 
+                                ON m.id = p.movement_id 
+                            WHERE date BETWEEN ? AND ? 
+                            GROUP BY 
+                                order_number, 
+                                date, 
+                                type 
+                            ORDER BY date DESC 
+                            """, start_str, end_str)
+        events = []
+        for movement in movements:
+            start_datetime = datetime.strptime(
+                movement['start'], 
+                '%Y-%m-%d %H:%M:%S'
+                )
+
+            event = {
+                'start': start_datetime.isoformat(),
+                'title': f"{movement['title']} ({movement['event_type']})",
+                'extendedProps': {
+                    'quantity': movement['quantity'],
+                    'amount': movement['amount'],
+                    'event_type': movement['event_type']
+                },
+                'allDay': False,
+                'url': f'result/{movement['title']}/{movement['event_type']}',
+                'color': '#878787'
+            }
+            events.append(event)
+    
+        return jsonify(events)
+    
+    except Exception as e:
+        return render_template("error.html", message=f"{e}"), 400
 
 
-@server.route("/notifications")
+@app.route("/notifications")
 @login_required
 def notifications():
     @stream_with_context
@@ -1499,7 +1587,7 @@ def notifications():
     return Response(generate_notifications(), content_type='text/event-stream')
 
 
-@server.route("/mark_read", methods=['POST'])
+@app.route("/mark_read", methods=['POST'])
 @login_required
 def mark_read():
     try:
@@ -1532,11 +1620,10 @@ def mark_read():
         return render_template_string("Success!")
 
     except Exception as e:
-        print(f'Error marking notifications as read: {e}')
-        return render_template_string("Failure")
+        return render_template_string(f"Failure: {e}")
 
 
-@server.route('/set_language', methods=['POST'])
+@app.route('/set_language', methods=['POST'])
 @login_required
 def set_language():
     language = request.form.get('language', 'en')
@@ -1545,54 +1632,57 @@ def set_language():
     return redirect(request.referrer)
 
 
-@server.route('/settings', methods=['GET'])
+@app.route('/settings', methods=['GET'])
 @login_required
 def settings():
     return render_template("settings.html")
 
 
-@server.route('/create_user', methods=['GET', 'POST'])
+@app.route('/create_user', methods=['GET', 'POST'])
 @login_required
 @role_required(['admin'])
 def create_user():
     if request.method == 'POST':
-        id_type = request.form.get('id-type-hidden')
-        identification = request.form.get('identification')
-        name = request.form.get('user-name')
-        role = request.form.get('role')
-        email = request.form.get('user-email')
-        phone = request.form.get('user-phone')
-        password_hash = generate_password_hash(identification)
-        db.execute("""
-                   INSERT INTO users (
-                    identification_type, 
-                    identification, 
-                    name, 
-                    role, 
-                    hash,
-                    email, 
-                    phone, 
-                    start_date,
-                    status
-                   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
-                    id_type,
-                    identification,
-                    name,
-                    role,
-                    password_hash,
-                    email,
-                    phone,
-                    datetime.now(),
-                    'active'
-                   )
-        flash('New user created!', 'success')
-        return render_template('create_user.html')
+        try:
+            id_type = request.form.get('id-type-hidden')
+            identification = request.form.get('identification')
+            name = request.form.get('user-name')
+            role = request.form.get('role')
+            email = request.form.get('user-email')
+            phone = request.form.get('user-phone')
+            password_hash = generate_password_hash(identification)
+            db.execute("""
+                    INSERT INTO users (
+                        identification_type, 
+                        identification, 
+                        name, 
+                        role, 
+                        hash,
+                        email, 
+                        phone, 
+                        start_date,
+                        status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                        id_type,
+                        identification,
+                        name,
+                        role,
+                        password_hash,
+                        email,
+                        phone,
+                        datetime.now(),
+                        'active'
+                    )
+            flash('New user created!', 'success')
+            return render_template('create_user.html')
+        except Exception as e:
+            return render_template("error.html", message=f"{e}"), 400
     
     else:
         return render_template('create_user.html')
 
 
-@server.route('/edit_user', methods=['POST'])
+@app.route('/edit_user', methods=['POST'])
 @login_required
 @role_required(['admin'])
 def edit_user():
@@ -1671,7 +1761,7 @@ def edit_user():
  
 
 
-@server.route("/transfer", methods=['POST'])
+@app.route("/transfer", methods=['POST'])
 @login_required
 @role_required(['admin', 'user'])
 def transfer():
@@ -1776,7 +1866,7 @@ def transfer():
         return render_template("error.html", message=f"There was a problem: {e}"), 400
 
 
-@server.route('/edit_product', methods=['POST'])
+@app.route('/edit_product', methods=['POST'])
 @login_required
 @role_required(['admin', 'user'])
 def edit_product():
@@ -1824,8 +1914,8 @@ def edit_product():
             image_upload = upload_image(
                 request.files["image_reference"], 
                 product_SKU, 
-                server.config["UPLOAD_DIRECTORY"], 
-                server.config["ALLOWED_EXTENSIONS"]
+                app.config["UPLOAD_DIRECTORY"], 
+                app.config["ALLOWED_EXTENSIONS"]
                 )
             image_link = image_upload[7:]
             image = f'image_route = "{image_link}",'
@@ -1873,7 +1963,7 @@ def edit_product():
         return render_template("error.html", message=f"{e}"), 400
 
 
-@server.route('/change_password', methods=['GET', 'POST'])
+@app.route('/change_password', methods=['GET', 'POST'])
 @login_required
 def change_password():
     if request.method == 'POST':
@@ -1914,13 +2004,14 @@ def change_password():
         return render_template('change_password.html')
 
 
-@server.route('/error')
+@app.route('/error')
 @login_required
 def error():
-    return render_template('error.html', message=f'There was a major problem.')
+    raise Exception("Error de prueba")
+    #return render_template('error.html', message=f'There was a major problem.')
 
 
-@server.route('/user_filter')
+@app.route('/user_filter')
 @login_required
 @role_required(['admin'])
 def user_filter():
