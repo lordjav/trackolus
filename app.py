@@ -12,6 +12,13 @@ from flask_sqlalchemy import SQLAlchemy
 from babel.dates import format_datetime
 
 app = Flask(__name__)
+
+def create_app(testing=False):
+    if testing:
+        app.config['TESTING'] = True
+    
+    return app
+
 app.secret_key = 'EsAlItErAsE'
 app.config["UPLOAD_DIRECTORY"] = "static/product_images/"
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
@@ -58,7 +65,16 @@ class DatabaseErrorHandler(logging.Handler):
         with app.app_context():
             current_path = request.path if request else "Unknown"
             ip_address = request.remote_addr if request else "Unknown"
-            user = db.execute('SELECT name FROM users WHERE id = ?', session['user_id'])[0]['name']
+            
+            user_id = session.get('user_id')
+            if user_id:
+                try:
+                    user = db.execute('SELECT name FROM users WHERE id = ?', session['user_id'])[0]['name'] 
+                except Exception:
+                    user = "Unknown"
+            else:
+                user = "Unknown"
+            
             if record.exc_info:
                 tb = traceback.format_exception(*record.exc_info)
                 error_trace = ''.join(tb)
@@ -108,11 +124,13 @@ def login():
         if request.method == "POST":
             # Ensure identification was submitted
             if not request.form.get("identification"):
-                return redirect("/login")
+                flash("Identification is required", "error")
+                return render_template("login.html"), 400
 
             # Ensure password was submitted
             elif not request.form.get("password"):
-                return redirect("/login")
+                flash("Password is required", "error")
+                return render_template("login.html"), 400
 
             # Query database for identification
             rows = db.execute("""
@@ -127,11 +145,13 @@ def login():
                 rows[0]["hash"], 
                 request.form.get("password")
                 ):
-                return redirect("/login")
+                flash("Invalid username and/or password", "error")
+                return render_template("login.html"), 401
             
             # Ensure user is active 
             if rows[0]['status'] != 'active':
-                return redirect("/login")
+                flash("Account is not active", "error")
+                return render_template("login.html"), 403
             
             # Remember which user has logged in and personal settings
             session['role'] = rows[0]['role']
@@ -141,29 +161,36 @@ def login():
             session['language'] = get_locale()
 
             # Save Log in in users_log
-            db.execute("""
-                    INSERT INTO users_log (
-                        user_id, 
-                        date, 
-                        type, 
-                        ip
-                    ) VALUES (?, ?, ?, ?)
-                    """, 
-                    rows[0]['id'],
-                    datetime.now(),
-                    1,
-                    request.remote_addr
-                    )
+            try:
+                db.execute("""
+                        INSERT INTO users_log (
+                            user_id, 
+                            date, 
+                            type, 
+                            ip
+                        ) VALUES (?, ?, ?, ?)
+                        """, 
+                        rows[0]['id'],
+                        datetime.now(),
+                        1,
+                        request.remote_addr
+                        )
+            except Exception as e:
+                # Log el error pero no interrumpir el login
+                print(f"Error logging user login: {e}")
 
             # Redirect user to home page
             return redirect('/dashboard')
 
-        # User reached route via GET (as by clicking a link or via redirect)
+        # User reached route via GET
         else:
             return render_template("login.html")
     
     except Exception as e:
-        return render_template("error.html", message=f"{e}"), 400
+        # Log el error para debugging
+        print(f"Login error: {e}")
+        flash("An error occurred. Please try again.", "error")
+        return render_template("login.html"), 400
 
 
 @app.route("/logout")
@@ -186,7 +213,7 @@ def logout():
         
         #Forget any user id
         session.clear()
-
+        print(session)
         #Redirect to login form
         return redirect("/login")
     
@@ -2028,3 +2055,8 @@ def user_filter():
                                     {% endfor %}
                                   </select>
                                   """, users=users)
+
+
+if __name__ == '__main__':
+    application = create_app()
+    application.run(debug=True)
