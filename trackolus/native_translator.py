@@ -44,6 +44,9 @@ def translations(language):
             keywords['log out'] = 'Log out'
             keywords['other'] = 'Other'
             keywords['add product'] = 'Add product'
+            keywords['low_stock'] = 'Low stock'
+            keywords['sales_per_day'] = 'Sales per day'
+            keywords['best_sellers'] = 'Best sellers'
 
         case 'es':
             keywords['id-type'] = 'Tipo de ID'
@@ -87,6 +90,9 @@ def translations(language):
             keywords['log out'] = 'Cerrar sesión'
             keywords['other'] = 'Otros'
             keywords['add product'] = 'Agregar producto'
+            keywords['low_stock'] = 'Poca existencia'
+            keywords['sales_per_day'] = 'Ventas por día'
+            keywords['best_sellers'] = 'Más vendidos'
 
     return keywords
 

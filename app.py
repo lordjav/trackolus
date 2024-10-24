@@ -1015,7 +1015,7 @@ def dashboard():
             plot_bgcolor='lightgray', 
             paper_bgcolor='white', 
             barcornerradius=5,
-            title="Low stock",
+            title=f"{tr['low_stock']}",
             width=400,
             height=600
             )    
@@ -1058,7 +1058,7 @@ def dashboard():
         out_fig.update_layout(
             plot_bgcolor='lightgray', 
             paper_bgcolor='white',
-            title="Sales per day",
+            title=f"{tr['sales_per_day']}",
             width=400,
             height=600
             )
@@ -1094,7 +1094,7 @@ def dashboard():
             plot_bgcolor='lightgray', 
             paper_bgcolor='white', 
             barcornerradius=5,
-            title="Best sellers",
+            title=f"{tr['best_sellers']}",
             width=400,
             height=600
             )
@@ -2031,11 +2031,15 @@ def change_password():
         return render_template('change_password.html')
 
 
-@app.route('/error')
+@app.route('/help')
 @login_required
-def error():
-    raise Exception("Error de prueba")
-    #return render_template('error.html', message=f'There was a major problem.')
+def help():
+    language = get_locale()
+    match language:
+        case 'en':
+            return render_template('help.html')
+        case 'es':
+            return render_template('help_es.html')
 
 
 @app.route('/user_filter')

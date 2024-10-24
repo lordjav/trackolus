@@ -1,0 +1,116 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+<div id="help-content">
+<h1>Trackolus</h1>
+
+
+<p>
+Trackolus es un sistema de control de almacenamiento tipo Sistema de Gestión de Almacenes (WMS por sus siglas en inglés) diseñado para controlar, supervisar y verificar el almacenamiento de una o varias bodegas de manera centralizada. Su facilidad de uso y simplicidad en la organización de la información lo hacen una herramienta apropiada para pequeñas y medianas empresas.
+</p>
+<h2>Tecnologías usadas</h2>
+
+
+<h3><br>Frontend:</h3>
+
+
+<p>
+La interfaz de usuario se basa principalmente en HTML, CSS y JavaScript. Para la comunicación con el servidor y procesamiento de las respuestas se usan herramientas de HTMX. Para el módulo de calendario se utilizó fullCalendar y algunos componentes visuales utilizan Bootstrap.
+</p>
+<ul>
+
+<li>HTML5.</li>
+
+<li>CSS 3.</li>
+
+<li>JavaScript.</li>
+
+<li>Bootstrap 5.3.3.</li>
+
+<li>HTMX 1.9.7.</li>
+
+<li>FullCalendar 6.1.15.</li>
+</ul>
+<h3>Backend:</h3>
+
+
+<p>
+La lógica de la aplicación se construyó en Python con Flask como framework y usando Jinja2 para el renderizado de las plantillas. Las gráficas fueron construidas con SQLAlchemy para las consultas, Pandas para la estructuración y Plotly para el renderizado. La traducción de la app se basó en un 50% en Babel y el resto en soluciones propias. PDFKIT se utilizó en los módulos de generación de documentos pdf.
+</p>
+<ul>
+
+<li>Python 3.12.3.</li>
+
+<li>Flask 3.0.3.</li>
+
+<li>Babel. 2.16.0.</li>
+
+<li>Jinja2 3.1.4.</li>
+
+<li>Pandas.</li>
+
+<li>Plotly.</li>
+
+<li>PDFKIT.</li>
+</ul>
+<h3>Base de datos: </h3>
+
+
+<p>
+SQLite3 usando mediante el módulo SQL de CS50 como ORM, otra parte del manejo de la información utilizó SQLAlchemy para la visualización de gráficas y para el registro de errores.
+</p>
+<h2>Instalación</h2>
+
+
+<p>
+Puesto que se trata de una aplicación web solo se requiere un navegador y no necesita de instalación, basta con acceder mediante la URL para su uso. Se recomienda tener la última versión del navegador preferido del usuario para evitar problemas de incompatibilidad con las tecnologías usadas. Se desaconseja el uso de Internet Explorer 13 y versiones anteriores.
+</p>
+<h2>Uso</h2>
+
+
+<p>
+Al iniciar sesión se observan 6 secciones principales accesibles mediante la barra lateral izquierda:
+</p>
+<p>
+Tablero: una recopilación de gráficos para análisis visual del almacenamiento en la(s) bodegas(s). Con información sobre ingresos y egresos en el tiempo, productos con menor stock, evolución en los últimos días así como comparativos con la última semana, mes y trimestre, etc.
+</p>
+<p>
+Reportes: acceso a reportes según varios tipos de datos como productos, clientes, proveedores, actividad de los usuarios, entradas y salidas de mercancía, entre otros. Se ofrece la generación de los informes en diferentes formatos: documentos pdf, hojas de cálculo y archivos de datos tipo CSV.
+</p>
+<p>
+Inventario: Listado de todos los productos almacenados con su respectiva información de códigos SKU, existencias, distribución por almacén, costo, imágenes, etc. También en esta sección se accede a la adición de nuevos productos y la transferencia de mercancía entre almacenes. 
+</p>
+<p>
+Para agregar nuevos productos acceda al menú desplegable mediante el botón en la esquina inferior derecha, ingrese la información del producto, seleccione una imagen de referencia y guarde la información. 
+</p>
+<p>
+Para transferir artículos entre almacenes acceda mediante el mismo menú, defina almacén de origen y destino, seleccione los artículos y guarde la orden de transferencia.
+</p>
+<p>
+Orden de compra: con su interfaz sencilla se agregan órdenes de salida de mercancía en pocos pasos. También con opción para la generación de cotizaciones. Para agregar una orden ingrese los datos del cliente (nombre, teléfono, identificación y correo). En caso de existir el cliente en la base de datos se cargará su información en los campos automáticamente. De lo contrario, se guardará la información en la base de datos por defecto. Seleccione luego la bodega desde la cuál saldrá la mercancía, los productos a incluir en la orden y su cantidad. Puede guardar la orden de compra o generar una cotización en pdf.
+</p>
+<p>
+Entradas: para consultar órdenes de ingreso de mercancía y su contenido además de información adicional, informes de recepción de productos y el registro de nuevos ingresos.
+</p>
+<p>
+Salidas: también en formato de listado para visualización rápida de egreso de mercancía. 
+</p>
+<p>
+Otras funciones: 
+</p>
+<ul>
+
+<li>Calendario: para visualización de órdenes en órden cronológico con opción de vista por agenda, día, semana y mes. Acceso mediante el menú en la esquina superior derecha. </li>
+
+<li>Notificaciones: registro en tiempo real de los eventos más importantes como entradas y salidas de mercancía, transferencia entre almacenes, adición y edición de nuevos productos, entre otros. Acceso mediante el menú en la esquina superior derecha.</li>
+
+<li>Lenguaje: con soporte para inglés y español. Menú de selección en la esquina superior derecha.</li>
+</ul>
+<h2>Licencia</h2>
+
+
+<p>
+Este software open source es provisto bajo licencia MIT.
+</p>
+</div>
+{% endblock %}
