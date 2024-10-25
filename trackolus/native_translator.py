@@ -47,6 +47,7 @@ def translations(language):
             keywords['low_stock'] = 'Low stock'
             keywords['sales_per_day'] = 'Sales per day'
             keywords['best_sellers'] = 'Best sellers'
+            keywords['title'] = 'Title'
 
         case 'es':
             keywords['id-type'] = 'Tipo de ID'

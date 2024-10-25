@@ -1458,7 +1458,11 @@ main {
         width: 70%;
         
     }
-    #save-transfer-button, #save-product-button, #save-user-button, #get-report, #save-inbound-button, #get-PDF, #save-order { max-height: 40px;}
+    #save-transfer-button, #save-product-button, #save-user-button, #get-report, #save-inbound-button, #get-PDF, #save-order, #create-user-button { 
+        width: fit-content;
+        padding: 0.25rem 0.75rem;
+
+    }
 
     #settings-options-container {
         flex-direction: row;

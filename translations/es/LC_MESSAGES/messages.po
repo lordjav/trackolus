@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-10-20 22:56-0500\n"
+"POT-Creation-Date: 2024-10-24 22:16-0500\n"
 "PO-Revision-Date: 2024-10-01 11:03-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: es\n"
@@ -18,105 +18,140 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-#: templates/change_password.html:6
-msgid "Old password"
+#: templates/calendar.html:36 templates/inbound-o.html:33
+#: templates/inbound.html:38 templates/inbound.html:104
+#: templates/inbound_movement_pdf.html:89 templates/inventory.html:141
+#: templates/order_pdf.html:91 templates/outbound.html:27
+#: templates/outbound_movement_pdf.html:91 templates/products_result-o.html:31
+#: templates/products_result.html:31 templates/purchase_order.html:38
+#: templates/transfer_movement_pdf.html:86
+msgid "Quantity"
+msgstr "Cantidad"
+
+#: templates/calendar.html:37
+msgid "Amount"
+msgstr "Monto"
+
+#: templates/change_password.html:6 templates/change_password.html:7
+msgid "Current password"
 msgstr "Contraseña actual"
 
-#: templates/change_password.html:7
+#: templates/change_password.html:8 templates/change_password.html:9
 msgid "New password"
 msgstr "Nueva contraseña"
 
-#: templates/change_password.html:8
+#: templates/change_password.html:10
+msgid "Confirmation"
+msgstr "Confirmación"
+
+#: templates/change_password.html:11
 msgid "Confirm new password"
 msgstr "Confirma la nueva contraseña"
 
-#: templates/change_password.html:12
+#: templates/change_password.html:15
 msgid "Save password"
 msgstr "Guardar contraseña"
 
-#: templates/create_user.html:6 templates/users_result.html:12
-#: templates/users_result.html:78
+#: templates/create_user.html:6 templates/create_user.html:7
+#: templates/users_result.html:12 templates/users_result.html:77
+#: templates/users_result.html:79
 msgid "Full name"
 msgstr "Nombre completo"
 
-#: templates/create_user.html:11
+#: templates/create_user.html:11 templates/users_result.html:82
+#: templates/users_result.html:84
+msgid "ID type"
+msgstr "Tipo de ID"
+
+#: templates/create_user.html:13
 msgid "Identity card"
 msgstr "Documento de identidad"
 
-#: templates/create_user.html:12
+#: templates/create_user.html:14
 msgid "Foreigner card"
 msgstr "Tarjeta de extranjería"
 
-#: templates/create_user.html:13
+#: templates/create_user.html:15
 msgid "Passport"
 msgstr "Pasaporte"
 
-#: templates/create_user.html:14
+#: templates/create_user.html:16
 msgid "National Identity Document"
 msgstr "Documento Nacional de Identidad"
 
-#: templates/create_user.html:15
+#: templates/create_user.html:17
 msgid "Driving license"
 msgstr "Licencia de conducir"
 
-#: templates/create_user.html:16
+#: templates/create_user.html:18
 msgid "Social security number"
 msgstr "Número de seguro social"
 
-#: templates/create_user.html:17
+#: templates/create_user.html:19
 msgid "Citizenship card"
 msgstr "Cédula de ciudadanía"
 
-#: templates/create_user.html:18
+#: templates/create_user.html:20
 msgid "Employer Identification Number"
 msgstr "Número de Identificación de empleador"
 
-#: templates/create_user.html:19
+#: templates/create_user.html:21
 msgid "Tax Identification Number"
 msgstr "Número de Identificación Tributaria"
 
-#: templates/create_user.html:20
+#: templates/create_user.html:22
 msgid "Individual Registration Number"
 msgstr "Clave Única de Registro de Población"
 
-#: templates/create_user.html:22 templates/customers_result.html:12
-#: templates/inbound_movement_pdf.html:80 templates/login.html:33
-#: templates/order_pdf.html:80 templates/outbound_movement_pdf.html:80
-#: templates/purchase_order.html:9 templates/suppliers_result.html:12
-#: templates/users_result.html:13
+#: templates/create_user.html:24 templates/create_user.html:25
+#: templates/customers_result.html:12 templates/inbound_movement_pdf.html:80
+#: templates/login.html:32 templates/order_pdf.html:80
+#: templates/outbound_movement_pdf.html:80 templates/purchase_order.html:9
+#: templates/suppliers_result.html:12 templates/users_result.html:13
+#: templates/users_result.html:99
 msgid "Identification"
 msgstr "Identificación"
 
-#: templates/create_user.html:24 templates/purchase_order.html:12
-#: templates/users_result.html:14 templates/users_result.html:96
+#: templates/create_user.html:27 templates/users_result.html:103
+msgid "Telephone number"
+msgstr "Número de teléfono"
+
+#: templates/create_user.html:28 templates/purchase_order.html:12
+#: templates/users_result.html:14 templates/users_result.html:104
 msgid "Contact phone"
 msgstr "Teléfono de contacto"
 
-#: templates/create_user.html:25 templates/customers_result.html:14
-#: templates/order_pdf.html:82 templates/outbound_movement_pdf.html:82
-#: templates/purchase_order.html:13 templates/suppliers_result.html:14
-#: templates/users_result.html:15 templates/users_result.html:97
+#: templates/create_user.html:29 templates/create_user.html:30
+#: templates/customers_result.html:14 templates/order_pdf.html:82
+#: templates/outbound_movement_pdf.html:82 templates/purchase_order.html:13
+#: templates/suppliers_result.html:14 templates/users_result.html:15
+#: templates/users_result.html:105 templates/users_result.html:106
 msgid "E-mail"
 msgstr "Correo electrónico"
 
-#: templates/create_user.html:27 templates/users_result.html:106
+#: templates/create_user.html:31 templates/users_result.html:16
+#: templates/users_result.html:118
+msgid "Role"
+msgstr "Rol"
+
+#: templates/create_user.html:33 templates/users_result.html:120
 msgid "Choose role"
 msgstr "Elija el rol"
 
-#: templates/create_user.html:28 templates/users_result.html:107
+#: templates/create_user.html:34 templates/users_result.html:121
 msgid "Administrator"
 msgstr "Administrador"
 
-#: templates/create_user.html:29 templates/generate_report_pdf.html:45
-#: templates/users_result.html:108
+#: templates/create_user.html:35 templates/generate_report_pdf.html:45
+#: templates/users_result.html:122
 msgid "User"
 msgstr "Usuario"
 
-#: templates/create_user.html:30 templates/users_result.html:109
+#: templates/create_user.html:36 templates/users_result.html:123
 msgid "Observer"
 msgstr "Observador"
 
-#: templates/create_user.html:34
+#: templates/create_user.html:40
 msgid "Save user"
 msgstr "Guardar usuario"
 
@@ -195,7 +230,7 @@ msgid "Order number"
 msgstr "Número de orden"
 
 #: templates/inbound-o.html:13 templates/inbound.html:13
-#: templates/inbound_movement_pdf.html:79
+#: templates/inbound.html:72 templates/inbound_movement_pdf.html:79
 msgid "Supplier"
 msgstr "Proveedor"
 
@@ -205,23 +240,15 @@ msgid "Receiver"
 msgstr "Recibió"
 
 #: templates/inbound-o.html:32 templates/inbound.html:37
-#: templates/inbound.html:97 templates/inbound_movement_pdf.html:88
-#: templates/inventory.html:65 templates/inventory.html:128
-#: templates/order_pdf.html:90 templates/outbound.html:26
-#: templates/outbound_movement_pdf.html:90 templates/products_result-o.html:12
-#: templates/products_result.html:12 templates/products_result.html:67
+#: templates/inbound.html:103 templates/inbound_movement_pdf.html:88
+#: templates/inventory.html:64 templates/inventory.html:66
+#: templates/inventory.html:140 templates/order_pdf.html:90
+#: templates/outbound.html:26 templates/outbound_movement_pdf.html:90
+#: templates/products_result-o.html:12 templates/products_result.html:12
+#: templates/products_result.html:66 templates/products_result.html:68
 #: templates/purchase_order.html:37 templates/transfer_movement_pdf.html:85
 msgid "Product name"
 msgstr "Nombre del producto"
-
-#: templates/inbound-o.html:33 templates/inbound.html:38
-#: templates/inbound.html:98 templates/inbound_movement_pdf.html:89
-#: templates/inventory.html:129 templates/order_pdf.html:91
-#: templates/outbound.html:27 templates/outbound_movement_pdf.html:91
-#: templates/products_result-o.html:31 templates/products_result.html:31
-#: templates/purchase_order.html:38 templates/transfer_movement_pdf.html:86
-msgid "Quantity"
-msgstr "Cantidad"
 
 #: templates/inbound-o.html:50 templates/inbound.html:55
 msgid "No inbound movements"
@@ -235,30 +262,34 @@ msgstr "Agregar nuevo envío entrante"
 msgid "Choose supplier"
 msgstr "Elija el proveedor"
 
-#: templates/inbound.html:76
+#: templates/inbound.html:79 templates/inventory.html:116
+msgid "Destination warehouse"
+msgstr "Bodega de destino"
+
+#: templates/inbound.html:81
 msgid "Choose warehouse"
 msgstr "Elija la bodega"
 
-#: templates/inbound.html:83 templates/inventory.html:114
+#: templates/inbound.html:89 templates/inventory.html:126
 #: templates/purchase_order.html:23
 msgid "Search by SKU code or name"
 msgstr "Buscar por código SKU o nombre"
 
-#: templates/inbound.html:99 templates/inventory.html:130
+#: templates/inbound.html:105 templates/inventory.html:142
 #: templates/purchase_order.html:41
 msgid "Remove"
 msgstr "Quitar"
 
-#: templates/inbound.html:110 templates/inventory.html:141
+#: templates/inbound.html:116 templates/inventory.html:153
 #: templates/purchase_order.html:57
 msgid "Save order"
 msgstr "Guardar orden"
 
-#: templates/inbound.html:156 templates/inventory.html:204
+#: templates/inbound.html:162 templates/inventory.html:216
 msgid "Item is already in the cart"
 msgstr "Artículo ya agregado"
 
-#: templates/inbound.html:201 templates/inventory.html:263
+#: templates/inbound.html:207 templates/inventory.html:275
 msgid "There are no products added"
 msgstr "Sin productos agregados"
 
@@ -266,10 +297,10 @@ msgstr "Sin productos agregados"
 msgid "Receiving report"
 msgstr "Informe de recepción"
 
-#: templates/inbound_movement_pdf.html:87 templates/inventory.html:66
+#: templates/inbound_movement_pdf.html:87 templates/inventory.html:68
 #: templates/order_pdf.html:89 templates/outbound.html:25
 #: templates/outbound_movement_pdf.html:89 templates/products_result-o.html:13
-#: templates/products_result.html:13 templates/products_result.html:68
+#: templates/products_result.html:13 templates/products_result.html:70
 #: templates/purchase_order.html:36 templates/transfer_movement_pdf.html:84
 msgid "SKU"
 msgstr "SKU"
@@ -316,117 +347,133 @@ msgstr "Sin productos en existencia"
 msgid "Add new product to stock"
 msgstr "Agregar producto al inventario"
 
-#: templates/inventory.html:68 templates/products_result.html:70
-#: templates/users_result.html:100
+#: templates/inventory.html:67 templates/products_result.html:69
+msgid "SKU code"
+msgstr "Código SKU"
+
+#: templates/inventory.html:69 templates/products_result.html:71
+#: templates/users_result.html:21 templates/users_result.html:109
+msgid "Status"
+msgstr "Estado"
+
+#: templates/inventory.html:71 templates/products_result.html:73
+#: templates/users_result.html:111
 msgid "Choose status"
 msgstr "Elija el estado"
 
-#: templates/inventory.html:69 templates/products_result.html:71
-#: templates/users_result.html:101
+#: templates/inventory.html:72 templates/products_result.html:74
+#: templates/users_result.html:112
 msgid "Active"
 msgstr "Activo"
 
-#: templates/inventory.html:70 templates/products_result.html:72
+#: templates/inventory.html:73 templates/products_result.html:75
 msgid "Discontinued"
 msgstr "Descontinuado"
 
-#: templates/inventory.html:74 templates/products_result.html:76
+#: templates/inventory.html:76 templates/inventory.html:78
+#: templates/products_result.html:78 templates/products_result.html:80
 msgid "Buy price"
 msgstr "Precio de compra"
 
-#: templates/inventory.html:76 templates/products_result.html:78
+#: templates/inventory.html:79 templates/inventory.html:81
+#: templates/products_result.html:81 templates/products_result.html:83
 msgid "Sell price"
 msgstr "Precio de venta"
 
-#: templates/inventory.html:78 templates/products_result.html:80
+#: templates/inventory.html:83 templates/inventory.html:84
+#: templates/products_result.html:85 templates/products_result.html:86
 msgid "Comments"
 msgstr "Comentarios"
 
-#: templates/inventory.html:79 templates/products_result.html:81
+#: templates/inventory.html:85 templates/products_result.html:87
 msgid "Select product image"
 msgstr "Elegir imagen del producto"
 
-#: templates/inventory.html:83
+#: templates/inventory.html:89
 msgid "Save product"
 msgstr "Guardar producto"
 
-#: templates/inventory.html:92
+#: templates/inventory.html:98
 msgid "Transfer to warehouses"
 msgstr "Transferir a bodegas"
 
-#: templates/inventory.html:99 templates/purchase_order.html:17
+#: templates/inventory.html:105
+msgid "Origin warehouse"
+msgstr "Bodega de origen"
+
+#: templates/inventory.html:107 templates/purchase_order.html:17
 msgid "Choose origin"
 msgstr "Elija el origen"
 
-#: templates/inventory.html:107
+#: templates/inventory.html:118
 msgid "Choose destination"
 msgstr "Elija el destino"
 
-#: templates/inventory.html:117 templates/purchase_order.html:26
+#: templates/inventory.html:129 templates/purchase_order.html:26
 msgid "Available"
 msgstr "Disponible"
 
-#: templates/inventory.html:256
+#: templates/inventory.html:268
 msgid "Cannot transfer less than 1 item"
 msgstr "No se puede transferir menos de 1 item"
 
-#: templates/layout.html:39 templates/layout.html:96
+#: templates/layout.html:38 templates/layout.html:95
 msgid "DASHBOARD"
 msgstr "TABLERO"
 
-#: templates/layout.html:47 templates/layout.html:104
+#: templates/layout.html:46 templates/layout.html:103
 msgid "REPORTS"
 msgstr "REPORTES"
 
-#: templates/layout.html:55 templates/layout.html:112
+#: templates/layout.html:54 templates/layout.html:111
 msgid "INVENTORY"
 msgstr "INVENTARIO"
 
-#: templates/layout.html:63 templates/layout.html:120
+#: templates/layout.html:62 templates/layout.html:119
 msgid "PURCHASE<br>ORDER"
 msgstr "ORDEN DE<br>COMPRA"
 
-#: templates/layout.html:71 templates/layout.html:128
+#: templates/layout.html:70 templates/layout.html:127
 msgid "INBOUND"
 msgstr "ENTRADAS"
 
-#: templates/layout.html:79 templates/layout.html:136
+#: templates/layout.html:78 templates/layout.html:135
 msgid "OUTBOUND"
 msgstr "SALIDAS"
 
-#: templates/layout.html:148
+#: templates/layout.html:147
 msgid "Search"
 msgstr "Buscar"
 
-#: templates/layout.html:185
+#: templates/layout.html:184
 msgid "Settings"
 msgstr "Ajustes"
 
-#: templates/layout.html:186
+#: templates/layout.html:185
 msgid "Language"
 msgstr "Lenguaje"
 
-#: templates/layout.html:187
+#: templates/layout.html:186
 msgid "Notifications"
 msgstr "Notificaciones"
 
-#: templates/layout.html:188
+#: templates/layout.html:187
 msgid "Calendar"
 msgstr "Calendario"
 
-#: templates/layout.html:189
+#: templates/layout.html:188
 msgid "Help"
 msgstr "Ayuda"
 
-#: templates/layout.html:191
+#: templates/layout.html:190
 msgid "Logout"
 msgstr "Cerrar sesión"
 
-#: templates/login.html:37
+#: templates/login.html:36
 msgid "Password"
 msgstr "Contraseña"
 
-#: templates/login.html:40
+#: templates/login.html:39
 msgid "Log In"
 msgstr "Iniciar sesión"
 
@@ -456,7 +503,7 @@ msgstr "Venta"
 msgid "Edit product information"
 msgstr "Editar información del producto"
 
-#: templates/products_result.html:85 templates/users_result.html:114
+#: templates/products_result.html:91 templates/users_result.html:129
 msgid "Save changes"
 msgstr "Guardar cambios"
 
@@ -500,7 +547,7 @@ msgstr "Usuarios"
 msgid "Activity"
 msgstr "Actividad"
 
-#: templates/reports.html:21
+#: templates/reports.html:22
 msgid "Get report"
 msgstr "Obtener reporte"
 
@@ -536,10 +583,6 @@ msgstr "Origen"
 msgid "Destination"
 msgstr "Destino"
 
-#: templates/users_result.html:16
-msgid "Role"
-msgstr "Rol"
-
 #: templates/users_result.html:17
 msgid "Active since"
 msgstr "Activo desde"
@@ -547,10 +590,6 @@ msgstr "Activo desde"
 #: templates/users_result.html:19
 msgid "Active until"
 msgstr "Activo hasta"
-
-#: templates/users_result.html:21
-msgid "Status"
-msgstr "Estado"
 
 #: templates/users_result.html:34
 msgid "Type of transaction"
@@ -568,19 +607,15 @@ msgstr "Cliente/Proveedor"
 msgid "Edit user information"
 msgstr "Editar información de usuario"
 
-#: templates/users_result.html:81
-msgid "ID type"
-msgstr "Tipo de ID"
-
-#: templates/users_result.html:94
+#: templates/users_result.html:100
 msgid "identification"
 msgstr "identificación"
 
-#: templates/users_result.html:102
+#: templates/users_result.html:113
 msgid "Suspended"
 msgstr "Suspendido"
 
-#: templates/users_result.html:103
+#: templates/users_result.html:114
 msgid "Inactive"
 msgstr "Inactivo"
 
@@ -646,4 +681,10 @@ msgstr "Inactivo"
 
 #~ msgid "Get report"
 #~ msgstr "Obtener reporte"
+
+#~ msgid "Old password"
+#~ msgstr "Contraseña actual"
+
+#~ msgid "Transaction cost"
+#~ msgstr "Monto de la transacción"
 

@@ -1519,6 +1519,7 @@ def calendar_date(date):
 @login_required
 def get_events():
     try:
+        tr = translations(session['language'])
         start = request.args.get('start')
         end = request.args.get('end')
 
@@ -1538,11 +1539,10 @@ def get_events():
 
         movements = db.execute("""
                             SELECT date AS start,
-                                order_number AS title,                     
-                                SUM(p.quantity) AS 'quantity',
+                                order_number AS title, 
+                                SUM(p.quantity) AS 'quantity', 
                                 SUM(p.price * p.quantity) AS amount,
-                                UPPER(SUBSTR(m.type, 1, 1)) || LOWER(SUBSTR(m.type, 2)) 
-                                    AS event_type 
+                                m.type AS event_type 
                             FROM movements m 
                             JOIN users u 
                                 ON m.author = u.id 
@@ -1561,17 +1561,18 @@ def get_events():
                 movement['start'], 
                 '%Y-%m-%d %H:%M:%S'
                 )
+            type_cap = str(movement['event_type']).capitalize()
 
             event = {
                 'start': start_datetime.isoformat(),
-                'title': f"{movement['title']} ({movement['event_type']})",
+                'title': f"{movement['title']} ({tr[f'{movement['event_type']}']})",
                 'extendedProps': {
                     'quantity': movement['quantity'],
                     'amount': movement['amount'],
                     'event_type': movement['event_type']
                 },
                 'allDay': False,
-                'url': f'result/{movement['title']}/{movement['event_type']}',
+                'url': f'result/{movement['title']}/{type_cap}',
                 'color': '#878787'
             }
             events.append(event)
