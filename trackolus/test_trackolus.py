@@ -23,6 +23,21 @@ def test_login_page(client):
     assert b"Trackolus" in response.data
 
 
+def test_error_logging(client):
+    response = client.get('/testing_false_route')
+    
+    assert response.status_code == 500
+
+    with client.application.app_context():
+        error_logs = errdb.session.query(ErrorLog).all()
+        assert len(error_logs) > 0
+        last_log = error_logs[-1]
+        assert last_log.error_message is not None
+        assert last_log.error_trace is not None
+        assert last_log.ip_address is not None
+        assert last_log.endpoint == '/testing_false_route'
+
+
 def test_login_authentication(client):
     with patch('app.get_locale', return_value='en'):
         response = client.post('/login', data={
@@ -64,7 +79,7 @@ def test_logout(client):
         session['user_id'] = 3
 
     response = client.get('/logout', follow_redirects=False)
-    print(response.data)
+
     assert response.status_code == 302
     assert b'error-face' not in response.data
     assert response.headers["Location"] == "/login"
@@ -110,17 +125,13 @@ def test_dashboard_page(client):
     assert b'inventory_graph3' in response.data
 
 
-def test_error_logging(client):
-    response = client.get('/testing_false_route')
-    
-    assert response.status_code == 500
+def test_purchase_order(client):
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        session['role'] = 'admin'
 
-    with client.application.app_context():
-        error_logs = errdb.session.query(ErrorLog).all()
-        assert len(error_logs) > 0
-        last_log = error_logs[-1]
-        assert last_log.error_message is not None
-        assert last_log.error_trace is not None
-        assert last_log.ip_address is not None
-        assert last_log.endpoint == '/testing_false_route'
-
+    response = client.get('/purchase_order')
+    print(response.data)
+    assert response.status_code == 200
+    assert b'error-face' not in response.data
+    assert b'purchase-cart' in response.data
