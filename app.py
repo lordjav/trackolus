@@ -145,7 +145,7 @@ def login():
                 rows[0]["hash"], 
                 request.form.get("password")
                 ):
-                flash("Invalid username and/or password", "error")
+                flash("Invalid username and/or password", "danger")
                 return render_template("login.html"), 401
             
             # Ensure user is active 
@@ -160,57 +160,65 @@ def login():
             session["inventory_order"] = False
             session['language'] = get_locale()
 
-            # Save Log in in users_log
-            try:
-                db.execute("""
-                        INSERT INTO users_log (
-                            user_id, 
-                            date, 
-                            type, 
-                            ip
-                        ) VALUES (?, ?, ?, ?)
-                        """, 
-                        rows[0]['id'],
-                        datetime.now(),
-                        1,
-                        request.remote_addr
-                        )
-            except Exception as e:
-                # Log el error pero no interrumpir el login
-                print(f"Error logging user login: {e}")
+            # Save Log in in users_log except if Testing user
+            if session['user_id'] != 3:
+                try:
+                    db.execute("""
+                            INSERT INTO users_log (
+                                user_id, 
+                                date, 
+                                type, 
+                                ip
+                            ) VALUES (?, ?, ?, ?)
+                            """, 
+                            rows[0]['id'],
+                            datetime.now(),
+                            1,
+                            request.remote_addr
+                            )
+                except Exception as e:
+                    flash(f"Error logging user login: {e}")
 
-            # Redirect user to home page
-            return redirect('/dashboard')
+            # Redirect user to home page except if is the first login, 
+            # in wich case is redirected to change password
+            first_login = db.execute("""
+                                     SELECT user_id 
+                                     FROM users_log 
+                                     WHERE user_id = ?
+                                     """, session['user_id'])
+            if len(first_login) < 2 and session['user_id'] != 3:
+                return redirect('/change_password')
+            else:
+                return redirect('/dashboard')
 
         # User reached route via GET
         else:
             return render_template("login.html")
     
-    except Exception as e:
-        # Log el error para debugging
+    except Exception as e:        
         print(f"Login error: {e}")
-        flash("An error occurred. Please try again.", "error")
+        flash("An error occurred. Please try again.", "danger")
         return render_template("login.html"), 400
 
 
 @app.route("/logout")
 def logout():
     try:
-        # Save Log out in users_log
-        db.execute("""
-                    INSERT INTO users_log (
-                    user_id, 
-                    date, 
-                    type, 
-                    ip
-                    ) VALUES (?, ?, ?, ?)
-                    """, 
-                    session['user_id'],
-                    datetime.now(),
-                    2,
-                    request.remote_addr
-                    ) 
-        
+        # Save Log out in users_log except if Testing user
+        if session['user_id'] != 3:            
+            db.execute("""
+                        INSERT INTO users_log (
+                        user_id, 
+                        date, 
+                        type, 
+                        ip
+                        ) VALUES (?, ?, ?, ?)
+                        """, 
+                        session['user_id'],
+                        datetime.now(),
+                        2,
+                        request.remote_addr
+                        )
         #Forget any user id
         session.clear()
         print(session)
@@ -1166,16 +1174,19 @@ def search():
                 term, term, term
                 )
             
-            users = db.execute("""
-                SELECT name AS 'User'
-                FROM users
-                WHERE name LIKE ? 
-                OR identification LIKE ? 
-                LIMIT 10""", 
-                term, term
-                )
-            search_results = [products, customers, movements, suppliers, users]
+            search_results = [products, customers, movements, suppliers]
             
+            if session['role'] == 'admin':
+                users = db.execute("""
+                    SELECT name AS 'User'
+                    FROM users
+                    WHERE name LIKE ? 
+                    OR identification LIKE ? 
+                    LIMIT 10""", 
+                    term, term
+                    )
+                search_results.append(users)
+
         else:
             search_results = []
 

@@ -26,29 +26,29 @@ def test_login_page(client):
 def test_login_authentication(client):
     with patch('app.get_locale', return_value='en'):
         response = client.post('/login', data={
-            'identification': '1102828578',
-            'password': '2'
+            'identification': '0000',
+            'password': '0000'
         }, follow_redirects=True)
     
     assert response.status_code == 200
     assert b'error-face' not in response.data
 
     with client.session_transaction() as session:
-        assert session['user_id'] == 1
+        assert session['user_id'] == 3
         assert session['role'] == 'admin'
-        assert session['name'] == 'Javier Meza Causado'
+        assert session['name'] == 'Testing user'
         assert session['inventory_order'] == False
         assert session['language'] == 'en'
 
 
 def test_login_validation(client):
     response = client.post('/login', data={
-        "password": "2"
+        "password": "0000"
     })
     assert response.status_code == 400
     
     response = client.post('/login', data={
-        "identification": "1102828578"
+        "identification": "0000"
     })
     assert response.status_code == 400
     
@@ -61,7 +61,7 @@ def test_login_validation(client):
 
 def test_logout(client):
     with client.session_transaction() as session:
-        session['user_id'] = 1
+        session['user_id'] = 3
 
     response = client.get('/logout', follow_redirects=False)
     print(response.data)
@@ -74,7 +74,7 @@ def test_logout(client):
 
 def test_inventory(client):
     with client.session_transaction() as session:
-        session['user_id'] = 1
+        session['user_id'] = 3
         session['role'] = 'admin'
         
     response = client.get('/inventory')
@@ -85,7 +85,7 @@ def test_inventory(client):
     assert b'more-button' in response.data
 
     with client.session_transaction() as session:
-        session['user_id'] = 1
+        session['user_id'] = 3
         session['role'] = 'observer'
         
     response = client.get('/inventory')
@@ -98,7 +98,7 @@ def test_inventory(client):
 
 def test_dashboard_page(client):
     with client.session_transaction() as session:
-        session['user_id'] = 1
+        session['user_id'] = 3
         session['language'] = 'en'
     
     response = client.get('/dashboard')
@@ -111,7 +111,7 @@ def test_dashboard_page(client):
 
 
 def test_error_logging(client):
-    response = client.get('/false_route')
+    response = client.get('/testing_false_route')
     
     assert response.status_code == 500
 
@@ -122,5 +122,5 @@ def test_error_logging(client):
         assert last_log.error_message is not None
         assert last_log.error_trace is not None
         assert last_log.ip_address is not None
-        assert last_log.endpoint == '/false_route'
+        assert last_log.endpoint == '/testing_false_route'
 
