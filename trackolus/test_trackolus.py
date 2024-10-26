@@ -131,7 +131,95 @@ def test_purchase_order(client):
         session['role'] = 'admin'
 
     response = client.get('/purchase_order')
-    print(response.data)
+
     assert response.status_code == 200
     assert b'error-face' not in response.data
     assert b'purchase-cart' in response.data
+
+
+def test_inbound(client):
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        session['role'] = 'admin'
+        
+    response = client.get('/inbound')
+
+    assert response.status_code == 200
+    assert b'error-face' not in response.data
+    assert b'<b>Supplier:</b>' in response.data
+    assert b'id="add-button"' in response.data
+
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        session['role'] = 'observer'
+        
+    response = client.get('/inbound')
+
+    assert response.status_code == 200
+    assert b'error-face' not in response.data
+    assert b'<b>Supplier:</b>' in response.data
+    assert b'id="add-button"' not in response.data
+
+
+def test_outound(client):
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        
+    response = client.get('/outbound')
+
+    assert response.status_code == 200
+    assert b'error-face' not in response.data
+    assert b'<b>Customer:</b>' in response.data
+
+
+@pytest.mark.parametrize("datatype", [
+    'Customers', 
+    'Suppliers', 
+    'Products', 
+    'Inbound', 
+    'Outbound', 
+    'Users'
+])
+def test_reports(client, datatype):
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        session['role'] = 'admin'
+        session['language'] = 'en'
+        
+    response = client.post('/reports', data={
+        'datatype': datatype 
+    })
+    snippet = f'data_title">{datatype}'
+    byte_snippet = snippet.encode('utf-8')
+
+    assert response.status_code == 200
+    assert b'error-face' not in response.data
+    assert byte_snippet in response.data
+
+
+def test_user_filter(client):
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        session['role'] = 'admin'
+        session['language'] = 'en'
+
+    response = client.get('/user_filter')
+
+    assert response.status_code == 200
+    assert b'user-select' in response.data
+
+
+def test_activity(client):
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        session['role'] = 'admin'
+        session['language'] = 'en'
+
+    response = client.post('/reports', data={
+        'datatype': 'Activity',
+        'user-select': 'Testing user' 
+    })
+    print(response.data)
+    assert response.status_code == 200
+    assert b'error-face' not in response.data
+    assert b'data_title">Activity' in response.data

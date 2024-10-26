@@ -928,7 +928,7 @@ def reports():
                             message="Forbbiden: you do not have permission to access this section."
                             ), 403
                     user = request.form.get('user-select')
-                    print(user)
+
                     users_log = db.execute(f"""
                             SELECT 
                                 l.date as {tr['date']}, 
