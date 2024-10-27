@@ -223,3 +223,37 @@ def test_activity(client):
     assert response.status_code == 200
     assert b'error-face' not in response.data
     assert b'data_title">Activity' in response.data
+
+
+@pytest.mark.parametrize("datatype", ['Users', 'Activity'])
+def restricted_report(client, datatype):
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        session['role'] = 'observer'
+        session['language'] = 'en'
+
+    response = client.post('/reports', data={
+        'datatype': datatype,
+    })
+
+    assert response.status_code == 403
+    assert b'error-face' in response.data
+    assert b'Forbbiden' in response.data
+
+@pytest.mark.parametrize("endpoint,snippet", [
+    ('help', 'WMS'),
+    ('calendar', 'href="result/'),
+    ('settings', 'change-password')
+])
+def test_others(client, endpoint, snippet):
+    with client.session_transaction() as session:
+        session['user_id'] = 3
+        session['role'] = 'observer'
+        session['language'] = 'en'
+
+    response = client.get(f'/{endpoint}')
+    byte_snippet = snippet.encode('utf-8')
+
+    assert response.status_code == 200
+    assert b'error-face' not in response.data
+    assert byte_snippet in response.data
