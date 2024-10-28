@@ -242,7 +242,7 @@ def restricted_report(client, datatype):
 
 @pytest.mark.parametrize("endpoint,snippet", [
     ('help', 'WMS'),
-    ('calendar', 'href="result/'),
+    ('calendar', 'dayGridMonth'),
     ('settings', 'change-password')
 ])
 def test_others(client, endpoint, snippet):
@@ -250,7 +250,7 @@ def test_others(client, endpoint, snippet):
         session['user_id'] = 3
         session['role'] = 'observer'
         session['language'] = 'en'
-
+    
     response = client.get(f'/{endpoint}')
     byte_snippet = snippet.encode('utf-8')
 
