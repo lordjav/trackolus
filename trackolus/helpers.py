@@ -180,7 +180,7 @@ def get_order_data():
     return data
 
 
-#Function: configurate pdfkit and wkhtmltopdf to create pdf 
+#Function: configurate pdfkit and wkhtmltopdf to create pdf. Adapted with help from AI tools.
 def configurate_pdf(rendered):
     path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)    
@@ -197,7 +197,7 @@ def configurate_pdf(rendered):
     return response
 
 
-#Function: get type of movements ('inbound' or 'outbound') and convert 
+#Function: get type of movements ('inbound', 'outbound' or 'transfer') and convert 
 #database into a list of movement objects
 def separate_movements(type_of_movement):
     movements = db.execute("""
@@ -253,7 +253,7 @@ def separate_movements(type_of_movement):
     return movements_objects
 
 
-#Function: upload product's image with SKU as name and route as a variable
+#Function: upload product's image with SKU as name
 def upload_image(image, SKU, directory, extensions):
     try:
         if image:

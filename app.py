@@ -13,12 +13,14 @@ from babel.dates import format_datetime
 
 app = Flask(__name__)
 
+#Create app function for testing purposes
 def create_app(testing=False):
     if testing:
         app.config['TESTING'] = True
     
     return app
 
+#App configuration
 app.secret_key = 'EsAlItErAsE'
 app.config["UPLOAD_DIRECTORY"] = "static/product_images/"
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
@@ -27,10 +29,12 @@ app.config["BABEL_TRANSLATION_DIRECTORIES"] = "./translations"
 app.config["BABEL_DEFAULT_LOCALE"] = 'en'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///error_log.db'
 
+#Database configuration for error log, general data and graph data respectively
 errdb = SQLAlchemy(app)
 db = SQL("sqlite:///general_data.db")
 engine = sqlalchemy.create_engine("sqlite:///general_data.db")
 
+#Babel configuration for translations and date formats
 babel = Babel(app)
 babel.init_app(
     app, 
@@ -43,7 +47,7 @@ app.jinja_env.filters["formattime"] = formattime
 app.jinja_env.filters["format_datetime"] = format_datetime
 app.jinja_env.filters["objtime"] = objtime
 
-#For register errors
+#Database model for error log
 class ErrorLog(errdb.Model):
     id = errdb.Column(errdb.Integer, primary_key=True)
     timestamp = errdb.Column(errdb.DateTime, default=datetime.now())
@@ -57,9 +61,11 @@ class ErrorLog(errdb.Model):
 with app.app_context():
     errdb.create_all()
 
+#Logger configuration for error log
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.ERROR)
 
+#Handler for error log, adapted with help from AI tools
 class DatabaseErrorHandler(logging.Handler):
     def emit(self, record):
         with app.app_context():
@@ -102,18 +108,19 @@ def handle_exception(e):
     return render_template("error.html", message=f"{e}"), 500
 
 
-#Decorator: Makes the function 'get_locale' available directly in the template
+#Decorator: Makes the function 'get_locale' available directly in templates. Adapted from Flask-Babel documentation
 @app.context_processor
 def inject_locale():
     return {'get_locale': get_locale}
 
 
-#Decorator: Makes the name saved in session dict available directly in templates
+#Decorator: Makes the name saved in session available directly in templates
 @app.context_processor
 def inject_user():
     return {'user_name': session.get('name', None)}
 
 
+#Login route: taken and adapted from CS50 Finance
 @app.route("/login", methods=["GET", "POST"])
 def login():
     try:
@@ -160,7 +167,7 @@ def login():
             session["inventory_order"] = False
             session['language'] = get_locale()
 
-            # Save Log in in users_log except if Testing user
+            # Save Login to users_log except if Testing user
             if session['user_id'] != 3:
                 try:
                     db.execute("""
@@ -201,6 +208,7 @@ def login():
         return render_template("login.html"), 400
 
 
+#Logout route
 @app.route("/logout")
 def logout():
     try:
@@ -229,17 +237,21 @@ def logout():
         return render_template("error.html", message=f"{e}"), 400
     
 
+#Inventory route
 @app.route("/inventory")
 @login_required
 @role_required(['admin', 'user', 'observer'])
 def inventory():
     try:
+        #Create catalogue of products as objects from database
         catalogue = create_catalogue()
+        #Call total_stock method for each product and append to dictionary of products
         catalogue_dict = []
         for product in catalogue:
             product.other_props['total_stock'] = product.total_stock
             catalogue_dict.append(product.to_dict())
 
+        #Render template according to user role
         if session['role'] == 'observer':
             template = 'inventory-o.html'
         else:
@@ -251,9 +263,11 @@ def inventory():
         return render_template("error.html", message=f"{e}"), 400
     
 
+#Ordered inventory route: change order of inventory table by clicking on headers, adapted with help from AI tools
 @app.route("/ordered_inventory/<parameter>")
 @login_required
 def ordered_inventory(parameter):
+    #Check if parameter is valid to avoid SQL injection
     allowed_parameters = ['SKU', 
                           'product_name', 
                           'total_stock', 
@@ -261,10 +275,13 @@ def ordered_inventory(parameter):
     if parameter not in allowed_parameters:
         raise ValueError('Invalid parameter in "Order" variable')
 
+    #Change variable for inverted order
     session["inventory_order"] = not session["inventory_order"]
     
+    #Create catalogue of products as objects from database
     catalogue = create_catalogue()
 
+    #Change order of catalogue according to parameter
     sorted_catalogue = sorted(
         catalogue, 
         key=lambda p: getattr(p, parameter), 
@@ -301,6 +318,7 @@ def ordered_inventory(parameter):
                                   """, catalogue=sorted_catalogue)
 
 
+#Add product route: add new product to inventory
 @app.route("/add_product", methods=["POST"])
 @login_required
 @role_required(['admin', 'user'])
@@ -328,6 +346,7 @@ def add_product():
         elif int(request.form.get("sell_price")) <= 0 or int(request.form.get("buy_price")) <= 0:
             raise ValueError("Price must be a positive number")
         
+        #Upload image if submitted
         if request.files["image_reference"]:
             image_upload = upload_image(
                 request.files["image_reference"], 
@@ -338,20 +357,22 @@ def add_product():
             image_link = image_upload[7:]
 
         date = datetime.now()
+        #Create list of warehouses to add product to
         warehouses = []
         for id in db.execute("SELECT id FROM warehouses"):
             warehouses.append(id['id'])
         
+        #Insert product into inventory table
         db.execute("""
                 INSERT INTO inventory (
                     product_name, 
                     SKU, 
-                    status,
+                    status, 
                     buy_price, 
                     sell_price, 
                     author, 
                     addition_date, 
-                    image_route,
+                    image_route, 
                     comments
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
                 request.form.get("product_name_modal"), 
@@ -365,6 +386,7 @@ def add_product():
                 request.form.get("comments")
                 )
         product_id = db.execute("SELECT last_insert_rowid() AS id")[0]['id']
+        #Insert product into allocation table for each warehouse
         for w in warehouses:
             db.execute("""
                     INSERT INTO allocation (
@@ -374,7 +396,6 @@ def add_product():
                     ) VALUES (?, ?, ?)
                     """, product_id, w, 0)
 
-
         #Saving data for notification
         user = db.execute("""
                         SELECT name 
@@ -383,7 +404,7 @@ def add_product():
                         session['user_id']
                         )
         notification_title = 'New product'
-        notification_message = f"""New product in inventory:\n{request.form.get("product_name_modal")}\nAdded by: {user[0]['name']}"""
+        notification_message = f"""New product in inventory:\n{request.form.get("product_name_modal")}.\nAdded by: {user[0]['name']}."""
         save_notification(notification_title, notification_message)
         flash('Product added to inventory', 'success')
         return redirect("/inventory")
@@ -392,14 +413,16 @@ def add_product():
         return render_template("error.html", message=f"{e}"), 400
 
 
+#Purchase order route: create new purchase order
 @app.route("/purchase_order", methods=["GET", "POST"])
 @login_required
 @role_required(['admin', 'user'])
 def purchase_order():
     if request.method == "POST":
+        #Get data from form
         data = get_order_data()
-
         try:
+            #Check if customer is already in database, if not add it
             is_customer = db.execute("""
                                      SELECT id 
                                      FROM customers_suppliers 
@@ -425,6 +448,7 @@ def purchase_order():
                            )
             else:
                 customer_id = is_customer[0]["id"]
+            #Get last order number and add 1
             order_number = db.execute("""
                                       SELECT order_number 
                                       FROM movements 
@@ -432,7 +456,7 @@ def purchase_order():
                                       LIMIT 1 
                                       """)[0]["order_number"]
             order_number += 1
-
+            #Get warehouse id and check if it exists
             warehouse = request.form.get('warehouse')
             warehouse_id = db.execute("""
                                       SELECT id 
@@ -445,6 +469,7 @@ def purchase_order():
             else:
                 w_id = warehouse_id[0]['id']
 
+            #Insert new outbound order into movements table
             db.execute("""
                         INSERT INTO movements (
                         order_number, 
@@ -463,13 +488,15 @@ def purchase_order():
                         customer_id
                         )
             movement_id = db.execute("SELECT id FROM movements ORDER BY id DESC LIMIT 1")[0]['id']
-
-            for item in data['products']:                
+            
+            #Insert products into products_movement table and update allocation table
+            for item in data['products']:
                 if item.warehouses[warehouse] == 0:
                     raise ValueError(f"{item.product_name} is out of stock in this warehouse.")
                 elif item.other_props['items_to_transact'] > item.warehouses[warehouse]:
                     raise ValueError(f"There is only {item.total_stock} items of {item.product_name} in this warehouse")
                 else:
+                    #If there are enough items, insert transaction data into product_movements table
                     db.execute("""
                                INSERT INTO products_movement (
                                movement_id, 
@@ -483,6 +510,7 @@ def purchase_order():
                                item.other_props['items_to_transact'], 
                                item.sell_price 
                                )
+                    #Update allocation table
                     db.execute("""
                                UPDATE allocation 
                                SET stock = ? 
@@ -507,7 +535,7 @@ def purchase_order():
                                        """, customer_id
                                        )
             notification_title = 'New sale'
-            notification_message = f"""New outbound order placed.\nOrder: {order_number}\nCustomer: {customer_name[0]['name']}\nVendor: {user[0]['name']}"""
+            notification_message = f"""New outbound order placed.\nOrder: {order_number}.\nCustomer: {customer_name[0]['name']}.\nVendor: {user[0]['name']}."""
             save_notification(notification_title, notification_message)
             flash('Purchase order successfully placed', 'success')
             return redirect("/purchase_order")
@@ -518,6 +546,7 @@ def purchase_order():
 
     else:
         try:
+            #Create catalogue of products as a dictionary
             catalogue = create_catalogue()
             catalogue_dict = []
             for product in catalogue:
@@ -526,6 +555,8 @@ def purchase_order():
         except Exception as e:
             return render_template("error.html", message=f"{e}"), 400
 
+
+#View PDF route: view purchase order as a quote before placing it. Adapted with help from AI tools
 @app.route("/view_pdf", methods=["POST"])
 @login_required
 def view_pdf():
@@ -539,27 +570,33 @@ def view_pdf():
         return render_template("error.html", message=f"{e}"), 400
 
 
+#Inbound route: show all inbound orders as a list
 @app.route("/inbound", methods=["GET", "POST"])
 @login_required
 def inbound():
+    #POST method: create new inbound order
     if request.method == "POST":
+        #Check if user has permission to create inbound orders
         if session['role'] == 'observer':
             return render_template("error.html", message="Forbbiden: you do not have permission to access this section."), 403
         data = get_order_data()
         
         try:
             warehouse = request.form.get('warehouse')
+            #Get supplier from database
             supplier_id = db.execute("""
                                      SELECT id
                                      FROM customers_suppliers 
                                      WHERE name = ? 
                                      """, request.form.get('supplier'))[0]['id']
+            #Get warehouse id from database
             warehouse_id = db.execute("""
                                       SELECT id 
                                       FROM warehouses 
                                       WHERE name = ?""", 
                                       warehouse
                                       )[0]['id']
+            #Get last order number and add 1
             order_number = db.execute("""
                                       SELECT order_number 
                                       FROM movements 
@@ -567,6 +604,7 @@ def inbound():
                                       LIMIT 1
                                       """)[0]["order_number"]
             order_number += 1
+            #Insert new inbound order into movements table
             db.execute("""
                        INSERT INTO movements (
                         order_number, 
@@ -589,9 +627,11 @@ def inbound():
                                      FROM movements
                                      WHERE order_number = ?
                                      """, order_number)[0]["id"]
+            #Check if there are products to add to the order
             for item in data['products']:                                
                 if item.other_props['items_to_transact'] <= 0:
                     raise ValueError("Value must be a positive integer")
+                #Update allocation table
                 db.execute("""
                            UPDATE allocation 
                            SET stock = ? 
@@ -601,7 +641,8 @@ def inbound():
                            (item.warehouses[warehouse] + item.other_props['items_to_transact']), 
                            item.id,
                            warehouse_id
-                           )                
+                           )
+                #Insert product into products_movement table
                 db.execute("""
                            INSERT INTO products_movement (
                             movement_id, 
@@ -624,7 +665,7 @@ def inbound():
                               """, session['user_id']
                               )[0]['name']
             notification_title = 'New incoming shipment'
-            notification_message = f"""New goods received:\nOrder: {order_number}\nSupplier: {request.form.get('supplier')} \nReceiver: {user}"""
+            notification_message = f"""New goods received:\nOrder: {order_number}.\nSupplier: {request.form.get('supplier')}.\nReceiver: {user}."""
             save_notification(notification_title, notification_message)
             flash('Inbound order successfully placed', 'success')
             return redirect("/inbound")
@@ -633,15 +674,19 @@ def inbound():
             print(f"There was a problem: {e}")
             return render_template("error.html", message=f"There was a problem: {e}"), 400
 
+    #GET method: show all inbound orders
     else:
         try:
+            #Get a list of inbound orders
             movements_objects = separate_movements('inbound')
+            #Create catalogue of products as objects from database
             catalogue = create_catalogue()
             catalogue_dict = []
             for product in catalogue:
                 catalogue_dict.append(product.to_dict())
             suppliers = db.execute("SELECT name AS 'supplier' FROM customers_suppliers WHERE relation = 'supplier'")
-
+            
+            #Render template according to user role
             if session['role'] == 'observer':
                 template = 'inbound-o.html'
             else:
@@ -657,19 +702,25 @@ def inbound():
         except Exception as e:
             return render_template("error.html", message=f"{e}"), 400
 
+
+#Outbound route: show all outbound orders as a list
 @app.route("/outbound")
 @login_required
 def outbound():
     try:
+        #Get a list of outbound orders
         movements_objects = separate_movements('outbound')
         return render_template("outbound.html", catalogue=movements_objects)
     except Exception as e:
         return render_template("error.html", message=f"{e}"), 400
 
+
+#Movement_pdf route: view each inbound or outbound order as a PDF
 @app.route("/movement_pdf/<order_number>")
 @login_required
 def movement_pdf(order_number):
     try:
+        #Get all data from database for the order
         order_raw = db.execute("""
                             SELECT 
                                 m.order_number, 
@@ -711,10 +762,13 @@ def movement_pdf(order_number):
                                     )
         grand_total = 0
         for element in order_raw:
+            #Format each product as object from dictionary.
             product = products_to_movements(element)
             order_object.add_products(product)
+            #Calculate grand total of order
             grand_total += element["price"] * element["quantity"]
         
+        #Add additional data to template according to order type
         if order_raw[0]['type'] == "outbound":
             additional_data = {
                 "customer_name": order_raw[0]["counterpart"], 
@@ -734,6 +788,7 @@ def movement_pdf(order_number):
                 }
             template = "inbound_movement_pdf.html"
         else:
+            #If order is a transfer
             order_object.add_prop('origin', order_raw[0]['origin'])
             order_object.add_prop('destination', order_raw[0]['destination'])
             additional_data = {}
@@ -752,6 +807,7 @@ def movement_pdf(order_number):
         return render_template("error.html", message=f"{e}"), 400
 
 
+#Reports route: show all data as a report
 @app.route("/reports", methods=["GET", "POST"])
 @login_required
 def reports():
@@ -759,7 +815,9 @@ def reports():
         try:
             datatype = request.form.get("datatype")
             global data_report
+            #Get report translated
             tr = translations(session['language'])
+            #Get data from database according to datatype
             match datatype:
                 case "Customers":
                     data_report = db.execute(f"""
@@ -903,6 +961,7 @@ def reports():
                     data_report.append({'datatype':f'{tr['transfer']}', 'keyword':'Order'})
 
                 case 'Users':
+                    #Check if user has permission to access this data
                     if session['role'] != 'admin':
                         return render_template(
                             "error.html", 
@@ -922,6 +981,7 @@ def reports():
                     data_report.append({f'datatype':f'{tr['users']}', 'keyword':'User'})
 
                 case 'Activity':
+                    #Check if user has permission to access this data
                     if session['role'] != 'admin':
                         return render_template(
                             "error.html", 
@@ -974,7 +1034,7 @@ def reports():
                         for item in category:
                             data_report.append(item)
                             users.add(item[f"{tr['user']}"])
-
+                    #Sort data by date
                     data_report.sort(key=lambda event: event[f"{tr['date']}"], reverse=True)
                     data_report.append({'datatype':f'{tr['activity']}', 'keyword':'activity'})
 
@@ -987,18 +1047,21 @@ def reports():
         return render_template("reports.html")
 
 
+#Dashboard route: show data as graphs. Adapted with help from AI tools
 @app.route("/")
 @app.route("/dashboard")
 @login_required
 def dashboard():
     try:
+        #Get graph translated
         tr = translations(session['language'])
 
+        #Function to wrap labels in graphs
         def wrap_labels(str, width=20):
             return '<br>'.join(textwrap.wrap(str, width=width))
-
+        
         engine = sqlalchemy.create_engine("sqlite:///general_data.db")
-        #Inventory graph
+        #INVENTORY GRAPH: get top 10 products with lowest stock
         inv_graph = pandas.read_sql_query(f"""
                                         SELECT 
                                             SUM(a.stock) AS {tr['quantity']}, 
@@ -1032,7 +1095,7 @@ def dashboard():
             config={'displayModeBar':False, 'staticPlot':True}
             )
         
-        #Outbound graph
+        #OUTBOUND GRAPH: get sales per day in the last 7 days
         out_graph = pandas.read_sql_query(f"""
                                         SELECT 
                                             date(m.date) AS {tr['day']},
@@ -1075,7 +1138,7 @@ def dashboard():
             config={'displayModeBar':False, 'staticPlot':True}
             )
         
-        #Best_sellers graph 
+        #BEST SELLERS GRAPH: get top 5 best sellers
         bs_graph = pandas.read_sql_query(f"""
                                         SELECT 
                                             i.product_name AS {tr['products']}, 
@@ -1110,6 +1173,7 @@ def dashboard():
             full_html=False, 
             config={'displayModeBar':False, 'staticPlot':True})
 
+        #Render graphs
         return render_template(
             "dashboard.html", 
             inventory=inventory_figure, 
@@ -1118,6 +1182,8 @@ def dashboard():
     except Exception as e:
         return render_template("error.html", message=f"{e}"), 400
 
+
+#Search route: search for products, customers, suppliers, orders or users
 @app.route("/search")
 @login_required
 def search():
@@ -1175,7 +1241,7 @@ def search():
                 )
             
             search_results = [products, customers, movements, suppliers]
-            
+            #If user is admin, add users to search results
             if session['role'] == 'admin':
                 users = db.execute("""
                     SELECT name AS 'User'
@@ -1210,6 +1276,8 @@ def search():
     except Exception as e:
         return render_template("error.html", message=f"{e}"), 400
 
+
+#Result route: show item searched
 @app.route('/result/<search_term>/<type>')
 @login_required
 def result(search_term, type):
@@ -1342,9 +1410,11 @@ def result(search_term, type):
                                             """, search_term)
                 template = 'suppliers_result.html'
 
+            #In case of movement, show it as a PDF
             case 'Inbound' | 'Outbound' | 'Transfer' | 'Order':
                 return redirect(f"/movement_pdf/{search_term}")
             
+            #In case of users, check if user has permission to access this data
             case 'User':
                 if session['role'] != 'admin':
                     return render_template(
@@ -1389,6 +1459,7 @@ def result(search_term, type):
                                             """, item[0]['id'])
                 template = 'users_result.html'
 
+            #Any other case, manage it as an error
             case _:
                 return render_template(
                     "error.html", 
@@ -1403,10 +1474,13 @@ def result(search_term, type):
         return render_template("error.html", message=f"{e}"), 400
 
 
+#Generate_report route: generate a report in PDF, CSV or XLS format. Adapted with help from AI tools and multiple Youtube tutorials
 @app.route('/generate_report/<doc_type>')
 @login_required
 def generate_doc(doc_type):
+    #Get datatype
     datatype = data_report[-1]['datatype']
+    #Get date and format it for setting file name
     file_name = f'{datatype}_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}'
     data_report_noType = data_report[:-1]
     additional_data = {
@@ -1464,6 +1538,7 @@ def generate_doc(doc_type):
     return response
 
 
+#Get_customer route: get customer data for autocomplete
 @app.route("/get_customer")
 @login_required
 def get_customer():
@@ -1497,6 +1572,7 @@ def get_customer():
                                   """, customers=customers)
 
 
+#Get_customer_data route: get customer data for autocomplete
 @app.route("/get_customer_data/<name>")
 @login_required
 def get_customer_data(name):
@@ -1513,12 +1589,14 @@ def get_customer_data(name):
     return jsonify(customer_data)
 
 
+#Calendar route: show movements in calendar
 @app.route('/calendar')
 @login_required
 def calendar():
     return render_template("calendar.html")
     
 
+#Calendar_date route: show movements in calendar for a specific date
 @app.route('/calendar_date/<date>')
 @login_required
 def calendar_date(date):
@@ -1526,11 +1604,14 @@ def calendar_date(date):
     return render_template("calendar.html", day=go_to_date)
 
 
+#Get_events route: get movements data for rendering in calendar. Adapted with help from AI tools
 @app.route("/get_events")
 @login_required
 def get_events():
     try:
+        #Get page translated
         tr = translations(session['language'])
+        #Get start and end date for events
         start = request.args.get('start')
         end = request.args.get('end')
 
@@ -1567,6 +1648,7 @@ def get_events():
                             ORDER BY date DESC 
                             """, start_str, end_str)
         events = []
+        #Get movements as calendar objects
         for movement in movements:
             start_datetime = datetime.strptime(
                 movement['start'], 
@@ -1594,6 +1676,7 @@ def get_events():
         return render_template("error.html", message=f"{e}"), 400
 
 
+#Notifications route: show notifications in real time using SSE. Adapted with help from AI tools
 @app.route("/notifications")
 @login_required
 def notifications():
@@ -1626,6 +1709,7 @@ def notifications():
     return Response(generate_notifications(), content_type='text/event-stream')
 
 
+#Mark_read route: mark notifications as read when seen
 @app.route("/mark_read", methods=['POST'])
 @login_required
 def mark_read():
@@ -1662,6 +1746,7 @@ def mark_read():
         return render_template_string(f"Failure: {e}")
 
 
+#Set language route: set language for user
 @app.route('/set_language', methods=['POST'])
 @login_required
 def set_language():
@@ -1671,18 +1756,22 @@ def set_language():
     return redirect(request.referrer)
 
 
+#Settings route: show settings page
 @app.route('/settings', methods=['GET'])
 @login_required
 def settings():
     return render_template("settings.html")
 
 
+#Create_user route: create a new user.
 @app.route('/create_user', methods=['GET', 'POST'])
 @login_required
 @role_required(['admin'])
 def create_user():
+    #POST method: create new user
     if request.method == 'POST':
         try:
+            #Get user data from form and save it in database
             id_type = request.form.get('id-type-hidden')
             identification = request.form.get('identification')
             name = request.form.get('user-name')
@@ -1721,6 +1810,7 @@ def create_user():
         return render_template('create_user.html')
 
 
+#Edit_user route: edit user data
 @app.route('/edit_user', methods=['POST'])
 @login_required
 @role_required(['admin'])
@@ -1768,7 +1858,8 @@ def edit_user():
         #Ensure role selected is a valid option
         elif role not in ['admin', 'user', 'observer']:
             raise Exception("Role not valid")
-   
+
+        #If all data is correct, update user data
         db.execute("""
                    UPDATE users 
                    SET 
@@ -1799,12 +1890,13 @@ def edit_user():
         return render_template("error.html", message=f"{e}"), 400
  
 
-
+#Transfer route: save a new transfer order
 @app.route("/transfer", methods=['POST'])
 @login_required
 @role_required(['admin', 'user'])
 def transfer():
     try:
+        #Get data from form and format it
         data = get_order_data()
         order_number = db.execute("""
                                 SELECT order_number 
@@ -1813,17 +1905,20 @@ def transfer():
                                 LIMIT 1
                                 """)[0]["order_number"]
         order_number += 1
+        #Get origin and destination warehouses
         origin_warehouse = request.form.get('origin-warehouse')
         origin_warehouse_id = db.execute("SELECT id FROM warehouses WHERE name = ?", origin_warehouse)[0]['id']
         destination_warehouse = request.form.get('destination-warehouse')
         destination_warehouse_id = db.execute("SELECT id FROM warehouses WHERE name = ?", destination_warehouse)[0]['id']
 
+        #Check list for items to transfer
         for item in data['products']:            
             if item.warehouses[origin_warehouse] == 0:
                 raise ValueError(f"{item.product_name} is out of stock in this warehouse.")            
             elif item.other_props['items_to_transact'] > item.warehouses[origin_warehouse]:
                 raise ValueError(f"There is only {item.total_stock} items of {item.product_name} in this warehouse.")
-            
+
+        #If number of items to transfer is correct, save data in movements table
         db.execute("""
                    INSERT INTO movements (
                     order_number, 
@@ -1849,9 +1944,11 @@ def transfer():
                                  LIMIT 1
                                  """)[0]['id']
         for item in data['products']:
+            #If no elements to transfer, skip this product
             if item.other_props['items_to_transact'] == 0:
                 continue
-
+            
+            #Insert data in products_movement table
             db.execute("""
                        INSERT INTO products_movement (
                         movement_id,
@@ -1866,6 +1963,7 @@ def transfer():
                        0
                        )
             
+            #Update stock in allocation table for origin and destination warehouses
             db.execute("""
                        UPDATE allocation 
                        SET stock = ? 
@@ -1894,7 +1992,7 @@ def transfer():
                           """, session['user_id']
                           )
         notification_title = 'New transference of products'
-        notification_message = f"""Order: {order_number}.\nFrom: {origin_warehouse}.\nTo: {destination_warehouse}.\nBy: {user[0]['name']}"""
+        notification_message = f"""Order: {order_number}.\nFrom: {origin_warehouse}.\nTo: {destination_warehouse}.\nBy: {user[0]['name']}."""
         save_notification(notification_title, notification_message)
         
         flash('Transfer order successfully placed', 'success')
@@ -1905,6 +2003,7 @@ def transfer():
         return render_template("error.html", message=f"There was a problem: {e}"), 400
 
 
+#Edit product route: edit product data
 @app.route('/edit_product', methods=['POST'])
 @login_required
 @role_required(['admin', 'user'])
@@ -1918,6 +2017,7 @@ def edit_product():
         sell_price = request.form.get('sell_price')
         comments = request.form.get('comments')
 
+        #Get original name of product because it changes url
         original_name = db.execute("""
                                 SELECT product_name 
                                 FROM inventory 
@@ -1949,6 +2049,7 @@ def edit_product():
         elif int(sell_price) <= 0 or int(buy_price) <= 0:
             raise ValueError("Price must be a positive number")
 
+        #If image is submitted, upload it and save route in database
         if request.files["image_reference"]:
             image_upload = upload_image(
                 request.files["image_reference"], 
@@ -1961,6 +2062,7 @@ def edit_product():
         else:
             image = ''
 
+        #If all data is correct, update inventory table
         db.execute(f"""
                    UPDATE inventory 
                    SET 
@@ -1991,9 +2093,10 @@ def edit_product():
                           )
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         notification_title = 'Product updated'
-        notification_message = f"A product was updated:\n{original_name}\nModified by: {user[0]['name']}\nDate: {date}"
+        notification_message = f"A product was updated:\n{original_name}.\nModified by: {user[0]['name']}.\nDate: {date}."
         save_notification(notification_title, notification_message)
         
+        #Redirect to product page with new url if changed
         request_page = f'/result/{product_name}/Product'
 
         flash('Changes on product saved', 'success')
@@ -2002,6 +2105,7 @@ def edit_product():
         return render_template("error.html", message=f"{e}"), 400
 
 
+#Change_password route: change user password
 @app.route('/change_password', methods=['GET', 'POST'])
 @login_required
 def change_password():
@@ -2052,6 +2156,7 @@ def change_password():
         return render_template('change_password.html')
 
 
+#Help route: show documentation page
 @app.route('/help')
 @login_required
 def help():
@@ -2063,11 +2168,11 @@ def help():
             return render_template('help_es.html')
 
 
+#User_filter route: shows users for filtering search in reports module
 @app.route('/user_filter')
 @login_required
 @role_required(['admin'])
 def user_filter():
-    tr = translations(session['language'])
     users = db.execute("""
                        SELECT name 
                        FROM users
