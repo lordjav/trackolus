@@ -124,12 +124,12 @@ def login():
         if request.method == "POST":
             # Ensure identification was submitted
             if not request.form.get("identification"):
-                flash("Identification is required", "error")
+                flash("Identification is required", "danger")
                 return render_template("login.html"), 400
 
             # Ensure password was submitted
             elif not request.form.get("password"):
-                flash("Password is required", "error")
+                flash("Password is required", "danger")
                 return render_template("login.html"), 400
 
             # Query database for identification
@@ -150,7 +150,7 @@ def login():
             
             # Ensure user is active 
             if rows[0]['status'] != 'active':
-                flash("Account is not active", "error")
+                flash("Account is not active", "danger")
                 return render_template("login.html"), 403
             
             # Remember which user has logged in and personal settings
@@ -2027,6 +2027,15 @@ def change_password():
         except Exception as e:
             flash(str(e), category="danger")
             return render_template("change_password.html")
+        
+        #Verify password is not in list of unallowed passwords
+        with open('passwords.csv', 'r') as file:
+            reader = csv.reader(file)
+            passwords = list(reader)
+
+        if request.form.get("new-password") in passwords:
+            flash("This password is not allowed for security reasons", category="danger")
+            return render_template("change_password.html")
 
         #Try to update password in database and handle exceptions
         try:
@@ -2076,3 +2085,4 @@ def user_filter():
 if __name__ == '__main__':
     application = create_app()
     application.run(debug=True)
+
