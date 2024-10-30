@@ -18,13 +18,14 @@ searchBar.addEventListener('focus', function () {
     suggestions.style.display = 'block';
 });
 
+// Hide suggestions when the search bar loses focus
 searchBar.addEventListener('blur', function () {
     setTimeout(function() {
         suggestions.style.display = 'none';
     }, 150)
 });
 
-//Add new notifications
+// Add new notifications. Adapted with help from AI tools
 let notificationsRead = [];
 const evtSource = new EventSource("/notifications");
 evtSource.onmessage = function(event) {
@@ -34,6 +35,7 @@ evtSource.onmessage = function(event) {
     if (existingNotification) {        
         return;
     }
+    // Create new notification, title, date and message
     const newNotification = document.createElement("div");
     newNotification.id = notification.id;
     newNotification.className = "notification";
@@ -52,8 +54,9 @@ evtSource.onmessage = function(event) {
     newNotification.appendChild(date);
     newNotification.appendChild(message);
 
+    // Add notification to the top of the list
     notificationsDiv.insertBefore(newNotification, notificationsDiv.firstChild);
-
+    // For new notifications, make the text bold
     if (notification.isSeen === 0) {
         newNotification.querySelectorAll('*').forEach(function(element) {
             element.style.fontWeight = 'bold';
@@ -65,7 +68,7 @@ evtSource.onerror = function(err) {
     console.error("EventSource failed:", err);
 };
 
-//Mark notifications as read
+// Mark notifications as read
 function markRead(container) {
     const allNotifications = container.querySelectorAll("*");
     allNotifications.forEach(function(element) {
@@ -73,7 +76,7 @@ function markRead(container) {
     });
 };
 
-//Show/hide notifications, modals and language selection
+// Show/hide notifications, modals and language selection
 const notifications = document.getElementById('notifications');
 const notificationContainer = document.getElementById("notification-icon-container");
 const notificationContainerAux = document.getElementById("notification-icon-container-aux");
@@ -82,6 +85,7 @@ const languageSelect = document.getElementById("language-select-container");
 const languageContainer = document.getElementById("language-container");
 const languageContainerAux = document.getElementById("language-container-aux");
 
+// Show notifications and send request to mark them as read
 function showNotifications() {    
     if (notifications.style.display === 'none') {        
         notifications.style.display = 'block';
@@ -93,8 +97,9 @@ function showNotifications() {
         notifications.style.display = 'none';
     }
 };
-
+// After page load, add event listeners to show notification and language containers
 document.addEventListener("DOMContentLoaded", function() {
+    // If click on notification icon, relocate and show notifications (Wide screens)
     notificationContainer.addEventListener("click", function(event) {
         if (notificationContainer.contains(event.target)) {
             notificationContainer.appendChild(notifications);
@@ -103,6 +108,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    // If click on notification icon, relocate and show notifications (Small screens)
     notificationContainerAux.addEventListener('click', function(event) {
         if (notificationContainerAux.contains(event.target)) {
             toolsModal.appendChild(notifications);
@@ -110,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function() {
             showNotifications();
         }
     });
-
+    // If click on language icon, relocate and show language selection (Wide screens)
     languageContainer.addEventListener("click", function(event) {
         if (languageContainer.contains(event.target)) {
             languageContainer.appendChild(languageSelect);
@@ -123,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    // If click on language icon, relocate and show language selection (Small screens)
     languageContainerAux.addEventListener("click", function(event) {
         if (languageContainerAux.contains(event.target)) {
             toolsModal.appendChild(languageSelect);
@@ -134,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
-
+    // If click outside the notification or language containers or modal window, hide them
     window.onclick = function(event) {
         if (!languageContainer.contains(event.target) && !languageContainerAux.contains(event.target)) {
             languageSelect.style.display = 'none';

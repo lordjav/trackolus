@@ -221,6 +221,7 @@
     {% endwith %}
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
     <script>
+        // Display modal flash message
         document.addEventListener('DOMContentLoaded', function() {
             if (document.getElementById('modal-flash')) {
                 document.getElementById('modal-flash').style.display = 'flex';                

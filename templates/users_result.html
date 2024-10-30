@@ -133,7 +133,7 @@
     </div>
 </div>
 <script>
-    // Verify if user information changed before sending request to update database
+    // Check if user information changed before sending request to server
     let propertiesToEdit = document.getElementsByClassName('edit');
     const user = {{ item[0] | tojson | safe }};
     const form = document.getElementById('edit-user-form');

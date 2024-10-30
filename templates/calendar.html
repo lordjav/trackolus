@@ -6,27 +6,38 @@
 </div>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 <script>
+  // Traslate calendar buttons
   buttonTextLanguage = {
     'es': {today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día', list: 'Agenda'},
     'default': {today: 'Today', month: 'Month', week: 'Week', day: 'Day', list: 'List'}
   }
   document.addEventListener('DOMContentLoaded', function() {
+    // FullCalendar initialization
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
+      // Set locale and buttons
       locale: '{{ get_locale() }}',
       buttonText: buttonTextLanguage['{{ get_locale() }}'],
       themeSystem: 'bootstrap5',
+      // Set calendar height
       height: '80vh',
+      // Set initial view as month
       initialView: 'dayGridMonth',
+      // Allow selection
       selectable: true,
+      // Set header buttons
       headerToolbar: {
         start: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth',
         center: 'title',
         end: 'prev,today,next'
       },
+      // Set a max number of events per day to show in month view
       dayMaxEvents: true,
+      // Get movements from server
       events: '/get_events',
       eventContent: function(arg) {
+        // If view is day, show movements as order, time, products quantity and amount
+        // Otherwise, show only order number
         if (arg.view.type === 'timeGridDay') {
           return {
           html: `
@@ -44,9 +55,11 @@
             };
         }
       },
+      // In month view, if click on a movement change to day view
       dateClick: function(info) {
             calendar.changeView('timeGridDay', info.dateStr);
       },
+      // In day wiew, if click on a movement, open a new tab with the order
       eventClick: function(info) {
         if (info.event.url) {
             info.jsEvent.preventDefault();
@@ -54,6 +67,8 @@
         }
       }      
     });
+    // Render code from server that shows movements in calendar for a specific date 
+    // (See calendar_date route in app.py)
     {{ day | safe }}
     calendar.render();
   });

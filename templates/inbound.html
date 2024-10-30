@@ -121,7 +121,7 @@
 </div>
 
 <script>
-  //Collapsible
+  // Collapsible sections. Adapted with help from AI tools
   var mov = document.getElementsByClassName("movements");
   var i;
   for (i = 0; i < mov.length; i++) {
@@ -137,7 +137,7 @@
       }
   });}
 
-  //Show error message
+  // Show error message and hide it after 5 seconds
   function errorMessage(message) {
     document.getElementById("error-output").innerHTML = message;
     document.getElementById("error-output").style.visibility = "visible";
@@ -147,23 +147,29 @@
      setTimeout(eraseErrorMessage, 5000);
   }
   
-  //Add product in a new row in table and to hidden input list
+  // Add product in a new row in table and to hidden input list. Adapted with help from AI tools
+  // First: load all products from inventory in a json object using Jinja2
   let myInventory = {{ inventory | tojson | safe }};
   const search3 = document.getElementById('search3');
+
   search3.addEventListener('input', function(e) {
+    // Second: check if the input value is a valid SKU or product name
     let datalistProducts = Array.from(document.getElementById('products').options);
     let validOption = datalistProducts.some(option => option.value === search3.value);
     if (validOption) {
+        // Third: if the input value is valid, get the SKU code
         let selectedOption = e.target.value;
         let index = selectedOption.indexOf(' ');
         let SKU = selectedOption.substring(0, index);
 
+        // Fourth: check if the SKU is already in the table of selected products. If not, add it
         if (document.getElementById(SKU) != null) {
             errorMessage("{{ _('Item is already in the cart') }}");
         } else {
             let product = myInventory.find(object => object.SKU === SKU);
             document.getElementById("table-header").style.visibility = "visible";
             let productAdded = document.getElementById("product-list").insertRow();
+            // Fifth: for each product, add a new row in the table with SKU, product name, quantity and delete button
             productAdded.classList.add('product-to-add');
             const cellClass = ['SKU', 'product', 'quantity', 'deleteButton'];
             const cellContent = [
@@ -180,13 +186,15 @@
                     newCell.classList.add('delete-button');
                 }
             }
-        document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
+            // Sixth: add the SKU to the hidden input list wich will be sent to the server
+            document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
         }
+        // Seventh: clear the input field for the next search
         document.getElementById('search3').value = "";
     };
   });
 
-  //Delete product (from hidden input list and table)
+  // Delete product from hidden input list and table. Adapted with help from AI tools
   function deleteRow(e) {
     if (e.target.classList.contains("delete-button")) {
         document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
@@ -198,7 +206,7 @@
   };
   document.querySelector("#products-in-list").addEventListener("click", deleteRow);
 
-  //Validations
+  // Validations: if there are no products added cancel form submission and show error message
   function saveOrder() {
     if (document.getElementById("products-selected").options.length == 0) {
         document.getElementById("add-shipment").addEventListener('submit', function(event) {

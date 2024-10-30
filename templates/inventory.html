@@ -157,7 +157,7 @@
     </div>
 </div>
 <script>
-  //Show error message
+  // Show error message and hide it after 5 seconds
   function errorMessage(message) {
     document.getElementById("error-output").innerHTML = message;
     document.getElementById("error-output").style.visibility = "visible";
@@ -173,7 +173,7 @@
   const destinationWarehouse = document.getElementById('destination-warehouse');
   let chooseWarehouse = document.getElementById('choose-destination-warehouse');
   originWarehouse.addEventListener('change', function() {
-    //Shows search input
+    //Show search input
     if (originWarehouse.value !== "") {
       searchContainer.style.visibility = 'visible';
     } else {
@@ -200,18 +200,22 @@
     });
   });  
 
-  //Add product in a new row in table and to hidden input list
+  // Add product in a new row in table and to hidden input list. Adapted with help from AI tools
+  // First: load all products from inventory in a json object using Jinja2
   let myInventory = {{ catalogue | tojson | safe }};
   const search4 = document.getElementById('search4');
   search4.addEventListener('input', function(e) {
+    // Second: check if the input value is a valid SKU or product name  
     let datalistProducts = Array.from(document.getElementById('products').options);
     let validOption = datalistProducts.some(option => option.value === search4.value);
     let selectedOption = e.target.value;
     if (validOption) {
+        // Third: if the input value is valid, get the SKU code
         let selectedOption = e.target.value;
         let index = selectedOption.indexOf(' ');
         let SKU = selectedOption.substring(0, index);        
 
+        // Fourth: check if the SKU is already in the table of selected products. If not, add it
         if (document.getElementById(SKU) != null) {
             errorMessage("{{ _('Item is already in the cart') }}");
         } else {
@@ -221,6 +225,7 @@
             if (stock > 0) {initialValue = 1};
             document.getElementById("table-header").style.visibility = "visible";
             let productAdded = document.getElementById("product-list").insertRow();
+            // Fifth: for each product, add a new row in the table with SKU, product name, quantity and delete button
             productAdded.classList.add('product-to-add');
             const cellClass = ['SKU', 'product', 'quantity', 'deleteButton'];
             const cellContent = [
@@ -237,13 +242,15 @@
                     newCell.classList.add('delete-button');
                 }
             }
+            // Sixth: add the SKU to the hidden input list wich will be sent to the server
             document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
         }
+        // Seventh: clear the input field for the next search
         document.getElementById('search4').value = "";
     }
   });
   
-  //Delete product (from hidden input list and table)
+  // Delete product from hidden input list and table. Adapted with help from AI tools
   function deleteRow(e) {
     if (e.target.classList.contains("delete-button")) {
         document.getElementById(e.target.parentNode.firstElementChild.innerHTML).remove();
@@ -258,11 +265,13 @@
   //Validations
   const transfer = document.getElementById("add-transfer");
   transfer.addEventListener('submit', function(event) {
-    event.preventDefault();    
+    event.preventDefault();
+    // If there are no products in the list cancel submission and show error message
     if (document.getElementById("products-selected").options.length > 0) {
       let validation = true;
       let transferQuantity = Array.from(document.getElementsByClassName('transfer-quantity'));
       transferQuantity.forEach(function(element) {        
+        // If there are '0' items of a product cancel submission and show error message
         if (element.value <= 0) {
           validation = false;
           errorMessage("{{ _('Cannot transfer less than 1 item') }}");          

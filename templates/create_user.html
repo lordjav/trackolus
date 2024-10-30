@@ -43,11 +43,13 @@
 </div>
 <script>
     function selectId(value) {
+        // Set the selected value in the dropdown button
         const idButton = document.getElementById('id-type');
         const idButtonHidden = document.getElementById('id-type-hidden');
         idButtonHidden.value = value;
         idButton.innerHTML = value;
         idButton.style.boxShadow = 'none';
+        // Adjust the label font size according to the selected value
         if (value == 'CURP') {
             idButton.style.fontSize = 'smaller';
         } else {

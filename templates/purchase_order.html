@@ -75,7 +75,7 @@
     }
   });
 
-  // Show suggestions box if customer-name input is focused and hide if doesn't
+  // Show suggestions box if customer-name input is focused and hide if does not
   const customerNameInput = document.getElementById('customer-name');
   const suggestions2 = document.getElementById('suggestions2');
   
@@ -89,26 +89,30 @@
     }
   });
 
-  //Add product in a new row
-  let myInventory = {{ catalogue | tojson | safe }};
+  //Add product in a new row. Adapted with help from AI tools
   const errorOuput = document.getElementById("error-output");
 
   function eraseErrorMessage() {
     errorOuput.style.visibility = "hidden";
   }
+  // First: load all products from inventory in a json object using Jinja2
+  let myInventory = {{ catalogue | tojson | safe }};
   document.getElementById('search2').addEventListener('input', function(e) {
     let selectedOption = e.target.value;
     let index = selectedOption.indexOf(' ');
     let SKU = selectedOption.substring(0, index);
 
+    // Second: get SKU code of selected product and check if it is already in the table
     if (document.getElementById(SKU) != null) {      
       errorOuput.innerHTML = 'Item already in list';
       errorOuput.style.visibility = "visible";
       setTimeout(eraseErrorMessage, 5000);
     } else {
+      // Third: Fetch SKU code in inventory and add product to table
       let product = myInventory.find(object => object.SKU === SKU);
       let productAdded = document.getElementById("product-list").insertRow();
       productAdded.classList.add('product-to-add');
+      // Fourth: for each row in the table add SKU, product name, quantit, price, total price and delete button
       let wh = document.getElementById('warehouse').value;
       const cellClass = ['SKU', 'product', 'quantity', 'unit-price', 'total-price', 'delete-button'];
       const cellContent = [
@@ -125,8 +129,10 @@
         newCell.innerHTML = cellContent[i];
       }
       document.getElementById("table-header").style.visibility = "visible";
+      // Fifth: add the SKU to the hidden input list wich will be sent to the server      
       document.getElementById("products-selected").innerHTML += `<option id="${product.SKU}" value="${product.SKU}" selected></option>`;
     }
+    // Sixth: clear the input field for the next search
     document.getElementById('search2').value = "";
   });
   
