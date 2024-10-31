@@ -229,7 +229,6 @@ def logout():
                         )
         #Forget any user id
         session.clear()
-        print(session)
         #Redirect to login form
         return redirect("/login")
     
@@ -671,7 +670,6 @@ def inbound():
             return redirect("/inbound")
         
         except Exception as e:
-            print(f"There was a problem: {e}")
             return render_template("error.html", message=f"There was a problem: {e}"), 400
 
     #GET method: show all inbound orders
@@ -1778,7 +1776,7 @@ def create_user():
             role = request.form.get('role')
             email = request.form.get('user-email')
             phone = request.form.get('user-phone')
-            password_hash = generate_password_hash(identification)
+            password_hash = generate_password_hash(str(identification))
             db.execute("""
                     INSERT INTO users (
                         identification_type, 
@@ -1999,7 +1997,6 @@ def transfer():
         return redirect("/inventory")
         
     except Exception as e:
-        print(f"There was a problem: {e}")
         return render_template("error.html", message=f"There was a problem: {e}"), 400
 
 
@@ -2112,39 +2109,37 @@ def change_password():
     if request.method == 'POST':
         try:
             old_password_hash = db.execute("SELECT hash FROM users WHERE id = ?", session["user_id"])[0]["hash"]
-            
+            current_password = str(request.form.get("current-password"))
+            new_password = str(request.form.get("new-password"))
+            confirmation = str(request.form.get("confirmation"))
+
             # Ensure old password was submitted
-            if not request.form.get("old-password"):
+            if not current_password:
                 raise Exception("Must provide your current password")
             # Ensure new password was submitted
-            elif not request.form.get("new-password"):
+            elif not new_password:
                 raise Exception("Must provide a new password")
             # Ensure confirmation was submitted
-            elif not request.form.get("confirmation"):
+            elif not confirmation:
                 raise Exception("Must confirm your new password")
             # Ensure passwords match
-            elif request.form.get("new-password") != request.form.get("confirmation"):
+            elif new_password != confirmation:
                 raise Exception("Passwords does not match")
             # Ensure old password is correct
-            if not check_password_hash(old_password_hash, request.form.get("old-password")):
+            if not check_password_hash(old_password_hash, current_password):
                 raise Exception("Current password is incorrect")
-        except Exception as e:
-            flash(str(e), category="danger")
-            return render_template("change_password.html")
-        
-        #Verify password is not in list of unallowed passwords
-        with open('passwords.csv', 'r') as file:
-            reader = csv.reader(file)
-            passwords = list(reader)
+            
+            #Verify password is not in list of unallowed passwords
+            with open('passwords.csv', 'r') as file:
+                reader = csv.reader(file)
+                passwords = list(reader)
 
-        if request.form.get("new-password") in passwords:
-            flash("This password is not allowed for security reasons", category="danger")
-            return render_template("change_password.html")
+            if new_password in passwords:
+                flash("This password is not allowed for security reasons", category="danger")
+                return render_template("change_password.html")
 
-        #Try to update password in database and handle exceptions
-        try:
-            password_hash = generate_password_hash(request.form.get("new_password"))
-
+            # Update password in database and handle exceptions
+            password_hash = generate_password_hash(new_password)
             db.execute("UPDATE users SET hash = ? WHERE id = ?", password_hash, session["user_id"])
             
             flash("Password succesfully changed", category="success")
