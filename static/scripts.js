@@ -25,59 +25,17 @@ searchBar.addEventListener('blur', function () {
     }, 150)
 });
 
-// Add new notifications. Adapted with help from AI tools
-let notificationsRead = [];
-const evtSource = new EventSource("/notifications");
-evtSource.onmessage = function(event) {
-    const notificationsDiv = document.getElementById("notifications");
-    const notification = JSON.parse(event.data);
-    const existingNotification = document.getElementById(notification.id);
-    if (existingNotification) {        
-        return;
+// Change the notification icon when there are unread notifications
+const readIndicator = document.getElementById('read-indicator');
+document.addEventListener('htmx:afterSettle', (event) => {
+    // If notifications are shown and there are unread notifications, change the notification icon
+    if (event.target.id === 'notifications' && document.getElementsByClassName('unread').length > 0) {
+        readIndicator.classList.remove('hidden');
     }
-    // Create new notification, title, date and message
-    const newNotification = document.createElement("div");
-    newNotification.id = notification.id;
-    newNotification.className = "notification";
-
-    const title = document.createElement("h3");
-    title.textContent = notification.title;
-
-    const date = document.createElement("p");
-    date.textContent = new Date(notification.date).toLocaleString();
-
-    const message = document.createElement("p");
-    message.style.whiteSpace = 'pre-line';
-    message.textContent = notification.message;
-
-    newNotification.appendChild(title);
-    newNotification.appendChild(date);
-    newNotification.appendChild(message);
-
-    // Add notification to the top of the list
-    notificationsDiv.insertBefore(newNotification, notificationsDiv.firstChild);
-    // For new notifications, make the text bold
-    if (notification.isSeen === 0) {
-        newNotification.querySelectorAll('*').forEach(function(element) {
-            element.style.fontWeight = 'bold';
-        });
-    }    
-};
-
-evtSource.onerror = function(err) {
-    console.error("EventSource failed:", err);
-};
-
-// Mark notifications as read
-function markRead(container) {
-    const allNotifications = container.querySelectorAll("*");
-    allNotifications.forEach(function(element) {
-        element.style.fontWeight = 'inherit';
-    });
-};
+});
 
 // Show/hide notifications, modals and language selection
-const notifications = document.getElementById('notifications');
+
 const notificationContainer = document.getElementById("notification-icon-container");
 const notificationContainerAux = document.getElementById("notification-icon-container-aux");
 
@@ -86,13 +44,19 @@ const languageContainer = document.getElementById("language-container");
 const languageContainerAux = document.getElementById("language-container-aux");
 
 // Show notifications and send request to mark them as read
-function showNotifications() {    
+let notificationsRead = [];
+function showNotifications() {
+    const notifications = document.getElementById('notifications');
     if (notifications.style.display === 'none') {        
         notifications.style.display = 'block';
+        // Make a list of notifications to mark as read
         notifications.querySelectorAll('.notification').forEach(function(element) {
             notificationsRead.push(parseInt(element.id));
         });
+        // Create a custom event to be used by HTMX to make POST request
         notifications.dispatchEvent(new CustomEvent("markRead"));
+        // Change the notification icon to read
+        readIndicator.classList.add('hidden');
     } else {
         notifications.style.display = 'none';
     }
@@ -101,6 +65,7 @@ function showNotifications() {
 document.addEventListener("DOMContentLoaded", function() {
     // If click on notification icon, relocate and show notifications (Wide screens)
     notificationContainer.addEventListener("click", function(event) {
+        const notifications = document.getElementById('notifications');
         if (notificationContainer.contains(event.target)) {
             notificationContainer.appendChild(notifications);
             notifications.classList.toggle('notifications-small', false);
@@ -110,6 +75,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // If click on notification icon, relocate and show notifications (Small screens)
     notificationContainerAux.addEventListener('click', function(event) {
+        const notifications = document.getElementById('notifications');
         if (notificationContainerAux.contains(event.target)) {
             toolsModal.appendChild(notifications);
             notifications.classList.toggle('notifications-small', true);
@@ -146,6 +112,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!languageContainer.contains(event.target) && !languageContainerAux.contains(event.target)) {
             languageSelect.style.display = 'none';
         }
+        const notifications = document.getElementById('notifications');
         if (!notificationContainer.contains(event.target) && !notificationContainerAux.contains(event.target)) {
             notifications.style.display = 'none';
         }

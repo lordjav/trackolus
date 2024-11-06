@@ -1678,33 +1678,40 @@ def get_events():
 @app.route("/notifications")
 @login_required
 def notifications():
-    @stream_with_context
-    def generate_notifications():
-        while True:
-            notifications = db.execute("""
-                                       SELECT 
-                                        n.id AS id,
-                                        n.title AS title,
-                                        n.message AS message,
-                                        n.date AS date,
-                                        nu.seen AS isSeen 
-                                       FROM notifications n
-                                       JOIN notified_users nu
-                                       ON n.id = nu.notification_id
-                                       WHERE n.date >= datetime(
-                                        "now", 
-                                        "-24 hours", 
-                                        "localtime"
-                                       )
-                                       AND nu.user_id = ?
-                                       ORDER BY n.date
-                                       """, session['user_id'])
+    notifications = db.execute("""
+                                SELECT 
+                                n.id AS id,
+                                n.title AS title,
+                                n.message AS message,
+                                n.date AS date,
+                                nu.seen AS isSeen 
+                                FROM notifications n
+                                JOIN notified_users nu
+                                ON n.id = nu.notification_id
+                                WHERE n.date >= datetime(
+                                "now", 
+                                "-24 hours", 
+                                "localtime"
+                                )
+                                AND nu.user_id = ?
+                                ORDER BY n.date DESC
+                                """, session['user_id'])
 
-            for notification in notifications:
-                yield f"data: {json.dumps(dict(notification))}\n\n"
-            
-            time.sleep(5)
-    return Response(generate_notifications(), content_type='text/event-stream')
+    return render_template_string("""
+                                  {% if notifications %}
+                                  <div class="header-tool" id="notifications" style="display: none;" hx-post="/mark_read" hx-vals="js:{notifications_read: notificationsRead}" hx-trigger="markRead[document.getElementsByClassName('unread').length > 0]" hx-target="#question-icon" hx-swap="none">
+                                  {% for notification in notifications %}
+                                    <div class="notification{% if notification['isSeen'] == 0 %} unread{% endif %}" id="{{ notification['id'] }}">
+                                        <h3>{{ notification['title'] }}</h3>
+                                        <p>{{ notification['date'] }}</p>
+                                        <p>{{ notification['message'] }}</p>
+                                    </div>
+                                  {% endfor %}
+                                  </div>
+                                  {% else %}
+                                    <h3>Anything new in the last 24 hours</h3>
+                                  {% endif %}
+                                  """, notifications=notifications)
 
 
 #Mark_read route: mark notifications as read when seen
