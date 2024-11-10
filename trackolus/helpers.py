@@ -1,4 +1,4 @@
-import pdfkit, os
+import pdfkit, os, platform
 from cs50 import SQL
 from datetime import datetime
 from flask import redirect, session, request, g, render_template, make_response
@@ -179,10 +179,13 @@ def get_order_data():
     
     return data
 
-
 #Function: configurate pdfkit and wkhtmltopdf to create pdf. Adapted with help from AI tools.
 def configurate_pdf(rendered):
-    path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    if platform.system() == 'Windows':
+        path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    else:
+        path_wkhtmltopdf = '/usr/bin/wkhtmltopdf'
+
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)    
     pdf = pdfkit.from_string(
         rendered, 

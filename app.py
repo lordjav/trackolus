@@ -1493,16 +1493,7 @@ def generate_doc(doc_type):
                 data=data_report,
                 additional_data=additional_data
                 )
-            path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
-            config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)    
-            pdf = pdfkit.from_string(
-                rendered, 
-                False, 
-                options={"enable-local-file-access": ""}, 
-                configuration=config
-                )    
-            response = make_response(pdf)
-            response.headers['Content-Type'] = 'application/pdf'
+            response = configurate_pdf(rendered)
             response.headers['Content-Disposition'] = f"attachment; filename={file_name}.pdf"
 
         case 'csv':
@@ -1709,7 +1700,9 @@ def notifications():
                                   {% endfor %}
                                   </div>
                                   {% else %}
-                                    <h3>Anything new in the last 24 hours</h3>
+                                    <div class="header-tool" id="notifications" style="display: none;">
+                                        <div style="height:100px;padding:5px 10px;display:flex;justify-content:center;align-items:center;"><h3>Anything new in the last 24 hours.</h3></div>
+                                    </div>
                                   {% endif %}
                                   """, notifications=notifications)
 
