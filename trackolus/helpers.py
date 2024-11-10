@@ -184,7 +184,7 @@ def configurate_pdf(rendered):
     if platform.system() == 'Windows':
         path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
     else:
-        path_wkhtmltopdf = '/env/bin/wkhtmltopdf'
+        path_wkhtmltopdf = '/usr/bin/wkhtmltopdf'
 
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)    
     pdf = pdfkit.from_string(
