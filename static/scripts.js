@@ -25,6 +25,7 @@ searchBar.addEventListener('blur', function () {
     }, 150)
 });
 
+// NOTIFICATIONS SCRIPT
 // Change the notification icon when there are unread notifications
 const readIndicator = document.getElementById('read-indicator');
 document.addEventListener('htmx:afterSettle', (event) => {
@@ -38,6 +39,8 @@ document.addEventListener('htmx:afterSettle', (event) => {
 
 const notificationContainer = document.getElementById("notification-icon-container");
 const notificationContainerAux = document.getElementById("notification-icon-container-aux");
+const notificationIcon = document.getElementById("notification-icon");
+const notificationIconAux = document.getElementById("notification-icon-aux");
 
 const languageSelect = document.getElementById("language-select-container");
 const languageContainer = document.getElementById("language-container");
@@ -61,6 +64,7 @@ function showNotifications() {
         notifications.style.display = 'none';
     }
 };
+
 // After page load, add event listeners to show notification and language containers
 document.addEventListener("DOMContentLoaded", function() {
     // If click on notification icon, relocate and show notifications (Wide screens)
@@ -72,7 +76,6 @@ document.addEventListener("DOMContentLoaded", function() {
             showNotifications();
         }
     });
-
     // If click on notification icon, relocate and show notifications (Small screens)
     notificationContainerAux.addEventListener('click', function(event) {
         const notifications = document.getElementById('notifications');
@@ -94,7 +97,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
-
     // If click on language icon, relocate and show language selection (Small screens)
     languageContainerAux.addEventListener("click", function(event) {
         if (languageContainerAux.contains(event.target)) {
@@ -117,6 +119,7 @@ document.addEventListener("DOMContentLoaded", function() {
             notifications.style.display = 'none';
         }
         if (event.target.classList.contains('modal-window')) {
+            notificationIcon.appendChild(readIndicator);
             event.target.style.display = "none";
         }
     }
@@ -145,17 +148,17 @@ const toolsBar = document.getElementById('tools-modal-content');
 const notifAux = document.getElementById('notifications-aux');
 
 function showToolsbar() {
+    notificationIconAux.appendChild(readIndicator);
     toolsModal.style.display = "block";
     toolsModal.style.zIndex = 10;
     toolsBar.style.display = "flex";
     toolsBar.style.zIndex = 11;
 
 }
-function closeSidebar() {
+function closeToolsbar() {
+    notificationIcon.appendChild(readIndicator);
     toolsModal.style.display = "none";
     toolsModal.style.zIndex = -3;
     toolsBar.style.display = "none";
     toolsBar.style.zIndex = 1;
 }
-
-
