@@ -1037,6 +1037,23 @@ main {
     font-size: 1.2rem !important;
 }
 
+#product-image-modal-content {
+    width: fit-content;
+}
+
+@media only screen and (orientation: landscape) {
+    #product-image {
+        width: fit-content;
+        height: 80vh;
+    }
+}
+@media only screen and (orientation: portrait) {
+    #product-image {
+        width: 80vw;
+        height: fit-content;
+    }
+}
+
 /* Extra extra small devices (phones, 420px and down) */
 @media only screen and (min-width: 150px) {
     html {
@@ -1318,9 +1335,6 @@ main {
     .movement-container * {
         font-size: 1.2rem;
     }
-    #product-info {
-        flex-direction: row;
-    }
     .notifications-small {
         font-size: 1.2rem !important;
         position: fixed !important;
@@ -1431,6 +1445,9 @@ main {
     }
     .password-input {
         width: 40vw;
+    }
+    #product-info {
+        flex-direction: row;
     }
 }
 

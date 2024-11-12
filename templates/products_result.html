@@ -5,7 +5,7 @@
 <div>
     <article id="product-info">
         <section class="image_container" style="text-align:center;">
-            <img class="result_image" src="{{ url_for('static', filename=item[0]['image_route']) }}">
+            <img onclick="showModal('product-image-modal')" class="result_image" src="{{ url_for('static', filename=item[0]['image_route']) }}">
         </section>
         
         <section id="product-data">
@@ -94,6 +94,17 @@
         </div>
     </div>
 </div>
+<div class="modal-window" id="product-image-modal" tabindex="-1">
+    <div class="modal-content" id="product-image-modal-content">
+        <div class="modal-header" id="product-image-modal-header">
+            <h3 id="product-image-title"></h3>
+            <button type="button" class="btn-close close-modal-button" id="close-modal-button-3" onclick="closeModal('product-image-modal')"></button>
+        </div>
+        <div class="modal-body" id="product-image-modal-body">
+            <img id="product-image" src="{{ url_for('static', filename=item[0]['image_route']) }}">
+        </div>
+    </div>
+</div>
 <script>
     // Check if product information changed before sending request to server
     let propertiesToEdit = document.getElementsByClassName('edit');
@@ -117,6 +128,14 @@
             closeModal('edit-product');
         }
     });
+    
+    // Show product image in modal
+    function showImage(src) {
+        let modal = document.getElementById('image-modal');
+        let img = document.getElementById('modal-image');
+        img.src = src;
+        modal.style.display = "block";
+    }
 </script>
 
 {% endblock %}
