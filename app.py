@@ -27,12 +27,12 @@ app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 app.config["ALLOWED_EXTENSIONS"] = [".jpg", ".jpeg", ".png", ".gif"]
 app.config["BABEL_TRANSLATION_DIRECTORIES"] = "./translations"
 app.config["BABEL_DEFAULT_LOCALE"] = 'en'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///error_log.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../../databases/error_log.db'
 
 #Database configuration for error log, general data and graph data respectively
 errdb = SQLAlchemy(app)
-db = SQL("sqlite:///general_data.db")
-engine = sqlalchemy.create_engine("sqlite:///general_data.db")
+db = SQL("sqlite:///../databases/general_data.db")
+engine = sqlalchemy.create_engine("sqlite:///../databases/general_data.db")
 
 #Babel configuration for translations and date formats
 babel = Babel(app)
@@ -2155,12 +2155,15 @@ def change_password():
 @app.route('/help')
 @login_required
 def help():
+    raise ValueError("Error: Help page not found")
+    """"
     language = get_locale()
     match language:
         case 'en':
             return render_template('help.html')
         case 'es':
             return render_template('help_es.html')
+    """
 
 
 #User_filter route: shows users for filtering search in reports module

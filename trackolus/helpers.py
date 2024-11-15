@@ -5,7 +5,7 @@ from flask import redirect, session, request, g, render_template, make_response
 from functools import wraps
 from trackolus.classes import *
 
-db = SQL("sqlite:///general_data.db")
+db = SQL("sqlite:///../databases/general_data.db")
 
 #Function: limits access only to logged users.
 def login_required(f):
