@@ -1058,7 +1058,6 @@ def dashboard():
         def wrap_labels(str, width=20):
             return '<br>'.join(textwrap.wrap(str, width=width))
         
-        engine = sqlalchemy.create_engine("sqlite:///general_data.db")
         #INVENTORY GRAPH: get top 10 products with lowest stock
         inv_graph = pandas.read_sql_query(f"""
                                         SELECT 
