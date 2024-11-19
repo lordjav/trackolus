@@ -444,7 +444,7 @@ main {
     margin: auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 500px;
+    width: 550px;
     border-radius: 15px;
     text-align: center;
     box-shadow: 4px 4px 9px 3px rgba(0, 0, 0, 0.42);
@@ -610,7 +610,7 @@ main {
 }
 
 #sell-price-label {
-    translate: 259px -3px;
+    translate: 286px -3px;
 }
 
 #buttons-purchase-container {
@@ -1309,7 +1309,7 @@ main {
         display: none;
     }
     #add-product-modal-content, #edit-product-modal-content, #edit-user-modal-content {
-        width: 500px;
+        width: 550px;
     }
     #purchase-form {
         width: 95%;

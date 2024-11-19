@@ -445,6 +445,7 @@ def purchase_order():
                            'customer', 
                            'active',
                            )
+                customer_id = db.execute("SELECT last_insert_rowid() AS id")[0]['id']
             else:
                 customer_id = is_customer[0]["id"]
             #Get last order number and add 1
@@ -2154,15 +2155,12 @@ def change_password():
 @app.route('/help')
 @login_required
 def help():
-    raise ValueError("Error: Help page not found")
-    """"
     language = get_locale()
     match language:
         case 'en':
             return render_template('help.html')
         case 'es':
             return render_template('help_es.html')
-    """
 
 
 #User_filter route: shows users for filtering search in reports module
